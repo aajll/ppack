@@ -1,5 +1,7 @@
 # ppack
 
+[![CI](https://github.com/ACIDBURN2501/ppack/actions/workflows/ci.yml/badge.svg)](https://github.com/ACIDBURN2501/ppack/actions/workflows/ci.yml)
+
 A generic payload serialisation library for bit-aligned data fields in C.
 
 ## Features
