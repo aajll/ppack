@@ -9,7 +9,7 @@ project(
   license: 'MIT',
 )
 
-# ── Version header ─────────────────────────────────────────────────────────────
+# === Version header ===========================================================
 
 ver = meson.project_version().split('.')
 
@@ -31,11 +31,11 @@ configure_file(
   install_dir: get_option('includedir') / 'ppack',
 )
 
-# ── Include directories ────────────────────────────────────────────────────────
+# === Include directories ======================================================
 
 public_headers = include_directories('include')
 
-# ── Application core library ───────────────────────────────────────────────────
+# === Application core library =================================================
 # Hardware-agnostic application logic.  Linked by both the application
 # executable and the unit-test suite (which supplies its own platform mocks).
 
@@ -50,15 +50,35 @@ ppack_lib = static_library(
 )
 
 # Install public header
-install_headers('include/ppack.h', subdir: 'ppack')
+install_headers(
+  ['include/ppack.h', 'include/ppack_platform.h'],
+  subdir: 'ppack'
+)
 
 ppack_dep = declare_dependency(
   include_directories: public_headers,
   link_with: ppack_lib,
 )
 
-# ── Host unit tests ────────────────────────────────────────────────────────────
+# === Host unit tests ==========================================================
 
 if get_option('build_tests')
+  # Second build of the library with the 16-bit MAU simulation flag, so the
+  # test binary linking against it actually exercises the word-addressable
+  # code path end-to-end (including ppack_u8_t sizing inside the library).
+  ppack_sim_lib = static_library(
+    'ppack_sim',
+    library_sources,
+    include_directories: public_headers,
+    c_args: ['-DPPACK_SIMULATE_16BIT_MAU'],
+    install: false,
+  )
+
+  ppack_sim_dep = declare_dependency(
+    include_directories: public_headers,
+    link_with: ppack_sim_lib,
+    compile_args: ['-DPPACK_SIMULATE_16BIT_MAU'],
+  )
+
   subdir('tests')
 endif

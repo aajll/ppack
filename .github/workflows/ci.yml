@@ -60,7 +60,7 @@ jobs:
 
   # ---------------------------------------------------------------------------
   # Verify the library compiles cleanly in release mode (no tests, no
-  # sanitizers) — the configuration a downstream project would use.
+  # sanitizers) - the configuration a downstream project would use.
   # ---------------------------------------------------------------------------
   release-build:
     name: "Release build"
@@ -88,3 +88,60 @@ jobs:
 
       - name: Build
         run: meson compile -C build
+
+  # ---------------------------------------------------------------------------
+  # Code coverage gate. Builds with gcov instrumentation, runs the full
+  # test suite, and fails the job if line or branch coverage drops below
+  # the threshold. Threshold is currently 100% to match the baseline;
+  # lower it deliberately if a justified gap is introduced.
+  # ---------------------------------------------------------------------------
+  coverage:
+    name: "Coverage gate"
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Install ninja
+        run: sudo apt-get update -q && sudo apt-get install -y ninja-build
+
+      - name: Install meson and gcovr
+        run: pip install meson gcovr
+
+      - name: Configure (coverage)
+        run: >
+          meson setup build
+          --buildtype=debug
+          -Dbuild_tests=true
+          -Db_coverage=true
+
+      - name: Build
+        run: meson compile -C build
+
+      - name: Run tests
+        run: meson test -C build --verbose
+
+      - name: Generate coverage report
+        run: |
+          mkdir -p coverage-report
+          gcovr \
+            --root . \
+            --filter 'src/' \
+            --filter 'include/' \
+            --html-details coverage-report/index.html \
+            --txt coverage-report/summary.txt \
+            --print-summary \
+            --fail-under-line 100 \
+            --fail-under-branch 100
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage-report/
