@@ -3000,6 +3000,136 @@ TEST_CASE(test_f32_special_values)
 }
 
 /* ------------------------------------------------------------------ */
+/* Wire format v1 lockdown                                            */
+/* ------------------------------------------------------------------ */
+/*
+ * These tests assert the exact byte sequence produced by ppack_pack
+ * for a fixed set of inputs. They define the wire-format contract for
+ * the v1.x release line: any change to these expected bytes is a
+ * BREAKING change to the protocol that downstream firmware nodes
+ * (e.g. Power Module / Supervisory controller CAN bus) rely on.
+ *
+ * Do not edit the expected byte arrays in these tests. If the library
+ * needs to produce a different wire layout, that is a v2 release.
+ */
+
+TEST_CASE(test_wire_v1_lockdown_byte_aligned)
+{
+        /* Layout:
+         *   bits  0..15  PPACK_TYPE_U16  (uint16_t  = 0x1234)
+         *   bits 16..31  PPACK_TYPE_S16  (int16_t   = -100   = 0xFF9C)
+         *   bits 32..63  PPACK_TYPE_U32  (uint32_t  = 0xDEADBEEF)
+         */
+        test_struct_t data = {
+            .field_u16 = 0x1234u,
+            .field_s16 = -100,
+            .field_u32 = 0xDEADBEEFu,
+        };
+
+        const struct ppack_field fields[] = {
+            {.type = PPACK_TYPE_U16,
+             .start_bit = 0,
+             .bit_length = 16,
+             .ptr_offset = offsetof(test_struct_t, field_u16),
+             .behaviour = PPACK_BEHAVIOUR_RAW},
+            {.type = PPACK_TYPE_S16,
+             .start_bit = 16,
+             .bit_length = 16,
+             .ptr_offset = offsetof(test_struct_t, field_s16),
+             .behaviour = PPACK_BEHAVIOUR_RAW},
+            {.type = PPACK_TYPE_U32,
+             .start_bit = 32,
+             .bit_length = 32,
+             .ptr_offset = offsetof(test_struct_t, field_u32),
+             .behaviour = PPACK_BEHAVIOUR_RAW},
+        };
+
+        ppack_byte_t payload[PPACK_PAYLOAD_UNITS] = {0};
+        TEST_ASSERT(ppack_pack(&data, payload, fields, 3) == PPACK_SUCCESS);
+
+        static const uint8_t expected[8] = {
+            0x34u, 0x12u, 0x9Cu, 0xFFu, 0xEFu, 0xBEu, 0xADu, 0xDEu,
+        };
+        for (uint16_t i = 0; i < 8; ++i) {
+                TEST_ASSERT(READ_LOGICAL_BYTE(payload, i) == expected[i]);
+        }
+}
+
+TEST_CASE(test_wire_v1_lockdown_float_and_small_types)
+{
+        /* Layout:
+         *   bits  0..31  PPACK_TYPE_F32  (float    = 1.0f = 0x3F800000)
+         *   bits 32..47  PPACK_TYPE_U16  (uint16_t = 0xCAFE)
+         *   bits 48..55  PPACK_TYPE_U8   (uint8_t  = 0xAB)
+         *   bits 56..63  PPACK_TYPE_BITS (uint32_t = 0xCD, 8-bit field)
+         */
+        test_struct_t data = {0};
+        data.field_f32 = 1.0f;
+        data.field_u16 = 0xCAFEu;
+        data.field_u8 = (ppack_u8_t)0xABu;
+        data.field_bits = 0xCDu;
+
+        const struct ppack_field fields[] = {
+            {.type = PPACK_TYPE_F32,
+             .start_bit = 0,
+             .bit_length = 32,
+             .ptr_offset = offsetof(test_struct_t, field_f32),
+             .behaviour = PPACK_BEHAVIOUR_RAW},
+            {.type = PPACK_TYPE_U16,
+             .start_bit = 32,
+             .bit_length = 16,
+             .ptr_offset = offsetof(test_struct_t, field_u16),
+             .behaviour = PPACK_BEHAVIOUR_RAW},
+            {.type = PPACK_TYPE_U8,
+             .start_bit = 48,
+             .bit_length = 8,
+             .ptr_offset = offsetof(test_struct_t, field_u8),
+             .behaviour = PPACK_BEHAVIOUR_RAW},
+            {.type = PPACK_TYPE_BITS,
+             .start_bit = 56,
+             .bit_length = 8,
+             .ptr_offset = offsetof(test_struct_t, field_bits),
+             .behaviour = PPACK_BEHAVIOUR_RAW},
+        };
+
+        ppack_byte_t payload[PPACK_PAYLOAD_UNITS] = {0};
+        TEST_ASSERT(ppack_pack(&data, payload, fields, 4) == PPACK_SUCCESS);
+
+        static const uint8_t expected[8] = {
+            0x00u, 0x00u, 0x80u, 0x3Fu, 0xFEu, 0xCAu, 0xABu, 0xCDu,
+        };
+        for (uint16_t i = 0; i < 8; ++i) {
+                TEST_ASSERT(READ_LOGICAL_BYTE(payload, i) == expected[i]);
+        }
+}
+
+TEST_CASE(test_wire_v1_lockdown_cross_byte_boundary)
+{
+        /* Layout: a single PPACK_TYPE_U16 = 0xABCD shifted left by 4 bits.
+         * Verifies the LSB-first / little-endian bit ordering on a non-
+         * byte-aligned start position. Bits 0..3 and 20..63 are zero. */
+        test_struct_t data = {.field_u16 = 0xABCDu};
+
+        const struct ppack_field fields[] = {
+            {.type = PPACK_TYPE_U16,
+             .start_bit = 4,
+             .bit_length = 16,
+             .ptr_offset = offsetof(test_struct_t, field_u16),
+             .behaviour = PPACK_BEHAVIOUR_RAW},
+        };
+
+        ppack_byte_t payload[PPACK_PAYLOAD_UNITS] = {0};
+        TEST_ASSERT(ppack_pack(&data, payload, fields, 1) == PPACK_SUCCESS);
+
+        static const uint8_t expected[8] = {
+            0xD0u, 0xBCu, 0x0Au, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+        };
+        for (uint16_t i = 0; i < 8; ++i) {
+                TEST_ASSERT(READ_LOGICAL_BYTE(payload, i) == expected[i]);
+        }
+}
+
+/* ------------------------------------------------------------------ */
 /* Test runner                                                        */
 /* ------------------------------------------------------------------ */
 
@@ -3154,6 +3284,14 @@ main(void)
                  "test_scaled_quantization_bounded");
         run_test(test_scaled_saturation, "test_scaled_saturation");
         run_test(test_f32_special_values, "test_f32_special_values");
+
+        /* Wire format v1 lockdown - DO NOT change expected bytes in v1.x */
+        run_test(test_wire_v1_lockdown_byte_aligned,
+                 "test_wire_v1_lockdown_byte_aligned");
+        run_test(test_wire_v1_lockdown_float_and_small_types,
+                 "test_wire_v1_lockdown_float_and_small_types");
+        run_test(test_wire_v1_lockdown_cross_byte_boundary,
+                 "test_wire_v1_lockdown_cross_byte_boundary");
 
         fprintf(stdout, "\n=== All tests passed ===\n\n");
         return EXIT_SUCCESS;

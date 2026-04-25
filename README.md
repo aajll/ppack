@@ -253,7 +253,7 @@ These configurations are run through the test suite or have been verified on har
 |---|---|---|
 | GCC, Clang | x86_64 Linux | Run in CI (8-bit MAU code path) |
 | GCC, Clang with `-DPPACK_SIMULATE_16BIT_MAU` | x86_64 Linux | Run in CI (16-bit MAU code path) |
-| TI C2000 CGT | F28379D | Project target; covered by 16-bit MAU simulation |
+| TI C2000 CGT | C2000 family (16-bit MAU) | Code path covered by host simulation; no live cross-compile in CI |
 
 Other architectures from the supported list above are expected to work but are not yet routinely validated. If you bring up ppack on a new target, please report back so the table can be extended.
 
