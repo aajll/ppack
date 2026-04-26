@@ -1,0 +1,64 @@
+/*
+ * @file: test_ppack_main.c
+ * @brief Unit-test driver for the ppack library.
+ *
+ * Each category lives in its own translation unit
+ * (test_<category>.c) and exposes a single
+ * void run_<category>_tests(void) entry point. This file is the
+ * driver: it dispatches to each category in a fixed order and
+ * prints the start/end banners.
+ */
+
+#include <ppack_platform.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+/*
+ * Compile-time verification that ppack_byte_t resolves correctly.
+ * On byte-addressable platforms: ppack_byte_t == uint8_t, PPACK_PAYLOAD_UNITS
+ * == 8 On word-addressable platforms: ppack_byte_t == uint16_t,
+ * PPACK_PAYLOAD_UNITS == 4
+ */
+_Static_assert(sizeof(ppack_byte_t) == 1 || sizeof(ppack_byte_t) == 2,
+               "ppack_byte_t must be 8 or 16 bits");
+
+_Static_assert(PPACK_PAYLOAD_UNITS == 8 || PPACK_PAYLOAD_UNITS == 4,
+               "PPACK_PAYLOAD_UNITS must be 4 or 8");
+
+extern void run_null_arg_tests(void);
+extern void run_validation_tests(void);
+extern void run_scale_zero_tests(void);
+extern void run_roundtrip_raw_tests(void);
+extern void run_sign_extension_tests(void);
+extern void run_layout_tests(void);
+extern void run_scaled_tests(void);
+extern void run_edge_tests(void);
+extern void run_exhaustive_tests(void);
+extern void run_pattern_tests(void);
+extern void run_u8_shim_tests(void);
+extern void run_fuzz_tests(void);
+extern void run_wire_lockdown_tests(void);
+
+int
+main(void)
+{
+        fprintf(stdout, "\n=== Running ppack unit tests ===\n\n");
+
+        run_null_arg_tests();
+        run_validation_tests();
+        run_scale_zero_tests();
+        run_roundtrip_raw_tests();
+        run_sign_extension_tests();
+        run_layout_tests();
+        run_scaled_tests();
+        run_edge_tests();
+        run_exhaustive_tests();
+        run_pattern_tests();
+        run_u8_shim_tests();
+        run_fuzz_tests();
+        run_wire_lockdown_tests();
+
+        fprintf(stdout, "\n=== All tests passed ===\n\n");
+        return EXIT_SUCCESS;
+}
