@@ -46,20 +46,20 @@
         } while (0)
 
 typedef struct {
-        uint16_t field_u16;
-        int16_t field_s16;
-        uint32_t field_u32;
-        int32_t field_s32;
+        uint16_t field_uint16;
+        int16_t field_int16;
+        uint32_t field_uint32;
+        int32_t field_int32;
         float field_f32;
-        ppack_u8_t field_u8; /* Mirrors target-side uint8_t (16-bit on TI) */
+        ppack_u8_t field_uint8; /* Mirrors target-side uint8_t (16-bit on TI) */
         uint32_t field_bits;
 } test_struct_t;
 
 typedef struct {
-        float field_u16_scaled;
-        float field_s16_scaled;
-        float field_u32_scaled;
-        float field_s32_scaled;
+        float field_uint16_scaled;
+        float field_int16_scaled;
+        float field_uint32_scaled;
+        float field_int32_scaled;
 } test_struct_scaled_t;
 
 #endif /* TEST_FIXTURES_H_ */

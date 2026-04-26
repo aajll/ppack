@@ -13,13 +13,13 @@ TEST_CASE(test_pack_overflow_start_plus_len)
 {
         /* start_bit=56, bit_length=16 → 56+16=72 > 64: must be rejected */
         ppack_byte_t payload[PPACK_PAYLOAD_UNITS] = {0};
-        test_struct_t data = {.field_u16 = 0x1234};
+        test_struct_t data = {.field_uint16 = 0x1234};
 
         const struct ppack_field fields[] = {
             {.type = PPACK_TYPE_UINT16,
              .start_bit = 56,
              .bit_length = 16,
-             .ptr_offset = offsetof(test_struct_t, field_u16),
+             .ptr_offset = offsetof(test_struct_t, field_uint16),
              .behaviour = PPACK_BEHAVIOUR_RAW},
         };
 
@@ -36,7 +36,7 @@ TEST_CASE(test_unpack_overflow_start_plus_len)
             {.type = PPACK_TYPE_UINT16,
              .start_bit = 56,
              .bit_length = 16,
-             .ptr_offset = offsetof(test_struct_t, field_u16),
+             .ptr_offset = offsetof(test_struct_t, field_uint16),
              .behaviour = PPACK_BEHAVIOUR_RAW},
         };
 
@@ -48,13 +48,13 @@ TEST_CASE(test_pack_exact_boundary_passes)
 {
         /* start_bit=48, bit_length=16 → 48+16=64: exactly on the limit, OK */
         ppack_byte_t payload[PPACK_PAYLOAD_UNITS] = {0};
-        test_struct_t data = {.field_u16 = 0xABCD};
+        test_struct_t data = {.field_uint16 = 0xABCD};
 
         const struct ppack_field fields[] = {
             {.type = PPACK_TYPE_UINT16,
              .start_bit = 48,
              .bit_length = 16,
-             .ptr_offset = offsetof(test_struct_t, field_u16),
+             .ptr_offset = offsetof(test_struct_t, field_uint16),
              .behaviour = PPACK_BEHAVIOUR_RAW},
         };
 
@@ -67,13 +67,13 @@ TEST_CASE(test_pack_exact_boundary_passes)
 TEST_CASE(test_pack_bit_length_zero_rejected)
 {
         ppack_byte_t payload[PPACK_PAYLOAD_UNITS] = {0};
-        test_struct_t data = {.field_u16 = 0x1234};
+        test_struct_t data = {.field_uint16 = 0x1234};
 
         const struct ppack_field fields[] = {
             {.type = PPACK_TYPE_UINT16,
              .start_bit = 0,
              .bit_length = 0,
-             .ptr_offset = offsetof(test_struct_t, field_u16),
+             .ptr_offset = offsetof(test_struct_t, field_uint16),
              .behaviour = PPACK_BEHAVIOUR_RAW},
         };
 
@@ -85,13 +85,13 @@ TEST_CASE(test_pack_bit_length_33_rejected)
 {
         /* bit_length > 32 must be rejected (would cause UB shift) */
         ppack_byte_t payload[PPACK_PAYLOAD_UNITS] = {0};
-        test_struct_t data = {.field_u32 = 0xDEADBEEF};
+        test_struct_t data = {.field_uint32 = 0xDEADBEEF};
 
         const struct ppack_field fields[] = {
             {.type = PPACK_TYPE_UINT32,
              .start_bit = 0,
              .bit_length = 33,
-             .ptr_offset = offsetof(test_struct_t, field_u32),
+             .ptr_offset = offsetof(test_struct_t, field_uint32),
              .behaviour = PPACK_BEHAVIOUR_RAW},
         };
 

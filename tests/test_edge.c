@@ -13,13 +13,13 @@
 TEST_CASE(test_invalid_field_type)
 {
         ppack_byte_t payload[PPACK_PAYLOAD_UNITS] = {0};
-        test_struct_t data = {.field_u16 = 0x1234};
+        test_struct_t data = {.field_uint16 = 0x1234};
 
         const struct ppack_field fields[] = {
             {.type = (enum ppack_type)99,
              .start_bit = 0,
              .bit_length = 16,
-             .ptr_offset = offsetof(test_struct_t, field_u16),
+             .ptr_offset = offsetof(test_struct_t, field_uint16),
              .behaviour = PPACK_BEHAVIOUR_RAW},
         };
 
@@ -38,7 +38,7 @@ TEST_CASE(test_unpack_invalid_field_type)
             {.type = (enum ppack_type)99,
              .start_bit = 0,
              .bit_length = 16,
-             .ptr_offset = offsetof(test_struct_t, field_u16),
+             .ptr_offset = offsetof(test_struct_t, field_uint16),
              .behaviour = PPACK_BEHAVIOUR_RAW},
         };
 
@@ -49,7 +49,7 @@ TEST_CASE(test_unpack_invalid_field_type)
 TEST_CASE(test_empty_field_list)
 {
         ppack_byte_t payload[PPACK_PAYLOAD_UNITS] = {0};
-        test_struct_t data = {.field_u16 = 0x1234};
+        test_struct_t data = {.field_uint16 = 0x1234};
 
         int ret = ppack_pack(&data, payload, NULL, 0);
         TEST_ASSERT(ret == -PPACK_ERR_INVALARG);
@@ -67,7 +67,7 @@ TEST_CASE(test_unpack_zero_field_count)
             {.type = PPACK_TYPE_UINT16,
              .start_bit = 0,
              .bit_length = 16,
-             .ptr_offset = offsetof(test_struct_t, field_u16),
+             .ptr_offset = offsetof(test_struct_t, field_uint16),
              .behaviour = PPACK_BEHAVIOUR_RAW},
         };
 
@@ -78,13 +78,13 @@ TEST_CASE(test_unpack_zero_field_count)
 TEST_CASE(test_small_bit_field)
 {
         ppack_byte_t payload[PPACK_PAYLOAD_UNITS] = {0};
-        test_struct_t data = {.field_u8 = 0x0F};
+        test_struct_t data = {.field_uint8 = 0x0F};
 
         const struct ppack_field fields[] = {
             {.type = PPACK_TYPE_UINT8,
              .start_bit = 0,
              .bit_length = 4,
-             .ptr_offset = offsetof(test_struct_t, field_u8),
+             .ptr_offset = offsetof(test_struct_t, field_uint8),
              .behaviour = PPACK_BEHAVIOUR_RAW},
         };
 
@@ -94,19 +94,19 @@ TEST_CASE(test_small_bit_field)
         test_struct_t unpacked = {0};
         int unpack_ret = ppack_unpack(&unpacked, payload, fields, 1);
         TEST_ASSERT(unpack_ret == PPACK_SUCCESS);
-        TEST_ASSERT(unpacked.field_u8 == 0x0F);
+        TEST_ASSERT(unpacked.field_uint8 == 0x0F);
 }
 
 TEST_CASE(test_6bit_field)
 {
         ppack_byte_t payload[PPACK_PAYLOAD_UNITS] = {0};
-        test_struct_t data = {.field_u8 = 0x3F};
+        test_struct_t data = {.field_uint8 = 0x3F};
 
         const struct ppack_field fields[] = {
             {.type = PPACK_TYPE_UINT8,
              .start_bit = 0,
              .bit_length = 6,
-             .ptr_offset = offsetof(test_struct_t, field_u8),
+             .ptr_offset = offsetof(test_struct_t, field_uint8),
              .behaviour = PPACK_BEHAVIOUR_RAW},
         };
 
@@ -116,14 +116,14 @@ TEST_CASE(test_6bit_field)
         test_struct_t unpacked = {0};
         int unpack_ret = ppack_unpack(&unpacked, payload, fields, 1);
         TEST_ASSERT(unpack_ret == PPACK_SUCCESS);
-        TEST_ASSERT(unpacked.field_u8 == 0x3F);
+        TEST_ASSERT(unpacked.field_uint8 == 0x3F);
 }
 
 TEST_CASE(test_adjacent_bit_fields)
 {
         ppack_byte_t payload[PPACK_PAYLOAD_UNITS] = {0};
         test_struct_t data = {
-            .field_u8 = 0x55,
+            .field_uint8 = 0x55,
             .field_bits = 0xAA,
         };
 
@@ -131,7 +131,7 @@ TEST_CASE(test_adjacent_bit_fields)
             {.type = PPACK_TYPE_UINT8,
              .start_bit = 0,
              .bit_length = 8,
-             .ptr_offset = offsetof(test_struct_t, field_u8),
+             .ptr_offset = offsetof(test_struct_t, field_uint8),
              .behaviour = PPACK_BEHAVIOUR_RAW},
             {.type = PPACK_TYPE_BITS,
              .start_bit = 8,
@@ -146,20 +146,20 @@ TEST_CASE(test_adjacent_bit_fields)
         test_struct_t unpacked = {0};
         int unpack_ret = ppack_unpack(&unpacked, payload, fields, 2);
         TEST_ASSERT(unpack_ret == PPACK_SUCCESS);
-        TEST_ASSERT(unpacked.field_u8 == 0x55);
+        TEST_ASSERT(unpacked.field_uint8 == 0x55);
         TEST_ASSERT(unpacked.field_bits == 0xAA);
 }
 
-TEST_CASE(test_negative_s32)
+TEST_CASE(test_negative_int32)
 {
         ppack_byte_t payload[PPACK_PAYLOAD_UNITS] = {0};
-        test_struct_t data = {.field_s32 = -1};
+        test_struct_t data = {.field_int32 = -1};
 
         const struct ppack_field fields[] = {
             {.type = PPACK_TYPE_INT32,
              .start_bit = 0,
              .bit_length = 32,
-             .ptr_offset = offsetof(test_struct_t, field_s32),
+             .ptr_offset = offsetof(test_struct_t, field_int32),
              .behaviour = PPACK_BEHAVIOUR_RAW},
         };
 
@@ -169,19 +169,19 @@ TEST_CASE(test_negative_s32)
         test_struct_t unpacked = {0};
         int unpack_ret = ppack_unpack(&unpacked, payload, fields, 1);
         TEST_ASSERT(unpack_ret == PPACK_SUCCESS);
-        TEST_ASSERT(unpacked.field_s32 == -1);
+        TEST_ASSERT(unpacked.field_int32 == -1);
 }
 
-TEST_CASE(test_max_u16)
+TEST_CASE(test_max_uint16)
 {
         ppack_byte_t payload[PPACK_PAYLOAD_UNITS] = {0};
-        test_struct_t data = {.field_u16 = 0xFFFF};
+        test_struct_t data = {.field_uint16 = 0xFFFF};
 
         const struct ppack_field fields[] = {
             {.type = PPACK_TYPE_UINT16,
              .start_bit = 0,
              .bit_length = 16,
-             .ptr_offset = offsetof(test_struct_t, field_u16),
+             .ptr_offset = offsetof(test_struct_t, field_uint16),
              .behaviour = PPACK_BEHAVIOUR_RAW},
         };
 
@@ -191,19 +191,19 @@ TEST_CASE(test_max_u16)
         test_struct_t unpacked = {0};
         int unpack_ret = ppack_unpack(&unpacked, payload, fields, 1);
         TEST_ASSERT(unpack_ret == PPACK_SUCCESS);
-        TEST_ASSERT(unpacked.field_u16 == 0xFFFF);
+        TEST_ASSERT(unpacked.field_uint16 == 0xFFFF);
 }
 
-TEST_CASE(test_max_s16)
+TEST_CASE(test_max_int16)
 {
         ppack_byte_t payload[PPACK_PAYLOAD_UNITS] = {0};
-        test_struct_t data = {.field_s16 = 32767};
+        test_struct_t data = {.field_int16 = 32767};
 
         const struct ppack_field fields[] = {
             {.type = PPACK_TYPE_INT16,
              .start_bit = 0,
              .bit_length = 16,
-             .ptr_offset = offsetof(test_struct_t, field_s16),
+             .ptr_offset = offsetof(test_struct_t, field_int16),
              .behaviour = PPACK_BEHAVIOUR_RAW},
         };
 
@@ -213,19 +213,19 @@ TEST_CASE(test_max_s16)
         test_struct_t unpacked = {0};
         int unpack_ret = ppack_unpack(&unpacked, payload, fields, 1);
         TEST_ASSERT(unpack_ret == PPACK_SUCCESS);
-        TEST_ASSERT(unpacked.field_s16 == 32767);
+        TEST_ASSERT(unpacked.field_int16 == 32767);
 }
 
-TEST_CASE(test_min_s16)
+TEST_CASE(test_min_int16)
 {
         ppack_byte_t payload[PPACK_PAYLOAD_UNITS] = {0};
-        test_struct_t data = {.field_s16 = -32768};
+        test_struct_t data = {.field_int16 = -32768};
 
         const struct ppack_field fields[] = {
             {.type = PPACK_TYPE_INT16,
              .start_bit = 0,
              .bit_length = 16,
-             .ptr_offset = offsetof(test_struct_t, field_s16),
+             .ptr_offset = offsetof(test_struct_t, field_int16),
              .behaviour = PPACK_BEHAVIOUR_RAW},
         };
 
@@ -235,19 +235,19 @@ TEST_CASE(test_min_s16)
         test_struct_t unpacked = {0};
         int unpack_ret = ppack_unpack(&unpacked, payload, fields, 1);
         TEST_ASSERT(unpack_ret == PPACK_SUCCESS);
-        TEST_ASSERT(unpacked.field_s16 == -32768);
+        TEST_ASSERT(unpacked.field_int16 == -32768);
 }
 
 TEST_CASE(test_zero_values)
 {
         ppack_byte_t payload[PPACK_PAYLOAD_UNITS] = {0};
-        test_struct_t data = {.field_u16 = 0};
+        test_struct_t data = {.field_uint16 = 0};
 
         const struct ppack_field fields[] = {
             {.type = PPACK_TYPE_UINT16,
              .start_bit = 0,
              .bit_length = 16,
-             .ptr_offset = offsetof(test_struct_t, field_u16),
+             .ptr_offset = offsetof(test_struct_t, field_uint16),
              .behaviour = PPACK_BEHAVIOUR_RAW},
         };
 
@@ -257,7 +257,7 @@ TEST_CASE(test_zero_values)
         test_struct_t unpacked = {0};
         int unpack_ret = ppack_unpack(&unpacked, payload, fields, 1);
         TEST_ASSERT(unpack_ret == PPACK_SUCCESS);
-        TEST_ASSERT(unpacked.field_u16 == 0);
+        TEST_ASSERT(unpacked.field_uint16 == 0);
 }
 
 TEST_CASE(test_negative_float)
@@ -312,13 +312,13 @@ TEST_CASE(test_float_zero)
 TEST_CASE(test_1bit_field)
 {
         ppack_byte_t payload[PPACK_PAYLOAD_UNITS] = {0};
-        test_struct_t data = {.field_u8 = 1};
+        test_struct_t data = {.field_uint8 = 1};
 
         const struct ppack_field fields[] = {
             {.type = PPACK_TYPE_UINT8,
              .start_bit = 0,
              .bit_length = 1,
-             .ptr_offset = offsetof(test_struct_t, field_u8),
+             .ptr_offset = offsetof(test_struct_t, field_uint8),
              .behaviour = PPACK_BEHAVIOUR_RAW},
         };
 
@@ -328,19 +328,19 @@ TEST_CASE(test_1bit_field)
         test_struct_t unpacked = {0};
         int unpack_ret = ppack_unpack(&unpacked, payload, fields, 1);
         TEST_ASSERT(unpack_ret == PPACK_SUCCESS);
-        TEST_ASSERT(unpacked.field_u8 == 1);
+        TEST_ASSERT(unpacked.field_uint8 == 1);
 }
 
 TEST_CASE(test_1bit_field_zero)
 {
         ppack_byte_t payload[PPACK_PAYLOAD_UNITS] = {0};
-        test_struct_t data = {.field_u8 = 0};
+        test_struct_t data = {.field_uint8 = 0};
 
         const struct ppack_field fields[] = {
             {.type = PPACK_TYPE_UINT8,
              .start_bit = 5,
              .bit_length = 1,
-             .ptr_offset = offsetof(test_struct_t, field_u8),
+             .ptr_offset = offsetof(test_struct_t, field_uint8),
              .behaviour = PPACK_BEHAVIOUR_RAW},
         };
 
@@ -350,25 +350,25 @@ TEST_CASE(test_1bit_field_zero)
         test_struct_t unpacked = {0};
         int unpack_ret = ppack_unpack(&unpacked, payload, fields, 1);
         TEST_ASSERT(unpack_ret == PPACK_SUCCESS);
-        TEST_ASSERT(unpacked.field_u8 == 0);
+        TEST_ASSERT(unpacked.field_uint8 == 0);
 }
 
 TEST_CASE(test_overlapping_fields)
 {
         /* Overlapping fields are defined behaviour: last write wins. */
         ppack_byte_t payload[PPACK_PAYLOAD_UNITS] = {0};
-        test_struct_t data = {.field_u8 = 0xFF};
+        test_struct_t data = {.field_uint8 = 0xFF};
 
         const struct ppack_field fields[] = {
             {.type = PPACK_TYPE_UINT8,
              .start_bit = 0,
              .bit_length = 8,
-             .ptr_offset = offsetof(test_struct_t, field_u8),
+             .ptr_offset = offsetof(test_struct_t, field_uint8),
              .behaviour = PPACK_BEHAVIOUR_RAW},
             {.type = PPACK_TYPE_UINT8,
              .start_bit = 4,
              .bit_length = 8,
-             .ptr_offset = offsetof(test_struct_t, field_u8),
+             .ptr_offset = offsetof(test_struct_t, field_uint8),
              .behaviour = PPACK_BEHAVIOUR_RAW},
         };
 
@@ -380,26 +380,26 @@ TEST_CASE(test_full_payload)
 {
         ppack_byte_t payload[PPACK_PAYLOAD_UNITS] = {0};
         test_struct_t data = {
-            .field_u16 = 0x1234,
-            .field_s16 = 0x5678,
-            .field_u32 = 0x9ABCDEF0,
+            .field_uint16 = 0x1234,
+            .field_int16 = 0x5678,
+            .field_uint32 = 0x9ABCDEF0,
         };
 
         const struct ppack_field fields[] = {
             {.type = PPACK_TYPE_UINT16,
              .start_bit = 0,
              .bit_length = 16,
-             .ptr_offset = offsetof(test_struct_t, field_u16),
+             .ptr_offset = offsetof(test_struct_t, field_uint16),
              .behaviour = PPACK_BEHAVIOUR_RAW},
             {.type = PPACK_TYPE_INT16,
              .start_bit = 16,
              .bit_length = 16,
-             .ptr_offset = offsetof(test_struct_t, field_s16),
+             .ptr_offset = offsetof(test_struct_t, field_int16),
              .behaviour = PPACK_BEHAVIOUR_RAW},
             {.type = PPACK_TYPE_UINT32,
              .start_bit = 32,
              .bit_length = 32,
-             .ptr_offset = offsetof(test_struct_t, field_u32),
+             .ptr_offset = offsetof(test_struct_t, field_uint32),
              .behaviour = PPACK_BEHAVIOUR_RAW},
         };
 
@@ -417,9 +417,9 @@ TEST_CASE(test_full_payload)
         test_struct_t unpacked = {0};
         int unpack_ret = ppack_unpack(&unpacked, payload, fields, 3);
         TEST_ASSERT(unpack_ret == PPACK_SUCCESS);
-        TEST_ASSERT(unpacked.field_u16 == 0x1234);
-        TEST_ASSERT(unpacked.field_s16 == 0x5678);
-        TEST_ASSERT(unpacked.field_u32 == 0x9ABCDEF0);
+        TEST_ASSERT(unpacked.field_uint16 == 0x1234);
+        TEST_ASSERT(unpacked.field_int16 == 0x5678);
+        TEST_ASSERT(unpacked.field_uint32 == 0x9ABCDEF0);
 }
 
 void
@@ -433,10 +433,10 @@ run_edge_tests(void)
         run_test(test_small_bit_field, "test_small_bit_field");
         run_test(test_6bit_field, "test_6bit_field");
         run_test(test_adjacent_bit_fields, "test_adjacent_bit_fields");
-        run_test(test_negative_s32, "test_negative_s32");
-        run_test(test_max_u16, "test_max_u16");
-        run_test(test_max_s16, "test_max_s16");
-        run_test(test_min_s16, "test_min_s16");
+        run_test(test_negative_int32, "test_negative_int32");
+        run_test(test_max_uint16, "test_max_uint16");
+        run_test(test_max_int16, "test_max_int16");
+        run_test(test_min_int16, "test_min_int16");
         run_test(test_zero_values, "test_zero_values");
         run_test(test_negative_float, "test_negative_float");
         run_test(test_float_zero, "test_float_zero");

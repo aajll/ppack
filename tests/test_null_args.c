@@ -16,7 +16,7 @@ TEST_CASE(test_pack_null_base_ptr)
             {.type = PPACK_TYPE_UINT16,
              .start_bit = 0,
              .bit_length = 16,
-             .ptr_offset = offsetof(test_struct_t, field_u16),
+             .ptr_offset = offsetof(test_struct_t, field_uint16),
              .behaviour = PPACK_BEHAVIOUR_RAW},
         };
 
@@ -30,10 +30,10 @@ TEST_CASE(test_pack_null_payload)
             {.type = PPACK_TYPE_UINT16,
              .start_bit = 0,
              .bit_length = 16,
-             .ptr_offset = offsetof(test_struct_t, field_u16),
+             .ptr_offset = offsetof(test_struct_t, field_uint16),
              .behaviour = PPACK_BEHAVIOUR_RAW},
         };
-        test_struct_t data = {.field_u16 = 0x1234};
+        test_struct_t data = {.field_uint16 = 0x1234};
 
         int ret = ppack_pack(&data, NULL, fields, 1);
         TEST_ASSERT(ret == -PPACK_ERR_NULLPTR);
@@ -42,7 +42,7 @@ TEST_CASE(test_pack_null_payload)
 TEST_CASE(test_pack_null_fields)
 {
         ppack_byte_t payload[PPACK_PAYLOAD_UNITS] = {0};
-        test_struct_t data = {.field_u16 = 0x1234};
+        test_struct_t data = {.field_uint16 = 0x1234};
 
         int ret = ppack_pack(&data, payload, NULL, 1);
         TEST_ASSERT(ret == -PPACK_ERR_INVALARG);
@@ -55,7 +55,7 @@ TEST_CASE(test_unpack_null_base_ptr)
             {.type = PPACK_TYPE_UINT16,
              .start_bit = 0,
              .bit_length = 16,
-             .ptr_offset = offsetof(test_struct_t, field_u16),
+             .ptr_offset = offsetof(test_struct_t, field_uint16),
              .behaviour = PPACK_BEHAVIOUR_RAW},
         };
 
@@ -70,7 +70,7 @@ TEST_CASE(test_unpack_null_payload)
             {.type = PPACK_TYPE_UINT16,
              .start_bit = 0,
              .bit_length = 16,
-             .ptr_offset = offsetof(test_struct_t, field_u16),
+             .ptr_offset = offsetof(test_struct_t, field_uint16),
              .behaviour = PPACK_BEHAVIOUR_RAW},
         };
 

@@ -9,16 +9,16 @@
 #include <ppack_platform.h>
 #include <stddef.h>
 
-TEST_CASE(test_pack_scale_zero_u16_rejected)
+TEST_CASE(test_pack_scale_zero_uint16_rejected)
 {
         ppack_byte_t payload[PPACK_PAYLOAD_UNITS] = {0};
-        test_struct_scaled_t data = {.field_u16_scaled = 1.0f};
+        test_struct_scaled_t data = {.field_uint16_scaled = 1.0f};
 
         const struct ppack_field fields[] = {
             {.type = PPACK_TYPE_UINT16,
              .start_bit = 0,
              .bit_length = 16,
-             .ptr_offset = offsetof(test_struct_scaled_t, field_u16_scaled),
+             .ptr_offset = offsetof(test_struct_scaled_t, field_uint16_scaled),
              .scale = 0.0f,
              .offset = 0.0f,
              .behaviour = PPACK_BEHAVIOUR_SCALED},
@@ -28,16 +28,16 @@ TEST_CASE(test_pack_scale_zero_u16_rejected)
         TEST_ASSERT(ret == -PPACK_ERR_OVERFLOW);
 }
 
-TEST_CASE(test_pack_scale_zero_s16_rejected)
+TEST_CASE(test_pack_scale_zero_int16_rejected)
 {
         ppack_byte_t payload[PPACK_PAYLOAD_UNITS] = {0};
-        test_struct_scaled_t data = {.field_s16_scaled = -1.0f};
+        test_struct_scaled_t data = {.field_int16_scaled = -1.0f};
 
         const struct ppack_field fields[] = {
             {.type = PPACK_TYPE_INT16,
              .start_bit = 0,
              .bit_length = 16,
-             .ptr_offset = offsetof(test_struct_scaled_t, field_s16_scaled),
+             .ptr_offset = offsetof(test_struct_scaled_t, field_int16_scaled),
              .scale = 0.0f,
              .offset = 0.0f,
              .behaviour = PPACK_BEHAVIOUR_SCALED},
@@ -47,16 +47,16 @@ TEST_CASE(test_pack_scale_zero_s16_rejected)
         TEST_ASSERT(ret == -PPACK_ERR_OVERFLOW);
 }
 
-TEST_CASE(test_pack_scale_zero_u32_rejected)
+TEST_CASE(test_pack_scale_zero_uint32_rejected)
 {
         ppack_byte_t payload[PPACK_PAYLOAD_UNITS] = {0};
-        test_struct_scaled_t data = {.field_u32_scaled = 1.0f};
+        test_struct_scaled_t data = {.field_uint32_scaled = 1.0f};
 
         const struct ppack_field fields[] = {
             {.type = PPACK_TYPE_UINT32,
              .start_bit = 0,
              .bit_length = 32,
-             .ptr_offset = offsetof(test_struct_scaled_t, field_u32_scaled),
+             .ptr_offset = offsetof(test_struct_scaled_t, field_uint32_scaled),
              .scale = 0.0f,
              .offset = 0.0f,
              .behaviour = PPACK_BEHAVIOUR_SCALED},
@@ -66,16 +66,16 @@ TEST_CASE(test_pack_scale_zero_u32_rejected)
         TEST_ASSERT(ret == -PPACK_ERR_OVERFLOW);
 }
 
-TEST_CASE(test_pack_scale_zero_s32_rejected)
+TEST_CASE(test_pack_scale_zero_int32_rejected)
 {
         ppack_byte_t payload[PPACK_PAYLOAD_UNITS] = {0};
-        test_struct_scaled_t data = {.field_s32_scaled = 1.0f};
+        test_struct_scaled_t data = {.field_int32_scaled = 1.0f};
 
         const struct ppack_field fields[] = {
             {.type = PPACK_TYPE_INT32,
              .start_bit = 0,
              .bit_length = 32,
-             .ptr_offset = offsetof(test_struct_scaled_t, field_s32_scaled),
+             .ptr_offset = offsetof(test_struct_scaled_t, field_int32_scaled),
              .scale = 0.0f,
              .offset = 0.0f,
              .behaviour = PPACK_BEHAVIOUR_SCALED},
@@ -85,7 +85,7 @@ TEST_CASE(test_pack_scale_zero_s32_rejected)
         TEST_ASSERT(ret == -PPACK_ERR_OVERFLOW);
 }
 
-TEST_CASE(test_pack_scale_u8_rejected)
+TEST_CASE(test_pack_scale_uint8_rejected)
 {
         ppack_byte_t payload[PPACK_PAYLOAD_UNITS] = {0};
         test_struct_scaled_t data = {0};
@@ -94,7 +94,7 @@ TEST_CASE(test_pack_scale_u8_rejected)
             {.type = PPACK_TYPE_UINT8,
              .start_bit = 0,
              .bit_length = 8,
-             .ptr_offset = offsetof(test_struct_t, field_u8),
+             .ptr_offset = offsetof(test_struct_t, field_uint8),
              .scale = 1.0f,
              .offset = 0.0f,
              .behaviour = PPACK_BEHAVIOUR_SCALED},
@@ -110,13 +110,13 @@ TEST_CASE(test_pack_scale_u8_rejected)
 void
 run_scale_zero_tests(void)
 {
-        run_test(test_pack_scale_zero_u16_rejected,
-                 "test_pack_scale_zero_u16_rejected");
-        run_test(test_pack_scale_zero_s16_rejected,
-                 "test_pack_scale_zero_s16_rejected");
-        run_test(test_pack_scale_zero_u32_rejected,
-                 "test_pack_scale_zero_u32_rejected");
-        run_test(test_pack_scale_zero_s32_rejected,
-                 "test_pack_scale_zero_s32_rejected");
-        run_test(test_pack_scale_u8_rejected, "test_pack_scale_u8_rejected");
+        run_test(test_pack_scale_zero_uint16_rejected,
+                 "test_pack_scale_zero_uint16_rejected");
+        run_test(test_pack_scale_zero_int16_rejected,
+                 "test_pack_scale_zero_int16_rejected");
+        run_test(test_pack_scale_zero_uint32_rejected,
+                 "test_pack_scale_zero_uint32_rejected");
+        run_test(test_pack_scale_zero_int32_rejected,
+                 "test_pack_scale_zero_int32_rejected");
+        run_test(test_pack_scale_uint8_rejected, "test_pack_scale_uint8_rejected");
 }

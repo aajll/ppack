@@ -27,26 +27,26 @@ TEST_CASE(test_wire_v1_lockdown_byte_aligned)
          *   bits 32..63  PPACK_TYPE_UINT32  (uint32_t  = 0xDEADBEEF)
          */
         test_struct_t data = {
-            .field_u16 = 0x1234u,
-            .field_s16 = -100,
-            .field_u32 = 0xDEADBEEFu,
+            .field_uint16 = 0x1234u,
+            .field_int16 = -100,
+            .field_uint32 = 0xDEADBEEFu,
         };
 
         const struct ppack_field fields[] = {
             {.type = PPACK_TYPE_UINT16,
              .start_bit = 0,
              .bit_length = 16,
-             .ptr_offset = offsetof(test_struct_t, field_u16),
+             .ptr_offset = offsetof(test_struct_t, field_uint16),
              .behaviour = PPACK_BEHAVIOUR_RAW},
             {.type = PPACK_TYPE_INT16,
              .start_bit = 16,
              .bit_length = 16,
-             .ptr_offset = offsetof(test_struct_t, field_s16),
+             .ptr_offset = offsetof(test_struct_t, field_int16),
              .behaviour = PPACK_BEHAVIOUR_RAW},
             {.type = PPACK_TYPE_UINT32,
              .start_bit = 32,
              .bit_length = 32,
-             .ptr_offset = offsetof(test_struct_t, field_u32),
+             .ptr_offset = offsetof(test_struct_t, field_uint32),
              .behaviour = PPACK_BEHAVIOUR_RAW},
         };
 
@@ -71,8 +71,8 @@ TEST_CASE(test_wire_v1_lockdown_float_and_small_types)
          */
         test_struct_t data = {0};
         data.field_f32 = 1.0f;
-        data.field_u16 = 0xCAFEu;
-        data.field_u8 = (ppack_u8_t)0xABu;
+        data.field_uint16 = 0xCAFEu;
+        data.field_uint8 = (ppack_u8_t)0xABu;
         data.field_bits = 0xCDu;
 
         const struct ppack_field fields[] = {
@@ -84,12 +84,12 @@ TEST_CASE(test_wire_v1_lockdown_float_and_small_types)
             {.type = PPACK_TYPE_UINT16,
              .start_bit = 32,
              .bit_length = 16,
-             .ptr_offset = offsetof(test_struct_t, field_u16),
+             .ptr_offset = offsetof(test_struct_t, field_uint16),
              .behaviour = PPACK_BEHAVIOUR_RAW},
             {.type = PPACK_TYPE_UINT8,
              .start_bit = 48,
              .bit_length = 8,
-             .ptr_offset = offsetof(test_struct_t, field_u8),
+             .ptr_offset = offsetof(test_struct_t, field_uint8),
              .behaviour = PPACK_BEHAVIOUR_RAW},
             {.type = PPACK_TYPE_BITS,
              .start_bit = 56,
@@ -114,13 +114,13 @@ TEST_CASE(test_wire_v1_lockdown_cross_byte_boundary)
         /* Layout: a single PPACK_TYPE_UINT16 = 0xABCD shifted left by 4 bits.
          * Verifies the LSB-first / little-endian bit ordering on a non-
          * byte-aligned start position. Bits 0..3 and 20..63 are zero. */
-        test_struct_t data = {.field_u16 = 0xABCDu};
+        test_struct_t data = {.field_uint16 = 0xABCDu};
 
         const struct ppack_field fields[] = {
             {.type = PPACK_TYPE_UINT16,
              .start_bit = 4,
              .bit_length = 16,
-             .ptr_offset = offsetof(test_struct_t, field_u16),
+             .ptr_offset = offsetof(test_struct_t, field_uint16),
              .behaviour = PPACK_BEHAVIOUR_RAW},
         };
 

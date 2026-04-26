@@ -17,7 +17,7 @@
 
 /* ---- Per-type fuzz round-trip ---- */
 
-TEST_CASE(test_fuzz_u8_round_trip)
+TEST_CASE(test_fuzz_uint8_round_trip)
 {
         fuzz_seed(0xBEEF0001u);
         for (uint32_t iter = 0; iter < FUZZ_ITERATIONS; ++iter) {
@@ -27,13 +27,13 @@ TEST_CASE(test_fuzz_u8_round_trip)
                 uint8_t value = (uint8_t)fuzz_unsigned_in_bits(bit_length);
 
                 test_struct_t src = {0};
-                src.field_u8 = (ppack_u8_t)value;
+                src.field_uint8 = (ppack_u8_t)value;
 
                 const struct ppack_field fields[] = {
                     {.type = PPACK_TYPE_UINT8,
                      .start_bit = start_bit,
                      .bit_length = bit_length,
-                     .ptr_offset = offsetof(test_struct_t, field_u8),
+                     .ptr_offset = offsetof(test_struct_t, field_uint8),
                      .behaviour = PPACK_BEHAVIOUR_RAW},
                 };
 
@@ -44,11 +44,11 @@ TEST_CASE(test_fuzz_u8_round_trip)
                 test_struct_t dst = {0};
                 TEST_ASSERT(ppack_unpack(&dst, payload, fields, 1)
                             == PPACK_SUCCESS);
-                TEST_ASSERT((uint8_t)dst.field_u8 == value);
+                TEST_ASSERT((uint8_t)dst.field_uint8 == value);
         }
 }
 
-TEST_CASE(test_fuzz_u16_round_trip)
+TEST_CASE(test_fuzz_uint16_round_trip)
 {
         fuzz_seed(0xBEEF0002u);
         for (uint32_t iter = 0; iter < FUZZ_ITERATIONS; ++iter) {
@@ -57,13 +57,13 @@ TEST_CASE(test_fuzz_u16_round_trip)
                     (uint16_t)fuzz_range(65u - (uint32_t)bit_length);
                 uint16_t value = (uint16_t)fuzz_unsigned_in_bits(bit_length);
 
-                test_struct_t src = {.field_u16 = value};
+                test_struct_t src = {.field_uint16 = value};
 
                 const struct ppack_field fields[] = {
                     {.type = PPACK_TYPE_UINT16,
                      .start_bit = start_bit,
                      .bit_length = bit_length,
-                     .ptr_offset = offsetof(test_struct_t, field_u16),
+                     .ptr_offset = offsetof(test_struct_t, field_uint16),
                      .behaviour = PPACK_BEHAVIOUR_RAW},
                 };
 
@@ -74,11 +74,11 @@ TEST_CASE(test_fuzz_u16_round_trip)
                 test_struct_t dst = {0};
                 TEST_ASSERT(ppack_unpack(&dst, payload, fields, 1)
                             == PPACK_SUCCESS);
-                TEST_ASSERT(dst.field_u16 == value);
+                TEST_ASSERT(dst.field_uint16 == value);
         }
 }
 
-TEST_CASE(test_fuzz_s16_round_trip)
+TEST_CASE(test_fuzz_int16_round_trip)
 {
         fuzz_seed(0xBEEF0003u);
         for (uint32_t iter = 0; iter < FUZZ_ITERATIONS; ++iter) {
@@ -87,13 +87,13 @@ TEST_CASE(test_fuzz_s16_round_trip)
                     (uint16_t)fuzz_range(65u - (uint32_t)bit_length);
                 int16_t value = (int16_t)fuzz_signed_in_bits(bit_length);
 
-                test_struct_t src = {.field_s16 = value};
+                test_struct_t src = {.field_int16 = value};
 
                 const struct ppack_field fields[] = {
                     {.type = PPACK_TYPE_INT16,
                      .start_bit = start_bit,
                      .bit_length = bit_length,
-                     .ptr_offset = offsetof(test_struct_t, field_s16),
+                     .ptr_offset = offsetof(test_struct_t, field_int16),
                      .behaviour = PPACK_BEHAVIOUR_RAW},
                 };
 
@@ -104,11 +104,11 @@ TEST_CASE(test_fuzz_s16_round_trip)
                 test_struct_t dst = {0};
                 TEST_ASSERT(ppack_unpack(&dst, payload, fields, 1)
                             == PPACK_SUCCESS);
-                TEST_ASSERT(dst.field_s16 == value);
+                TEST_ASSERT(dst.field_int16 == value);
         }
 }
 
-TEST_CASE(test_fuzz_u32_round_trip)
+TEST_CASE(test_fuzz_uint32_round_trip)
 {
         fuzz_seed(0xBEEF0004u);
         for (uint32_t iter = 0; iter < FUZZ_ITERATIONS; ++iter) {
@@ -117,13 +117,13 @@ TEST_CASE(test_fuzz_u32_round_trip)
                     (uint16_t)fuzz_range(65u - (uint32_t)bit_length);
                 uint32_t value = fuzz_unsigned_in_bits(bit_length);
 
-                test_struct_t src = {.field_u32 = value};
+                test_struct_t src = {.field_uint32 = value};
 
                 const struct ppack_field fields[] = {
                     {.type = PPACK_TYPE_UINT32,
                      .start_bit = start_bit,
                      .bit_length = bit_length,
-                     .ptr_offset = offsetof(test_struct_t, field_u32),
+                     .ptr_offset = offsetof(test_struct_t, field_uint32),
                      .behaviour = PPACK_BEHAVIOUR_RAW},
                 };
 
@@ -134,11 +134,11 @@ TEST_CASE(test_fuzz_u32_round_trip)
                 test_struct_t dst = {0};
                 TEST_ASSERT(ppack_unpack(&dst, payload, fields, 1)
                             == PPACK_SUCCESS);
-                TEST_ASSERT(dst.field_u32 == value);
+                TEST_ASSERT(dst.field_uint32 == value);
         }
 }
 
-TEST_CASE(test_fuzz_s32_round_trip)
+TEST_CASE(test_fuzz_int32_round_trip)
 {
         fuzz_seed(0xBEEF0005u);
         for (uint32_t iter = 0; iter < FUZZ_ITERATIONS; ++iter) {
@@ -147,13 +147,13 @@ TEST_CASE(test_fuzz_s32_round_trip)
                     (uint16_t)fuzz_range(65u - (uint32_t)bit_length);
                 int32_t value = fuzz_signed_in_bits(bit_length);
 
-                test_struct_t src = {.field_s32 = value};
+                test_struct_t src = {.field_int32 = value};
 
                 const struct ppack_field fields[] = {
                     {.type = PPACK_TYPE_INT32,
                      .start_bit = start_bit,
                      .bit_length = bit_length,
-                     .ptr_offset = offsetof(test_struct_t, field_s32),
+                     .ptr_offset = offsetof(test_struct_t, field_int32),
                      .behaviour = PPACK_BEHAVIOUR_RAW},
                 };
 
@@ -164,7 +164,7 @@ TEST_CASE(test_fuzz_s32_round_trip)
                 test_struct_t dst = {0};
                 TEST_ASSERT(ppack_unpack(&dst, payload, fields, 1)
                             == PPACK_SUCCESS);
-                TEST_ASSERT(dst.field_s32 == value);
+                TEST_ASSERT(dst.field_int32 == value);
         }
 }
 
@@ -242,27 +242,27 @@ TEST_CASE(test_fuzz_multi_field_mixed)
             {.type = PPACK_TYPE_UINT16,
              .start_bit = 0,
              .bit_length = 12,
-             .ptr_offset = offsetof(test_struct_t, field_u16),
+             .ptr_offset = offsetof(test_struct_t, field_uint16),
              .behaviour = PPACK_BEHAVIOUR_RAW},
             {.type = PPACK_TYPE_INT16,
              .start_bit = 12,
              .bit_length = 10,
-             .ptr_offset = offsetof(test_struct_t, field_s16),
+             .ptr_offset = offsetof(test_struct_t, field_int16),
              .behaviour = PPACK_BEHAVIOUR_RAW},
             {.type = PPACK_TYPE_UINT32,
              .start_bit = 22,
              .bit_length = 18,
-             .ptr_offset = offsetof(test_struct_t, field_u32),
+             .ptr_offset = offsetof(test_struct_t, field_uint32),
              .behaviour = PPACK_BEHAVIOUR_RAW},
             {.type = PPACK_TYPE_INT32,
              .start_bit = 40,
              .bit_length = 14,
-             .ptr_offset = offsetof(test_struct_t, field_s32),
+             .ptr_offset = offsetof(test_struct_t, field_int32),
              .behaviour = PPACK_BEHAVIOUR_RAW},
             {.type = PPACK_TYPE_UINT8,
              .start_bit = 54,
              .bit_length = 6,
-             .ptr_offset = offsetof(test_struct_t, field_u8),
+             .ptr_offset = offsetof(test_struct_t, field_uint8),
              .behaviour = PPACK_BEHAVIOUR_RAW},
             {.type = PPACK_TYPE_BITS,
              .start_bit = 60,
@@ -275,11 +275,11 @@ TEST_CASE(test_fuzz_multi_field_mixed)
         fuzz_seed(0xBEEF0008u);
         for (uint32_t iter = 0; iter < 2000u; ++iter) {
                 test_struct_t src = {0};
-                src.field_u16 = (uint16_t)fuzz_unsigned_in_bits(12);
-                src.field_s16 = (int16_t)fuzz_signed_in_bits(10);
-                src.field_u32 = fuzz_unsigned_in_bits(18);
-                src.field_s32 = fuzz_signed_in_bits(14);
-                src.field_u8 = (ppack_u8_t)fuzz_unsigned_in_bits(6);
+                src.field_uint16 = (uint16_t)fuzz_unsigned_in_bits(12);
+                src.field_int16 = (int16_t)fuzz_signed_in_bits(10);
+                src.field_uint32 = fuzz_unsigned_in_bits(18);
+                src.field_int32 = fuzz_signed_in_bits(14);
+                src.field_uint8 = (ppack_u8_t)fuzz_unsigned_in_bits(6);
                 src.field_bits = fuzz_unsigned_in_bits(4);
 
                 ppack_byte_t payload[PPACK_PAYLOAD_UNITS] = {0};
@@ -290,11 +290,11 @@ TEST_CASE(test_fuzz_multi_field_mixed)
                 TEST_ASSERT(ppack_unpack(&dst, payload, fields, n_fields)
                             == PPACK_SUCCESS);
 
-                TEST_ASSERT(dst.field_u16 == src.field_u16);
-                TEST_ASSERT(dst.field_s16 == src.field_s16);
-                TEST_ASSERT(dst.field_u32 == src.field_u32);
-                TEST_ASSERT(dst.field_s32 == src.field_s32);
-                TEST_ASSERT((uint8_t)dst.field_u8 == (uint8_t)src.field_u8);
+                TEST_ASSERT(dst.field_uint16 == src.field_uint16);
+                TEST_ASSERT(dst.field_int16 == src.field_int16);
+                TEST_ASSERT(dst.field_uint32 == src.field_uint32);
+                TEST_ASSERT(dst.field_int32 == src.field_int32);
+                TEST_ASSERT((uint8_t)dst.field_uint8 == (uint8_t)src.field_uint8);
                 TEST_ASSERT(dst.field_bits == src.field_bits);
         }
 }
@@ -313,27 +313,27 @@ TEST_CASE(test_fuzz_pack_unpack_pack_idempotent_raw)
             {.type = PPACK_TYPE_UINT16,
              .start_bit = 0,
              .bit_length = 12,
-             .ptr_offset = offsetof(test_struct_t, field_u16),
+             .ptr_offset = offsetof(test_struct_t, field_uint16),
              .behaviour = PPACK_BEHAVIOUR_RAW},
             {.type = PPACK_TYPE_INT16,
              .start_bit = 12,
              .bit_length = 10,
-             .ptr_offset = offsetof(test_struct_t, field_s16),
+             .ptr_offset = offsetof(test_struct_t, field_int16),
              .behaviour = PPACK_BEHAVIOUR_RAW},
             {.type = PPACK_TYPE_UINT32,
              .start_bit = 22,
              .bit_length = 18,
-             .ptr_offset = offsetof(test_struct_t, field_u32),
+             .ptr_offset = offsetof(test_struct_t, field_uint32),
              .behaviour = PPACK_BEHAVIOUR_RAW},
             {.type = PPACK_TYPE_INT32,
              .start_bit = 40,
              .bit_length = 14,
-             .ptr_offset = offsetof(test_struct_t, field_s32),
+             .ptr_offset = offsetof(test_struct_t, field_int32),
              .behaviour = PPACK_BEHAVIOUR_RAW},
             {.type = PPACK_TYPE_UINT8,
              .start_bit = 54,
              .bit_length = 6,
-             .ptr_offset = offsetof(test_struct_t, field_u8),
+             .ptr_offset = offsetof(test_struct_t, field_uint8),
              .behaviour = PPACK_BEHAVIOUR_RAW},
             {.type = PPACK_TYPE_BITS,
              .start_bit = 60,
@@ -346,11 +346,11 @@ TEST_CASE(test_fuzz_pack_unpack_pack_idempotent_raw)
         fuzz_seed(0xBEEF000Au);
         for (uint32_t iter = 0; iter < 2000u; ++iter) {
                 test_struct_t src = {0};
-                src.field_u16 = (uint16_t)fuzz_unsigned_in_bits(12);
-                src.field_s16 = (int16_t)fuzz_signed_in_bits(10);
-                src.field_u32 = fuzz_unsigned_in_bits(18);
-                src.field_s32 = fuzz_signed_in_bits(14);
-                src.field_u8 = (ppack_u8_t)fuzz_unsigned_in_bits(6);
+                src.field_uint16 = (uint16_t)fuzz_unsigned_in_bits(12);
+                src.field_int16 = (int16_t)fuzz_signed_in_bits(10);
+                src.field_uint32 = fuzz_unsigned_in_bits(18);
+                src.field_int32 = fuzz_signed_in_bits(14);
+                src.field_uint8 = (ppack_u8_t)fuzz_unsigned_in_bits(6);
                 src.field_bits = fuzz_unsigned_in_bits(4);
 
                 ppack_byte_t wire1[PPACK_PAYLOAD_UNITS] = {0};
@@ -390,26 +390,26 @@ TEST_CASE(test_pack_is_deterministic)
             {.type = PPACK_TYPE_UINT16,
              .start_bit = 0,
              .bit_length = 16,
-             .ptr_offset = offsetof(test_struct_t, field_u16),
+             .ptr_offset = offsetof(test_struct_t, field_uint16),
              .behaviour = PPACK_BEHAVIOUR_RAW},
             {.type = PPACK_TYPE_INT16,
              .start_bit = 16,
              .bit_length = 16,
-             .ptr_offset = offsetof(test_struct_t, field_s16),
+             .ptr_offset = offsetof(test_struct_t, field_int16),
              .behaviour = PPACK_BEHAVIOUR_RAW},
             {.type = PPACK_TYPE_UINT32,
              .start_bit = 32,
              .bit_length = 32,
-             .ptr_offset = offsetof(test_struct_t, field_u32),
+             .ptr_offset = offsetof(test_struct_t, field_uint32),
              .behaviour = PPACK_BEHAVIOUR_RAW},
         };
 
         fuzz_seed(0xBEEF0009u);
         for (uint32_t iter = 0; iter < 1000u; ++iter) {
                 test_struct_t src = {0};
-                src.field_u16 = (uint16_t)fuzz_unsigned_in_bits(16);
-                src.field_s16 = (int16_t)fuzz_signed_in_bits(16);
-                src.field_u32 = fuzz_unsigned_in_bits(32);
+                src.field_uint16 = (uint16_t)fuzz_unsigned_in_bits(16);
+                src.field_int16 = (int16_t)fuzz_signed_in_bits(16);
+                src.field_uint32 = fuzz_unsigned_in_bits(32);
 
                 ppack_byte_t p1[PPACK_PAYLOAD_UNITS] = {0};
                 ppack_byte_t p2[PPACK_PAYLOAD_UNITS] = {0};
@@ -441,20 +441,20 @@ TEST_CASE(test_scaled_quantization_bounded)
         const struct quant_case cases[] = {
             /* Voltage 0..650V at 0.01V resolution */
             {PPACK_TYPE_UINT16, 0.01f, 0.0f, 16,
-             offsetof(test_struct_scaled_t, field_u16_scaled), 0.0f, 650.0f},
+             offsetof(test_struct_scaled_t, field_uint16_scaled), 0.0f, 650.0f},
             /* Current -2000..2000A at 0.1A */
             {PPACK_TYPE_INT16, 0.1f, 0.0f, 16,
-             offsetof(test_struct_scaled_t, field_s16_scaled), -2000.0f,
+             offsetof(test_struct_scaled_t, field_int16_scaled), -2000.0f,
              2000.0f},
             /* Temperature -40..125C at 0.25C, offset-encoded */
             {PPACK_TYPE_UINT16, 0.25f, -40.0f, 10,
-             offsetof(test_struct_scaled_t, field_u16_scaled), -40.0f, 125.0f},
+             offsetof(test_struct_scaled_t, field_uint16_scaled), -40.0f, 125.0f},
             /* Energy counter 0..1e6 kWh at 0.001 */
             {PPACK_TYPE_UINT32, 0.001f, 0.0f, 32,
-             offsetof(test_struct_scaled_t, field_u32_scaled), 0.0f, 1.0e6f},
+             offsetof(test_struct_scaled_t, field_uint32_scaled), 0.0f, 1.0e6f},
             /* Power -2e6..2e6 W at 1W */
             {PPACK_TYPE_INT32, 1.0f, 0.0f, 24,
-             offsetof(test_struct_scaled_t, field_s32_scaled), -2.0e6f, 2.0e6f},
+             offsetof(test_struct_scaled_t, field_int32_scaled), -2.0e6f, 2.0e6f},
         };
 
         const size_t n_cases = sizeof(cases) / sizeof(cases[0]);
@@ -505,15 +505,15 @@ TEST_CASE(test_scaled_quantization_bounded)
 
 TEST_CASE(test_scaled_saturation)
 {
-        /* U16: 0..65535, scale=1, offset=0 */
+        /* UINT16: 0..65535, scale=1, offset=0 */
         {
-                test_struct_scaled_t src = {.field_u16_scaled = 1.0e9f};
+                test_struct_scaled_t src = {.field_uint16_scaled = 1.0e9f};
                 const struct ppack_field f[] = {
                     {.type = PPACK_TYPE_UINT16,
                      .start_bit = 0,
                      .bit_length = 16,
                      .ptr_offset =
-                         offsetof(test_struct_scaled_t, field_u16_scaled),
+                         offsetof(test_struct_scaled_t, field_uint16_scaled),
                      .scale = 1.0f,
                      .offset = 0.0f,
                      .behaviour = PPACK_BEHAVIOUR_SCALED},
@@ -522,23 +522,23 @@ TEST_CASE(test_scaled_saturation)
                 TEST_ASSERT(ppack_pack(&src, p, f, 1) == PPACK_SUCCESS);
                 test_struct_scaled_t dst = {0};
                 TEST_ASSERT(ppack_unpack(&dst, p, f, 1) == PPACK_SUCCESS);
-                TEST_ASSERT(dst.field_u16_scaled == 65535.0f);
+                TEST_ASSERT(dst.field_uint16_scaled == 65535.0f);
 
-                src.field_u16_scaled = -1.0e9f;
+                src.field_uint16_scaled = -1.0e9f;
                 TEST_ASSERT(ppack_pack(&src, p, f, 1) == PPACK_SUCCESS);
                 TEST_ASSERT(ppack_unpack(&dst, p, f, 1) == PPACK_SUCCESS);
-                TEST_ASSERT(dst.field_u16_scaled == 0.0f);
+                TEST_ASSERT(dst.field_uint16_scaled == 0.0f);
         }
 
-        /* S16: -32768..32767 */
+        /* INT16: -32768..32767 */
         {
-                test_struct_scaled_t src = {.field_s16_scaled = 1.0e9f};
+                test_struct_scaled_t src = {.field_int16_scaled = 1.0e9f};
                 const struct ppack_field f[] = {
                     {.type = PPACK_TYPE_INT16,
                      .start_bit = 0,
                      .bit_length = 16,
                      .ptr_offset =
-                         offsetof(test_struct_scaled_t, field_s16_scaled),
+                         offsetof(test_struct_scaled_t, field_int16_scaled),
                      .scale = 1.0f,
                      .offset = 0.0f,
                      .behaviour = PPACK_BEHAVIOUR_SCALED},
@@ -547,23 +547,23 @@ TEST_CASE(test_scaled_saturation)
                 TEST_ASSERT(ppack_pack(&src, p, f, 1) == PPACK_SUCCESS);
                 test_struct_scaled_t dst = {0};
                 TEST_ASSERT(ppack_unpack(&dst, p, f, 1) == PPACK_SUCCESS);
-                TEST_ASSERT(dst.field_s16_scaled == 32767.0f);
+                TEST_ASSERT(dst.field_int16_scaled == 32767.0f);
 
-                src.field_s16_scaled = -1.0e9f;
+                src.field_int16_scaled = -1.0e9f;
                 TEST_ASSERT(ppack_pack(&src, p, f, 1) == PPACK_SUCCESS);
                 TEST_ASSERT(ppack_unpack(&dst, p, f, 1) == PPACK_SUCCESS);
-                TEST_ASSERT(dst.field_s16_scaled == -32768.0f);
+                TEST_ASSERT(dst.field_int16_scaled == -32768.0f);
         }
 
-        /* U32: 0..4294967295 */
+        /* UINT32: 0..4294967295 */
         {
-                test_struct_scaled_t src = {.field_u32_scaled = 1.0e12f};
+                test_struct_scaled_t src = {.field_uint32_scaled = 1.0e12f};
                 const struct ppack_field f[] = {
                     {.type = PPACK_TYPE_UINT32,
                      .start_bit = 0,
                      .bit_length = 32,
                      .ptr_offset =
-                         offsetof(test_struct_scaled_t, field_u32_scaled),
+                         offsetof(test_struct_scaled_t, field_uint32_scaled),
                      .scale = 1.0f,
                      .offset = 0.0f,
                      .behaviour = PPACK_BEHAVIOUR_SCALED},
@@ -572,25 +572,25 @@ TEST_CASE(test_scaled_saturation)
                 TEST_ASSERT(ppack_pack(&src, p, f, 1) == PPACK_SUCCESS);
                 test_struct_scaled_t dst = {0};
                 TEST_ASSERT(ppack_unpack(&dst, p, f, 1) == PPACK_SUCCESS);
-                /* U32 scaled-unpack goes through uint32_t so float precision
+                /* UINT32 scaled-unpack goes through uint32_t so float precision
                  * may not represent 4294967295 exactly; check within 1 LSB. */
-                TEST_ASSERT(dst.field_u32_scaled >= 4.294e9f);
+                TEST_ASSERT(dst.field_uint32_scaled >= 4.294e9f);
 
-                src.field_u32_scaled = -1.0f;
+                src.field_uint32_scaled = -1.0f;
                 TEST_ASSERT(ppack_pack(&src, p, f, 1) == PPACK_SUCCESS);
                 TEST_ASSERT(ppack_unpack(&dst, p, f, 1) == PPACK_SUCCESS);
-                TEST_ASSERT(dst.field_u32_scaled == 0.0f);
+                TEST_ASSERT(dst.field_uint32_scaled == 0.0f);
         }
 
-        /* S32: -2147483648..2147483647 */
+        /* INT32: -2147483648..2147483647 */
         {
-                test_struct_scaled_t src = {.field_s32_scaled = 1.0e12f};
+                test_struct_scaled_t src = {.field_int32_scaled = 1.0e12f};
                 const struct ppack_field f[] = {
                     {.type = PPACK_TYPE_INT32,
                      .start_bit = 0,
                      .bit_length = 32,
                      .ptr_offset =
-                         offsetof(test_struct_scaled_t, field_s32_scaled),
+                         offsetof(test_struct_scaled_t, field_int32_scaled),
                      .scale = 1.0f,
                      .offset = 0.0f,
                      .behaviour = PPACK_BEHAVIOUR_SCALED},
@@ -599,12 +599,12 @@ TEST_CASE(test_scaled_saturation)
                 TEST_ASSERT(ppack_pack(&src, p, f, 1) == PPACK_SUCCESS);
                 test_struct_scaled_t dst = {0};
                 TEST_ASSERT(ppack_unpack(&dst, p, f, 1) == PPACK_SUCCESS);
-                TEST_ASSERT(dst.field_s32_scaled >= 2.1474e9f);
+                TEST_ASSERT(dst.field_int32_scaled >= 2.1474e9f);
 
-                src.field_s32_scaled = -1.0e12f;
+                src.field_int32_scaled = -1.0e12f;
                 TEST_ASSERT(ppack_pack(&src, p, f, 1) == PPACK_SUCCESS);
                 TEST_ASSERT(ppack_unpack(&dst, p, f, 1) == PPACK_SUCCESS);
-                TEST_ASSERT(dst.field_s32_scaled <= -2.1474e9f);
+                TEST_ASSERT(dst.field_int32_scaled <= -2.1474e9f);
         }
 }
 
@@ -659,11 +659,11 @@ TEST_CASE(test_f32_special_values)
 void
 run_fuzz_tests(void)
 {
-        run_test(test_fuzz_u8_round_trip, "test_fuzz_u8_round_trip");
-        run_test(test_fuzz_u16_round_trip, "test_fuzz_u16_round_trip");
-        run_test(test_fuzz_s16_round_trip, "test_fuzz_s16_round_trip");
-        run_test(test_fuzz_u32_round_trip, "test_fuzz_u32_round_trip");
-        run_test(test_fuzz_s32_round_trip, "test_fuzz_s32_round_trip");
+        run_test(test_fuzz_uint8_round_trip, "test_fuzz_uint8_round_trip");
+        run_test(test_fuzz_uint16_round_trip, "test_fuzz_uint16_round_trip");
+        run_test(test_fuzz_int16_round_trip, "test_fuzz_int16_round_trip");
+        run_test(test_fuzz_uint32_round_trip, "test_fuzz_uint32_round_trip");
+        run_test(test_fuzz_int32_round_trip, "test_fuzz_int32_round_trip");
         run_test(test_fuzz_bits_round_trip, "test_fuzz_bits_round_trip");
         run_test(test_fuzz_f32_round_trip, "test_fuzz_f32_round_trip");
         run_test(test_fuzz_multi_field_mixed, "test_fuzz_multi_field_mixed");

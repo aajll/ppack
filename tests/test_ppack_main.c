@@ -36,7 +36,7 @@ extern void run_scaled_tests(void);
 extern void run_edge_tests(void);
 extern void run_exhaustive_tests(void);
 extern void run_pattern_tests(void);
-extern void run_u8_shim_tests(void);
+extern void run_uint8_shim_tests(void);
 extern void run_fuzz_tests(void);
 extern void run_wire_lockdown_tests(void);
 
@@ -55,7 +55,7 @@ main(void)
         run_edge_tests();
         run_exhaustive_tests();
         run_pattern_tests();
-        run_u8_shim_tests();
+        run_uint8_shim_tests();
         run_fuzz_tests();
         run_wire_lockdown_tests();
 

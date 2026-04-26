@@ -9,7 +9,7 @@
 #include <ppack_platform.h>
 #include <stddef.h>
 
-TEST_CASE(test_pack_scaled_u16)
+TEST_CASE(test_pack_scaled_uint16)
 {
         ppack_byte_t payload[PPACK_PAYLOAD_UNITS] = {0};
         float input_val = 123.45f;
@@ -18,13 +18,13 @@ TEST_CASE(test_pack_scaled_u16)
             {.type = PPACK_TYPE_UINT16,
              .start_bit = 0,
              .bit_length = 16,
-             .ptr_offset = offsetof(test_struct_scaled_t, field_u16_scaled),
+             .ptr_offset = offsetof(test_struct_scaled_t, field_uint16_scaled),
              .scale = 0.01f,
              .offset = 0.0f,
              .behaviour = PPACK_BEHAVIOUR_SCALED},
         };
 
-        test_struct_scaled_t data = {.field_u16_scaled = input_val};
+        test_struct_scaled_t data = {.field_uint16_scaled = input_val};
         int ret = ppack_pack(&data, payload, fields, 1);
         TEST_ASSERT(ret == PPACK_SUCCESS);
 
@@ -32,14 +32,14 @@ TEST_CASE(test_pack_scaled_u16)
         int unpack_ret = ppack_unpack(&unpacked, payload, fields, 1);
         TEST_ASSERT(unpack_ret == PPACK_SUCCESS);
 
-        float diff = unpacked.field_u16_scaled - 123.45f;
+        float diff = unpacked.field_uint16_scaled - 123.45f;
         if (diff < 0.0f) {
                 diff = -diff;
         }
         TEST_ASSERT(diff < 0.1f);
 }
 
-TEST_CASE(test_pack_scaled_s16_with_offset)
+TEST_CASE(test_pack_scaled_int16_with_offset)
 {
         ppack_byte_t payload[PPACK_PAYLOAD_UNITS] = {0};
         float input_val = -25.5f;
@@ -48,13 +48,13 @@ TEST_CASE(test_pack_scaled_s16_with_offset)
             {.type = PPACK_TYPE_INT16,
              .start_bit = 0,
              .bit_length = 16,
-             .ptr_offset = offsetof(test_struct_scaled_t, field_s16_scaled),
+             .ptr_offset = offsetof(test_struct_scaled_t, field_int16_scaled),
              .scale = 0.1f,
              .offset = 10.0f,
              .behaviour = PPACK_BEHAVIOUR_SCALED},
         };
 
-        test_struct_scaled_t data = {.field_s16_scaled = input_val};
+        test_struct_scaled_t data = {.field_int16_scaled = input_val};
         int ret = ppack_pack(&data, payload, fields, 1);
         TEST_ASSERT(ret == PPACK_SUCCESS);
 
@@ -62,14 +62,14 @@ TEST_CASE(test_pack_scaled_s16_with_offset)
         int unpack_ret = ppack_unpack(&unpacked, payload, fields, 1);
         TEST_ASSERT(unpack_ret == PPACK_SUCCESS);
 
-        float diff = unpacked.field_s16_scaled - (-25.5f);
+        float diff = unpacked.field_int16_scaled - (-25.5f);
         if (diff < 0.0f) {
                 diff = -diff;
         }
         TEST_ASSERT(diff < 0.2f);
 }
 
-TEST_CASE(test_pack_scaled_u32)
+TEST_CASE(test_pack_scaled_uint32)
 {
         ppack_byte_t payload[PPACK_PAYLOAD_UNITS] = {0};
         float input_val = 12345.678f;
@@ -78,13 +78,13 @@ TEST_CASE(test_pack_scaled_u32)
             {.type = PPACK_TYPE_UINT32,
              .start_bit = 0,
              .bit_length = 32,
-             .ptr_offset = offsetof(test_struct_scaled_t, field_u32_scaled),
+             .ptr_offset = offsetof(test_struct_scaled_t, field_uint32_scaled),
              .scale = 0.001f,
              .offset = 0.0f,
              .behaviour = PPACK_BEHAVIOUR_SCALED},
         };
 
-        test_struct_scaled_t data = {.field_u32_scaled = input_val};
+        test_struct_scaled_t data = {.field_uint32_scaled = input_val};
         int ret = ppack_pack(&data, payload, fields, 1);
         TEST_ASSERT(ret == PPACK_SUCCESS);
 
@@ -92,14 +92,14 @@ TEST_CASE(test_pack_scaled_u32)
         int unpack_ret = ppack_unpack(&unpacked, payload, fields, 1);
         TEST_ASSERT(unpack_ret == PPACK_SUCCESS);
 
-        float diff = unpacked.field_u32_scaled - 12345.678f;
+        float diff = unpacked.field_uint32_scaled - 12345.678f;
         if (diff < 0.0f) {
                 diff = -diff;
         }
         TEST_ASSERT(diff < 1.0f);
 }
 
-TEST_CASE(test_pack_scaled_s32)
+TEST_CASE(test_pack_scaled_int32)
 {
         ppack_byte_t payload[PPACK_PAYLOAD_UNITS] = {0};
         float input_val = -500.0f;
@@ -108,13 +108,13 @@ TEST_CASE(test_pack_scaled_s32)
             {.type = PPACK_TYPE_INT32,
              .start_bit = 0,
              .bit_length = 32,
-             .ptr_offset = offsetof(test_struct_scaled_t, field_s32_scaled),
+             .ptr_offset = offsetof(test_struct_scaled_t, field_int32_scaled),
              .scale = 0.1f,
              .offset = 0.0f,
              .behaviour = PPACK_BEHAVIOUR_SCALED},
         };
 
-        test_struct_scaled_t data = {.field_s32_scaled = input_val};
+        test_struct_scaled_t data = {.field_int32_scaled = input_val};
         int ret = ppack_pack(&data, payload, fields, 1);
         TEST_ASSERT(ret == PPACK_SUCCESS);
 
@@ -122,7 +122,7 @@ TEST_CASE(test_pack_scaled_s32)
         int unpack_ret = ppack_unpack(&unpacked, payload, fields, 1);
         TEST_ASSERT(unpack_ret == PPACK_SUCCESS);
 
-        float diff = unpacked.field_s32_scaled - (-500.0f);
+        float diff = unpacked.field_int32_scaled - (-500.0f);
         if (diff < 0.0f) {
                 diff = -diff;
         }
@@ -132,9 +132,9 @@ TEST_CASE(test_pack_scaled_s32)
 void
 run_scaled_tests(void)
 {
-        run_test(test_pack_scaled_u16, "test_pack_scaled_u16");
-        run_test(test_pack_scaled_s16_with_offset,
-                 "test_pack_scaled_s16_with_offset");
-        run_test(test_pack_scaled_u32, "test_pack_scaled_u32");
-        run_test(test_pack_scaled_s32, "test_pack_scaled_s32");
+        run_test(test_pack_scaled_uint16, "test_pack_scaled_uint16");
+        run_test(test_pack_scaled_int16_with_offset,
+                 "test_pack_scaled_int16_with_offset");
+        run_test(test_pack_scaled_uint32, "test_pack_scaled_uint32");
+        run_test(test_pack_scaled_int32, "test_pack_scaled_int32");
 }

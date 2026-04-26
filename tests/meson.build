@@ -9,7 +9,7 @@ test_sources = [
   'test_roundtrip_raw.c',
   'test_sign_extension.c',
   'test_scaled.c',
-  'test_u8_shim.c',
+  'test_uint8_shim.c',
   'test_wire_lockdown.c',
   'test_edge.c',
   'test_exhaustive.c',
