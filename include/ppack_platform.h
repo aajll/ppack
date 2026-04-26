@@ -61,7 +61,7 @@ typedef uint8_t ppack_byte_t;
  * @note  This is a library-internal alias used by the implementation
  *        and the unit tests. Application code on real targets should
  *        continue to declare struct members as @c uint8_t for
- *        @c PPACK_TYPE_U8 fields. @c ppack_u8_t exists so that host
+ *        @c PPACK_TYPE_UINT8 fields. @c ppack_u8_t exists so that host
  *        builds with @c PPACK_SIMULATE_16BIT_MAU faithfully reproduce
  *        the C2000 storage layout.
  */

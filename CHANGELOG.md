@@ -4,6 +4,21 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.0.0] - 2026-04-26
+
+### Changed (BREAKING)
+
+- Renamed `enum ppack_type` constants to use `INT*` / `UINT*` instead
+  of `S*` / `U*`, aligning with `<stdint.h>` conventions:
+  - `PPACK_TYPE_U8`  → `PPACK_TYPE_UINT8`
+  - `PPACK_TYPE_U16` → `PPACK_TYPE_UINT16`
+  - `PPACK_TYPE_U32` → `PPACK_TYPE_UINT32`
+  - `PPACK_TYPE_S16` → `PPACK_TYPE_INT16`
+  - `PPACK_TYPE_S32` → `PPACK_TYPE_INT32`
+
+  Existing call sites must be updated. The wire format and behaviour
+  are unchanged; this is a source-compatibility break only.
+
 ## [1.4.1] - 2026-04-25
 
 First public release.

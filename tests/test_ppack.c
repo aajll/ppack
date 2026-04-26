@@ -84,7 +84,7 @@ TEST_CASE(test_pack_null_base_ptr)
 {
         ppack_byte_t payload[PPACK_PAYLOAD_UNITS] = {0};
         const struct ppack_field fields[] = {
-            {.type = PPACK_TYPE_U16,
+            {.type = PPACK_TYPE_UINT16,
              .start_bit = 0,
              .bit_length = 16,
              .ptr_offset = offsetof(test_struct_t, field_u16),
@@ -98,7 +98,7 @@ TEST_CASE(test_pack_null_base_ptr)
 TEST_CASE(test_pack_null_payload)
 {
         const struct ppack_field fields[] = {
-            {.type = PPACK_TYPE_U16,
+            {.type = PPACK_TYPE_UINT16,
              .start_bit = 0,
              .bit_length = 16,
              .ptr_offset = offsetof(test_struct_t, field_u16),
@@ -123,7 +123,7 @@ TEST_CASE(test_unpack_null_base_ptr)
 {
         ppack_byte_t payload[PPACK_PAYLOAD_UNITS] = {0};
         const struct ppack_field fields[] = {
-            {.type = PPACK_TYPE_U16,
+            {.type = PPACK_TYPE_UINT16,
              .start_bit = 0,
              .bit_length = 16,
              .ptr_offset = offsetof(test_struct_t, field_u16),
@@ -138,7 +138,7 @@ TEST_CASE(test_unpack_null_payload)
 {
         test_struct_t data = {0};
         const struct ppack_field fields[] = {
-            {.type = PPACK_TYPE_U16,
+            {.type = PPACK_TYPE_UINT16,
              .start_bit = 0,
              .bit_length = 16,
              .ptr_offset = offsetof(test_struct_t, field_u16),
@@ -169,7 +169,7 @@ TEST_CASE(test_pack_overflow_start_plus_len)
         test_struct_t data = {.field_u16 = 0x1234};
 
         const struct ppack_field fields[] = {
-            {.type = PPACK_TYPE_U16,
+            {.type = PPACK_TYPE_UINT16,
              .start_bit = 56,
              .bit_length = 16,
              .ptr_offset = offsetof(test_struct_t, field_u16),
@@ -186,7 +186,7 @@ TEST_CASE(test_unpack_overflow_start_plus_len)
         test_struct_t data = {0};
 
         const struct ppack_field fields[] = {
-            {.type = PPACK_TYPE_U16,
+            {.type = PPACK_TYPE_UINT16,
              .start_bit = 56,
              .bit_length = 16,
              .ptr_offset = offsetof(test_struct_t, field_u16),
@@ -204,7 +204,7 @@ TEST_CASE(test_pack_exact_boundary_passes)
         test_struct_t data = {.field_u16 = 0xABCD};
 
         const struct ppack_field fields[] = {
-            {.type = PPACK_TYPE_U16,
+            {.type = PPACK_TYPE_UINT16,
              .start_bit = 48,
              .bit_length = 16,
              .ptr_offset = offsetof(test_struct_t, field_u16),
@@ -223,7 +223,7 @@ TEST_CASE(test_pack_bit_length_zero_rejected)
         test_struct_t data = {.field_u16 = 0x1234};
 
         const struct ppack_field fields[] = {
-            {.type = PPACK_TYPE_U16,
+            {.type = PPACK_TYPE_UINT16,
              .start_bit = 0,
              .bit_length = 0,
              .ptr_offset = offsetof(test_struct_t, field_u16),
@@ -241,7 +241,7 @@ TEST_CASE(test_pack_bit_length_33_rejected)
         test_struct_t data = {.field_u32 = 0xDEADBEEF};
 
         const struct ppack_field fields[] = {
-            {.type = PPACK_TYPE_U32,
+            {.type = PPACK_TYPE_UINT32,
              .start_bit = 0,
              .bit_length = 33,
              .ptr_offset = offsetof(test_struct_t, field_u32),
@@ -262,7 +262,7 @@ TEST_CASE(test_pack_scale_zero_u16_rejected)
         test_struct_scaled_t data = {.field_u16_scaled = 1.0f};
 
         const struct ppack_field fields[] = {
-            {.type = PPACK_TYPE_U16,
+            {.type = PPACK_TYPE_UINT16,
              .start_bit = 0,
              .bit_length = 16,
              .ptr_offset = offsetof(test_struct_scaled_t, field_u16_scaled),
@@ -281,7 +281,7 @@ TEST_CASE(test_pack_scale_zero_s16_rejected)
         test_struct_scaled_t data = {.field_s16_scaled = -1.0f};
 
         const struct ppack_field fields[] = {
-            {.type = PPACK_TYPE_S16,
+            {.type = PPACK_TYPE_INT16,
              .start_bit = 0,
              .bit_length = 16,
              .ptr_offset = offsetof(test_struct_scaled_t, field_s16_scaled),
@@ -300,7 +300,7 @@ TEST_CASE(test_pack_scale_zero_u32_rejected)
         test_struct_scaled_t data = {.field_u32_scaled = 1.0f};
 
         const struct ppack_field fields[] = {
-            {.type = PPACK_TYPE_U32,
+            {.type = PPACK_TYPE_UINT32,
              .start_bit = 0,
              .bit_length = 32,
              .ptr_offset = offsetof(test_struct_scaled_t, field_u32_scaled),
@@ -319,7 +319,7 @@ TEST_CASE(test_pack_scale_zero_s32_rejected)
         test_struct_scaled_t data = {.field_s32_scaled = 1.0f};
 
         const struct ppack_field fields[] = {
-            {.type = PPACK_TYPE_S32,
+            {.type = PPACK_TYPE_INT32,
              .start_bit = 0,
              .bit_length = 32,
              .ptr_offset = offsetof(test_struct_scaled_t, field_s32_scaled),
@@ -342,7 +342,7 @@ TEST_CASE(test_pack_unpack_u16)
         test_struct_t data = {.field_u16 = 0x1234};
 
         const struct ppack_field fields[] = {
-            {.type = PPACK_TYPE_U16,
+            {.type = PPACK_TYPE_UINT16,
              .start_bit = 0,
              .bit_length = 16,
              .ptr_offset = offsetof(test_struct_t, field_u16),
@@ -366,7 +366,7 @@ TEST_CASE(test_pack_unpack_s16)
         test_struct_t data = {.field_s16 = -1234};
 
         const struct ppack_field fields[] = {
-            {.type = PPACK_TYPE_S16,
+            {.type = PPACK_TYPE_INT16,
              .start_bit = 0,
              .bit_length = 16,
              .ptr_offset = offsetof(test_struct_t, field_s16),
@@ -388,7 +388,7 @@ TEST_CASE(test_pack_unpack_u32)
         test_struct_t data = {.field_u32 = 0x12345678};
 
         const struct ppack_field fields[] = {
-            {.type = PPACK_TYPE_U32,
+            {.type = PPACK_TYPE_UINT32,
              .start_bit = 0,
              .bit_length = 32,
              .ptr_offset = offsetof(test_struct_t, field_u32),
@@ -410,7 +410,7 @@ TEST_CASE(test_pack_unpack_s32)
         test_struct_t data = {.field_s32 = -12345678};
 
         const struct ppack_field fields[] = {
-            {.type = PPACK_TYPE_S32,
+            {.type = PPACK_TYPE_INT32,
              .start_bit = 0,
              .bit_length = 32,
              .ptr_offset = offsetof(test_struct_t, field_s32),
@@ -459,7 +459,7 @@ TEST_CASE(test_pack_unpack_u8)
         test_struct_t data = {.field_u8 = 0xAB};
 
         const struct ppack_field fields[] = {
-            {.type = PPACK_TYPE_U8,
+            {.type = PPACK_TYPE_UINT8,
              .start_bit = 0,
              .bit_length = 8,
              .ptr_offset = offsetof(test_struct_t, field_u8),
@@ -511,7 +511,7 @@ TEST_CASE(test_s16_12bit_negative)
         test_struct_t data = {.field_s16 = -100};
 
         const struct ppack_field fields[] = {
-            {.type = PPACK_TYPE_S16,
+            {.type = PPACK_TYPE_INT16,
              .start_bit = 0,
              .bit_length = 12,
              .ptr_offset = offsetof(test_struct_t, field_s16),
@@ -533,7 +533,7 @@ TEST_CASE(test_s16_12bit_positive)
         test_struct_t data = {.field_s16 = 100};
 
         const struct ppack_field fields[] = {
-            {.type = PPACK_TYPE_S16,
+            {.type = PPACK_TYPE_INT16,
              .start_bit = 0,
              .bit_length = 12,
              .ptr_offset = offsetof(test_struct_t, field_s16),
@@ -556,7 +556,7 @@ TEST_CASE(test_s32_20bit_negative)
         test_struct_t data = {.field_s32 = -500};
 
         const struct ppack_field fields[] = {
-            {.type = PPACK_TYPE_S32,
+            {.type = PPACK_TYPE_INT32,
              .start_bit = 0,
              .bit_length = 20,
              .ptr_offset = offsetof(test_struct_t, field_s32),
@@ -579,7 +579,7 @@ TEST_CASE(test_s32_1bit_negative)
         test_struct_t data = {.field_s32 = -1};
 
         const struct ppack_field fields[] = {
-            {.type = PPACK_TYPE_S32,
+            {.type = PPACK_TYPE_INT32,
              .start_bit = 0,
              .bit_length = 1,
              .ptr_offset = offsetof(test_struct_t, field_s32),
@@ -605,7 +605,7 @@ TEST_CASE(test_pack_unpack_u16_offset)
         test_struct_t data = {.field_u16 = 0x1234};
 
         const struct ppack_field fields[] = {
-            {.type = PPACK_TYPE_U16,
+            {.type = PPACK_TYPE_UINT16,
              .start_bit = 16,
              .bit_length = 16,
              .ptr_offset = offsetof(test_struct_t, field_u16),
@@ -629,7 +629,7 @@ TEST_CASE(test_pack_unpack_spanning_boundary)
         test_struct_t data = {.field_u32 = 0x12345678};
 
         const struct ppack_field fields[] = {
-            {.type = PPACK_TYPE_U32,
+            {.type = PPACK_TYPE_UINT32,
              .start_bit = 8,
              .bit_length = 32,
              .ptr_offset = offsetof(test_struct_t, field_u32),
@@ -655,17 +655,17 @@ TEST_CASE(test_pack_multiple_fields)
         };
 
         const struct ppack_field fields[] = {
-            {.type = PPACK_TYPE_U16,
+            {.type = PPACK_TYPE_UINT16,
              .start_bit = 0,
              .bit_length = 16,
              .ptr_offset = offsetof(test_struct_t, field_u16),
              .behaviour = PPACK_BEHAVIOUR_RAW},
-            {.type = PPACK_TYPE_S16,
+            {.type = PPACK_TYPE_INT16,
              .start_bit = 16,
              .bit_length = 16,
              .ptr_offset = offsetof(test_struct_t, field_s16),
              .behaviour = PPACK_BEHAVIOUR_RAW},
-            {.type = PPACK_TYPE_U8,
+            {.type = PPACK_TYPE_UINT8,
              .start_bit = 32,
              .bit_length = 8,
              .ptr_offset = offsetof(test_struct_t, field_u8),
@@ -697,7 +697,7 @@ TEST_CASE(test_pack_scaled_u16)
         float input_val = 123.45f;
 
         const struct ppack_field fields[] = {
-            {.type = PPACK_TYPE_U16,
+            {.type = PPACK_TYPE_UINT16,
              .start_bit = 0,
              .bit_length = 16,
              .ptr_offset = offsetof(test_struct_scaled_t, field_u16_scaled),
@@ -727,7 +727,7 @@ TEST_CASE(test_pack_scaled_s16_with_offset)
         float input_val = -25.5f;
 
         const struct ppack_field fields[] = {
-            {.type = PPACK_TYPE_S16,
+            {.type = PPACK_TYPE_INT16,
              .start_bit = 0,
              .bit_length = 16,
              .ptr_offset = offsetof(test_struct_scaled_t, field_s16_scaled),
@@ -757,7 +757,7 @@ TEST_CASE(test_pack_scaled_u32)
         float input_val = 12345.678f;
 
         const struct ppack_field fields[] = {
-            {.type = PPACK_TYPE_U32,
+            {.type = PPACK_TYPE_UINT32,
              .start_bit = 0,
              .bit_length = 32,
              .ptr_offset = offsetof(test_struct_scaled_t, field_u32_scaled),
@@ -787,7 +787,7 @@ TEST_CASE(test_pack_scaled_s32)
         float input_val = -500.0f;
 
         const struct ppack_field fields[] = {
-            {.type = PPACK_TYPE_S32,
+            {.type = PPACK_TYPE_INT32,
              .start_bit = 0,
              .bit_length = 32,
              .ptr_offset = offsetof(test_struct_scaled_t, field_s32_scaled),
@@ -817,7 +817,7 @@ TEST_CASE(test_pack_scale_u8_rejected)
         test_struct_scaled_t data = {0};
 
         const struct ppack_field fields[] = {
-            {.type = PPACK_TYPE_U8,
+            {.type = PPACK_TYPE_UINT8,
              .start_bit = 0,
              .bit_length = 8,
              .ptr_offset = offsetof(test_struct_t, field_u8),
@@ -891,7 +891,7 @@ TEST_CASE(test_unpack_zero_field_count)
         test_struct_t data = {0};
 
         const struct ppack_field fields[] = {
-            {.type = PPACK_TYPE_U16,
+            {.type = PPACK_TYPE_UINT16,
              .start_bit = 0,
              .bit_length = 16,
              .ptr_offset = offsetof(test_struct_t, field_u16),
@@ -908,7 +908,7 @@ TEST_CASE(test_small_bit_field)
         test_struct_t data = {.field_u8 = 0x0F};
 
         const struct ppack_field fields[] = {
-            {.type = PPACK_TYPE_U8,
+            {.type = PPACK_TYPE_UINT8,
              .start_bit = 0,
              .bit_length = 4,
              .ptr_offset = offsetof(test_struct_t, field_u8),
@@ -930,7 +930,7 @@ TEST_CASE(test_6bit_field)
         test_struct_t data = {.field_u8 = 0x3F};
 
         const struct ppack_field fields[] = {
-            {.type = PPACK_TYPE_U8,
+            {.type = PPACK_TYPE_UINT8,
              .start_bit = 0,
              .bit_length = 6,
              .ptr_offset = offsetof(test_struct_t, field_u8),
@@ -955,7 +955,7 @@ TEST_CASE(test_adjacent_bit_fields)
         };
 
         const struct ppack_field fields[] = {
-            {.type = PPACK_TYPE_U8,
+            {.type = PPACK_TYPE_UINT8,
              .start_bit = 0,
              .bit_length = 8,
              .ptr_offset = offsetof(test_struct_t, field_u8),
@@ -983,7 +983,7 @@ TEST_CASE(test_negative_s32)
         test_struct_t data = {.field_s32 = -1};
 
         const struct ppack_field fields[] = {
-            {.type = PPACK_TYPE_S32,
+            {.type = PPACK_TYPE_INT32,
              .start_bit = 0,
              .bit_length = 32,
              .ptr_offset = offsetof(test_struct_t, field_s32),
@@ -1005,7 +1005,7 @@ TEST_CASE(test_max_u16)
         test_struct_t data = {.field_u16 = 0xFFFF};
 
         const struct ppack_field fields[] = {
-            {.type = PPACK_TYPE_U16,
+            {.type = PPACK_TYPE_UINT16,
              .start_bit = 0,
              .bit_length = 16,
              .ptr_offset = offsetof(test_struct_t, field_u16),
@@ -1027,7 +1027,7 @@ TEST_CASE(test_max_s16)
         test_struct_t data = {.field_s16 = 32767};
 
         const struct ppack_field fields[] = {
-            {.type = PPACK_TYPE_S16,
+            {.type = PPACK_TYPE_INT16,
              .start_bit = 0,
              .bit_length = 16,
              .ptr_offset = offsetof(test_struct_t, field_s16),
@@ -1049,7 +1049,7 @@ TEST_CASE(test_min_s16)
         test_struct_t data = {.field_s16 = -32768};
 
         const struct ppack_field fields[] = {
-            {.type = PPACK_TYPE_S16,
+            {.type = PPACK_TYPE_INT16,
              .start_bit = 0,
              .bit_length = 16,
              .ptr_offset = offsetof(test_struct_t, field_s16),
@@ -1071,7 +1071,7 @@ TEST_CASE(test_zero_values)
         test_struct_t data = {.field_u16 = 0};
 
         const struct ppack_field fields[] = {
-            {.type = PPACK_TYPE_U16,
+            {.type = PPACK_TYPE_UINT16,
              .start_bit = 0,
              .bit_length = 16,
              .ptr_offset = offsetof(test_struct_t, field_u16),
@@ -1142,7 +1142,7 @@ TEST_CASE(test_1bit_field)
         test_struct_t data = {.field_u8 = 1};
 
         const struct ppack_field fields[] = {
-            {.type = PPACK_TYPE_U8,
+            {.type = PPACK_TYPE_UINT8,
              .start_bit = 0,
              .bit_length = 1,
              .ptr_offset = offsetof(test_struct_t, field_u8),
@@ -1164,7 +1164,7 @@ TEST_CASE(test_1bit_field_zero)
         test_struct_t data = {.field_u8 = 0};
 
         const struct ppack_field fields[] = {
-            {.type = PPACK_TYPE_U8,
+            {.type = PPACK_TYPE_UINT8,
              .start_bit = 5,
              .bit_length = 1,
              .ptr_offset = offsetof(test_struct_t, field_u8),
@@ -1187,12 +1187,12 @@ TEST_CASE(test_overlapping_fields)
         test_struct_t data = {.field_u8 = 0xFF};
 
         const struct ppack_field fields[] = {
-            {.type = PPACK_TYPE_U8,
+            {.type = PPACK_TYPE_UINT8,
              .start_bit = 0,
              .bit_length = 8,
              .ptr_offset = offsetof(test_struct_t, field_u8),
              .behaviour = PPACK_BEHAVIOUR_RAW},
-            {.type = PPACK_TYPE_U8,
+            {.type = PPACK_TYPE_UINT8,
              .start_bit = 4,
              .bit_length = 8,
              .ptr_offset = offsetof(test_struct_t, field_u8),
@@ -1213,17 +1213,17 @@ TEST_CASE(test_full_payload)
         };
 
         const struct ppack_field fields[] = {
-            {.type = PPACK_TYPE_U16,
+            {.type = PPACK_TYPE_UINT16,
              .start_bit = 0,
              .bit_length = 16,
              .ptr_offset = offsetof(test_struct_t, field_u16),
              .behaviour = PPACK_BEHAVIOUR_RAW},
-            {.type = PPACK_TYPE_S16,
+            {.type = PPACK_TYPE_INT16,
              .start_bit = 16,
              .bit_length = 16,
              .ptr_offset = offsetof(test_struct_t, field_s16),
              .behaviour = PPACK_BEHAVIOUR_RAW},
-            {.type = PPACK_TYPE_U32,
+            {.type = PPACK_TYPE_UINT32,
              .start_bit = 32,
              .bit_length = 32,
              .ptr_offset = offsetof(test_struct_t, field_u32),
@@ -1283,7 +1283,7 @@ TEST_CASE(test_all_bit_positions_u8)
                 test_struct_t data = {.field_u8 = 0xAB};
 
                 const struct ppack_field fields[] = {
-                    {.type = PPACK_TYPE_U8,
+                    {.type = PPACK_TYPE_UINT8,
                      .start_bit = start_bit,
                      .bit_length = 8,
                      .ptr_offset = offsetof(test_struct_t, field_u8),
@@ -1314,7 +1314,7 @@ TEST_CASE(test_all_bit_positions_u16)
                 test_struct_t data = {.field_u16 = 0x1234};
 
                 const struct ppack_field fields[] = {
-                    {.type = PPACK_TYPE_U16,
+                    {.type = PPACK_TYPE_UINT16,
                      .start_bit = start_bit,
                      .bit_length = 16,
                      .ptr_offset = offsetof(test_struct_t, field_u16),
@@ -1344,7 +1344,7 @@ TEST_CASE(test_all_bit_positions_s16)
                 test_struct_t data = {.field_s16 = -5678};
 
                 const struct ppack_field fields[] = {
-                    {.type = PPACK_TYPE_S16,
+                    {.type = PPACK_TYPE_INT16,
                      .start_bit = start_bit,
                      .bit_length = 16,
                      .ptr_offset = offsetof(test_struct_t, field_s16),
@@ -1374,7 +1374,7 @@ TEST_CASE(test_all_bit_positions_u32)
                 test_struct_t data = {.field_u32 = 0x12345678};
 
                 const struct ppack_field fields[] = {
-                    {.type = PPACK_TYPE_U32,
+                    {.type = PPACK_TYPE_UINT32,
                      .start_bit = start_bit,
                      .bit_length = 32,
                      .ptr_offset = offsetof(test_struct_t, field_u32),
@@ -1404,7 +1404,7 @@ TEST_CASE(test_all_bit_positions_s32)
                 test_struct_t data = {.field_s32 = -12345678};
 
                 const struct ppack_field fields[] = {
-                    {.type = PPACK_TYPE_S32,
+                    {.type = PPACK_TYPE_INT32,
                      .start_bit = start_bit,
                      .bit_length = 32,
                      .ptr_offset = offsetof(test_struct_t, field_s32),
@@ -1436,7 +1436,7 @@ TEST_CASE(test_all_bit_lengths_u8)
                 test_struct_t data = {.field_u8 = 0xAB};
 
                 const struct ppack_field fields[] = {
-                    {.type = PPACK_TYPE_U8,
+                    {.type = PPACK_TYPE_UINT8,
                      .start_bit = 0,
                      .bit_length = bit_len,
                      .ptr_offset = offsetof(test_struct_t, field_u8),
@@ -1463,7 +1463,7 @@ TEST_CASE(test_all_bit_lengths_u16)
                 test_struct_t data = {.field_u16 = 0x1234};
 
                 const struct ppack_field fields[] = {
-                    {.type = PPACK_TYPE_U16,
+                    {.type = PPACK_TYPE_UINT16,
                      .start_bit = 0,
                      .bit_length = bit_len,
                      .ptr_offset = offsetof(test_struct_t, field_u16),
@@ -1489,7 +1489,7 @@ TEST_CASE(test_all_bit_lengths_s16)
                 test_struct_t data = {.field_s16 = -5678};
 
                 const struct ppack_field fields[] = {
-                    {.type = PPACK_TYPE_S16,
+                    {.type = PPACK_TYPE_INT16,
                      .start_bit = 0,
                      .bit_length = bit_len,
                      .ptr_offset = offsetof(test_struct_t, field_s16),
@@ -1518,7 +1518,7 @@ TEST_CASE(test_all_bit_lengths_u32)
                 test_struct_t data = {.field_u32 = 0x12345678};
 
                 const struct ppack_field fields[] = {
-                    {.type = PPACK_TYPE_U32,
+                    {.type = PPACK_TYPE_UINT32,
                      .start_bit = 0,
                      .bit_length = bit_len,
                      .ptr_offset = offsetof(test_struct_t, field_u32),
@@ -1544,7 +1544,7 @@ TEST_CASE(test_all_bit_lengths_s32)
                 test_struct_t data = {.field_s32 = -12345678};
 
                 const struct ppack_field fields[] = {
-                    {.type = PPACK_TYPE_S32,
+                    {.type = PPACK_TYPE_INT32,
                      .start_bit = 0,
                      .bit_length = bit_len,
                      .ptr_offset = offsetof(test_struct_t, field_s32),
@@ -1574,7 +1574,7 @@ TEST_CASE(test_cross_byte_boundary_u16)
         test_struct_t data = {.field_u16 = 0x5678};
 
         const struct ppack_field fields[] = {
-            {.type = PPACK_TYPE_U16,
+            {.type = PPACK_TYPE_UINT16,
              .start_bit = 7,
              .bit_length = 16,
              .ptr_offset = offsetof(test_struct_t, field_u16),
@@ -1600,7 +1600,7 @@ TEST_CASE(test_cross_byte_boundary_u8_pair)
         };
 
         const struct ppack_field fields[] = {
-            {.type = PPACK_TYPE_U8,
+            {.type = PPACK_TYPE_UINT8,
              .start_bit = 4,
              .bit_length = 8,
              .ptr_offset = offsetof(test_struct_t, field_u8),
@@ -1634,7 +1634,7 @@ TEST_CASE(test_adjacent_u8_same_word)
         };
 
         const struct ppack_field fields[] = {
-            {.type = PPACK_TYPE_U8,
+            {.type = PPACK_TYPE_UINT8,
              .start_bit = 0,
              .bit_length = 8,
              .ptr_offset = offsetof(test_struct_t, field_u8),
@@ -1671,7 +1671,7 @@ TEST_CASE(test_odd_aligned_u8)
                 test_struct_t data = {.field_u8 = 0xFF};
 
                 const struct ppack_field fields[] = {
-                    {.type = PPACK_TYPE_U8,
+                    {.type = PPACK_TYPE_UINT8,
                      .start_bit = start_bit,
                      .bit_length = 8,
                      .ptr_offset = offsetof(test_struct_t, field_u8),
@@ -1707,7 +1707,7 @@ TEST_CASE(test_full_layout_u8x8)
         };
 
         const struct ppack_field fields[] = {
-            {.type = PPACK_TYPE_U8,
+            {.type = PPACK_TYPE_UINT8,
              .start_bit = 0,
              .bit_length = 8,
              .ptr_offset = offsetof(test_struct_t, field_u8),
@@ -1776,12 +1776,12 @@ TEST_CASE(test_full_layout_s16x4)
         };
 
         const struct ppack_field fields[] = {
-            {.type = PPACK_TYPE_S16,
+            {.type = PPACK_TYPE_INT16,
              .start_bit = 0,
              .bit_length = 16,
              .ptr_offset = offsetof(test_struct_t, field_s16),
              .behaviour = PPACK_BEHAVIOUR_RAW},
-            {.type = PPACK_TYPE_U16,
+            {.type = PPACK_TYPE_UINT16,
              .start_bit = 16,
              .bit_length = 16,
              .ptr_offset = offsetof(test_struct_t, field_u16),
@@ -1823,17 +1823,17 @@ TEST_CASE(test_full_layout_mixed)
         };
 
         const struct ppack_field fields[] = {
-            {.type = PPACK_TYPE_U16,
+            {.type = PPACK_TYPE_UINT16,
              .start_bit = 0,
              .bit_length = 16,
              .ptr_offset = offsetof(test_struct_t, field_u16),
              .behaviour = PPACK_BEHAVIOUR_RAW},
-            {.type = PPACK_TYPE_S16,
+            {.type = PPACK_TYPE_INT16,
              .start_bit = 16,
              .bit_length = 16,
              .ptr_offset = offsetof(test_struct_t, field_s16),
              .behaviour = PPACK_BEHAVIOUR_RAW},
-            {.type = PPACK_TYPE_U8,
+            {.type = PPACK_TYPE_UINT8,
              .start_bit = 32,
              .bit_length = 8,
              .ptr_offset = offsetof(test_struct_t, field_u8),
@@ -1871,7 +1871,7 @@ TEST_CASE(test_full_layout_mixed)
 
 /* ---- Scaled fields at every type ---- */
 
-/* Note: PPACK_TYPE_U8 does not support PPACK_BEHAVIOUR_SCALED in the
+/* Note: PPACK_TYPE_UINT8 does not support PPACK_BEHAVIOUR_SCALED in the
  * current library implementation; scaled tests cover U16/S16/U32/S32. */
 
 TEST_CASE(test_scaled_s16_negative)
@@ -1880,7 +1880,7 @@ TEST_CASE(test_scaled_s16_negative)
         test_struct_scaled_t data = {.field_s16_scaled = -50.25f};
 
         const struct ppack_field fields[] = {
-            {.type = PPACK_TYPE_S16,
+            {.type = PPACK_TYPE_INT16,
              .start_bit = 0,
              .bit_length = 16,
              .ptr_offset = offsetof(test_struct_scaled_t, field_s16_scaled),
@@ -1910,7 +1910,7 @@ TEST_CASE(test_scaled_u32_large)
         test_struct_scaled_t data = {.field_u32_scaled = 42949.0f};
 
         const struct ppack_field fields[] = {
-            {.type = PPACK_TYPE_U32,
+            {.type = PPACK_TYPE_UINT32,
              .start_bit = 0,
              .bit_length = 32,
              .ptr_offset = offsetof(test_struct_scaled_t, field_u32_scaled),
@@ -1941,7 +1941,7 @@ TEST_CASE(test_scaled_s32_boundary)
         test_struct_scaled_t data = {.field_s32_scaled = -214700000.0f};
 
         const struct ppack_field fields[] = {
-            {.type = PPACK_TYPE_S32,
+            {.type = PPACK_TYPE_INT32,
              .start_bit = 0,
              .bit_length = 32,
              .ptr_offset = offsetof(test_struct_scaled_t, field_s32_scaled),
@@ -1985,7 +1985,7 @@ TEST_CASE(test_sign_ext_min_negative)
                 test_struct_t data = {.field_s16 = min_val};
 
                 const struct ppack_field fields[] = {
-                    {.type = PPACK_TYPE_S16,
+                    {.type = PPACK_TYPE_INT16,
                      .start_bit = 0,
                      .bit_length = bit_len,
                      .ptr_offset = offsetof(test_struct_t, field_s16),
@@ -2011,7 +2011,7 @@ TEST_CASE(test_sign_ext_max_positive)
                 test_struct_t data = {.field_s16 = max_val};
 
                 const struct ppack_field fields[] = {
-                    {.type = PPACK_TYPE_S16,
+                    {.type = PPACK_TYPE_INT16,
                      .start_bit = 0,
                      .bit_length = bit_len,
                      .ptr_offset = offsetof(test_struct_t, field_s16),
@@ -2045,7 +2045,7 @@ TEST_CASE(test_sign_ext_s32_boundary)
                 test_struct_t data = {.field_s32 = min_val};
 
                 const struct ppack_field fields[] = {
-                    {.type = PPACK_TYPE_S32,
+                    {.type = PPACK_TYPE_INT32,
                      .start_bit = 0,
                      .bit_length = bit_len,
                      .ptr_offset = offsetof(test_struct_t, field_s32),
@@ -2071,7 +2071,7 @@ TEST_CASE(test_payload_all_zeros)
 
         /* U16 at position 0 */
         const struct ppack_field f1 = {
-            .type = PPACK_TYPE_U16,
+            .type = PPACK_TYPE_UINT16,
             .start_bit = 0,
             .bit_length = 16,
             .ptr_offset = offsetof(test_struct_t, field_u16),
@@ -2084,7 +2084,7 @@ TEST_CASE(test_payload_all_zeros)
 
         /* S32 at position 32 */
         const struct ppack_field f2 = {
-            .type = PPACK_TYPE_S32,
+            .type = PPACK_TYPE_INT32,
             .start_bit = 32,
             .bit_length = 32,
             .ptr_offset = offsetof(test_struct_t, field_s32),
@@ -2112,7 +2112,7 @@ TEST_CASE(test_payload_all_ones)
 
         test_struct_t unpacked = {0};
         const struct ppack_field f1 = {
-            .type = PPACK_TYPE_U32,
+            .type = PPACK_TYPE_UINT32,
             .start_bit = 0,
             .bit_length = 32,
             .ptr_offset = offsetof(test_struct_t, field_u32),
@@ -2123,7 +2123,7 @@ TEST_CASE(test_payload_all_ones)
         TEST_ASSERT(unpacked.field_u32 == 0xFFFFFFFF);
 
         const struct ppack_field f2 = {
-            .type = PPACK_TYPE_S32,
+            .type = PPACK_TYPE_INT32,
             .start_bit = 0,
             .bit_length = 32,
             .ptr_offset = offsetof(test_struct_t, field_s32),
@@ -2187,7 +2187,7 @@ TEST_CASE(test_u8_pack_masks_oversized_source)
         data.field_u8 = (ppack_u8_t)0x1234u;
 
         const struct ppack_field fields[] = {
-            {.type = PPACK_TYPE_U8,
+            {.type = PPACK_TYPE_UINT8,
              .start_bit = 0,
              .bit_length = 8,
              .ptr_offset = offsetof(test_struct_t, field_u8),
@@ -2213,7 +2213,7 @@ TEST_CASE(test_u8_pack_bitlen16_masks_upper)
         data.field_u8 = (ppack_u8_t)0xABCDu;
 
         const struct ppack_field fields[] = {
-            {.type = PPACK_TYPE_U8,
+            {.type = PPACK_TYPE_UINT8,
              .start_bit = 0,
              .bit_length = 16,
              .ptr_offset = offsetof(test_struct_t, field_u8),
@@ -2238,7 +2238,7 @@ TEST_CASE(test_u8_unpack_clears_upper_bits)
         source.field_u8 = (ppack_u8_t)0x33u;
 
         const struct ppack_field fields[] = {
-            {.type = PPACK_TYPE_U8,
+            {.type = PPACK_TYPE_UINT8,
              .start_bit = 0,
              .bit_length = 8,
              .ptr_offset = offsetof(test_struct_t, field_u8),
@@ -2276,12 +2276,12 @@ TEST_CASE(test_u8_adjacent_oversized_inputs)
         ppack_byte_t payload[PPACK_PAYLOAD_UNITS] = {0};
 
         const struct ppack_field fields[] = {
-            {.type = PPACK_TYPE_U8,
+            {.type = PPACK_TYPE_UINT8,
              .start_bit = 0,
              .bit_length = 8,
              .ptr_offset = offsetof(u8_pair_t, a),
              .behaviour = PPACK_BEHAVIOUR_RAW},
-            {.type = PPACK_TYPE_U8,
+            {.type = PPACK_TYPE_UINT8,
              .start_bit = 8,
              .bit_length = 8,
              .ptr_offset = offsetof(u8_pair_t, b),
@@ -2373,7 +2373,7 @@ TEST_CASE(test_fuzz_u8_round_trip)
                 src.field_u8 = (ppack_u8_t)value;
 
                 const struct ppack_field fields[] = {
-                    {.type = PPACK_TYPE_U8,
+                    {.type = PPACK_TYPE_UINT8,
                      .start_bit = start_bit,
                      .bit_length = bit_length,
                      .ptr_offset = offsetof(test_struct_t, field_u8),
@@ -2403,7 +2403,7 @@ TEST_CASE(test_fuzz_u16_round_trip)
                 test_struct_t src = {.field_u16 = value};
 
                 const struct ppack_field fields[] = {
-                    {.type = PPACK_TYPE_U16,
+                    {.type = PPACK_TYPE_UINT16,
                      .start_bit = start_bit,
                      .bit_length = bit_length,
                      .ptr_offset = offsetof(test_struct_t, field_u16),
@@ -2433,7 +2433,7 @@ TEST_CASE(test_fuzz_s16_round_trip)
                 test_struct_t src = {.field_s16 = value};
 
                 const struct ppack_field fields[] = {
-                    {.type = PPACK_TYPE_S16,
+                    {.type = PPACK_TYPE_INT16,
                      .start_bit = start_bit,
                      .bit_length = bit_length,
                      .ptr_offset = offsetof(test_struct_t, field_s16),
@@ -2463,7 +2463,7 @@ TEST_CASE(test_fuzz_u32_round_trip)
                 test_struct_t src = {.field_u32 = value};
 
                 const struct ppack_field fields[] = {
-                    {.type = PPACK_TYPE_U32,
+                    {.type = PPACK_TYPE_UINT32,
                      .start_bit = start_bit,
                      .bit_length = bit_length,
                      .ptr_offset = offsetof(test_struct_t, field_u32),
@@ -2493,7 +2493,7 @@ TEST_CASE(test_fuzz_s32_round_trip)
                 test_struct_t src = {.field_s32 = value};
 
                 const struct ppack_field fields[] = {
-                    {.type = PPACK_TYPE_S32,
+                    {.type = PPACK_TYPE_INT32,
                      .start_bit = start_bit,
                      .bit_length = bit_length,
                      .ptr_offset = offsetof(test_struct_t, field_s32),
@@ -2582,27 +2582,27 @@ TEST_CASE(test_fuzz_multi_field_mixed)
 {
         /* Fixed 64-bit layout exercising six types; random values. */
         const struct ppack_field fields[] = {
-            {.type = PPACK_TYPE_U16,
+            {.type = PPACK_TYPE_UINT16,
              .start_bit = 0,
              .bit_length = 12,
              .ptr_offset = offsetof(test_struct_t, field_u16),
              .behaviour = PPACK_BEHAVIOUR_RAW},
-            {.type = PPACK_TYPE_S16,
+            {.type = PPACK_TYPE_INT16,
              .start_bit = 12,
              .bit_length = 10,
              .ptr_offset = offsetof(test_struct_t, field_s16),
              .behaviour = PPACK_BEHAVIOUR_RAW},
-            {.type = PPACK_TYPE_U32,
+            {.type = PPACK_TYPE_UINT32,
              .start_bit = 22,
              .bit_length = 18,
              .ptr_offset = offsetof(test_struct_t, field_u32),
              .behaviour = PPACK_BEHAVIOUR_RAW},
-            {.type = PPACK_TYPE_S32,
+            {.type = PPACK_TYPE_INT32,
              .start_bit = 40,
              .bit_length = 14,
              .ptr_offset = offsetof(test_struct_t, field_s32),
              .behaviour = PPACK_BEHAVIOUR_RAW},
-            {.type = PPACK_TYPE_U8,
+            {.type = PPACK_TYPE_UINT8,
              .start_bit = 54,
              .bit_length = 6,
              .ptr_offset = offsetof(test_struct_t, field_u8),
@@ -2653,27 +2653,27 @@ TEST_CASE(test_fuzz_pack_unpack_pack_idempotent_raw)
          * (non-scaled) types.
          */
         const struct ppack_field fields[] = {
-            {.type = PPACK_TYPE_U16,
+            {.type = PPACK_TYPE_UINT16,
              .start_bit = 0,
              .bit_length = 12,
              .ptr_offset = offsetof(test_struct_t, field_u16),
              .behaviour = PPACK_BEHAVIOUR_RAW},
-            {.type = PPACK_TYPE_S16,
+            {.type = PPACK_TYPE_INT16,
              .start_bit = 12,
              .bit_length = 10,
              .ptr_offset = offsetof(test_struct_t, field_s16),
              .behaviour = PPACK_BEHAVIOUR_RAW},
-            {.type = PPACK_TYPE_U32,
+            {.type = PPACK_TYPE_UINT32,
              .start_bit = 22,
              .bit_length = 18,
              .ptr_offset = offsetof(test_struct_t, field_u32),
              .behaviour = PPACK_BEHAVIOUR_RAW},
-            {.type = PPACK_TYPE_S32,
+            {.type = PPACK_TYPE_INT32,
              .start_bit = 40,
              .bit_length = 14,
              .ptr_offset = offsetof(test_struct_t, field_s32),
              .behaviour = PPACK_BEHAVIOUR_RAW},
-            {.type = PPACK_TYPE_U8,
+            {.type = PPACK_TYPE_UINT8,
              .start_bit = 54,
              .bit_length = 6,
              .ptr_offset = offsetof(test_struct_t, field_u8),
@@ -2730,17 +2730,17 @@ TEST_CASE(test_pack_is_deterministic)
 {
         /* Identical inputs must produce bit-identical payloads. */
         const struct ppack_field fields[] = {
-            {.type = PPACK_TYPE_U16,
+            {.type = PPACK_TYPE_UINT16,
              .start_bit = 0,
              .bit_length = 16,
              .ptr_offset = offsetof(test_struct_t, field_u16),
              .behaviour = PPACK_BEHAVIOUR_RAW},
-            {.type = PPACK_TYPE_S16,
+            {.type = PPACK_TYPE_INT16,
              .start_bit = 16,
              .bit_length = 16,
              .ptr_offset = offsetof(test_struct_t, field_s16),
              .behaviour = PPACK_BEHAVIOUR_RAW},
-            {.type = PPACK_TYPE_U32,
+            {.type = PPACK_TYPE_UINT32,
              .start_bit = 32,
              .bit_length = 32,
              .ptr_offset = offsetof(test_struct_t, field_u32),
@@ -2783,20 +2783,20 @@ TEST_CASE(test_scaled_quantization_bounded)
 
         const struct quant_case cases[] = {
             /* Voltage 0..650V at 0.01V resolution */
-            {PPACK_TYPE_U16, 0.01f, 0.0f, 16,
+            {PPACK_TYPE_UINT16, 0.01f, 0.0f, 16,
              offsetof(test_struct_scaled_t, field_u16_scaled), 0.0f, 650.0f},
             /* Current -2000..2000A at 0.1A */
-            {PPACK_TYPE_S16, 0.1f, 0.0f, 16,
+            {PPACK_TYPE_INT16, 0.1f, 0.0f, 16,
              offsetof(test_struct_scaled_t, field_s16_scaled), -2000.0f,
              2000.0f},
             /* Temperature -40..125C at 0.25C, offset-encoded */
-            {PPACK_TYPE_U16, 0.25f, -40.0f, 10,
+            {PPACK_TYPE_UINT16, 0.25f, -40.0f, 10,
              offsetof(test_struct_scaled_t, field_u16_scaled), -40.0f, 125.0f},
             /* Energy counter 0..1e6 kWh at 0.001 */
-            {PPACK_TYPE_U32, 0.001f, 0.0f, 32,
+            {PPACK_TYPE_UINT32, 0.001f, 0.0f, 32,
              offsetof(test_struct_scaled_t, field_u32_scaled), 0.0f, 1.0e6f},
             /* Power -2e6..2e6 W at 1W */
-            {PPACK_TYPE_S32, 1.0f, 0.0f, 24,
+            {PPACK_TYPE_INT32, 1.0f, 0.0f, 24,
              offsetof(test_struct_scaled_t, field_s32_scaled), -2.0e6f, 2.0e6f},
         };
 
@@ -2852,7 +2852,7 @@ TEST_CASE(test_scaled_saturation)
         {
                 test_struct_scaled_t src = {.field_u16_scaled = 1.0e9f};
                 const struct ppack_field f[] = {
-                    {.type = PPACK_TYPE_U16,
+                    {.type = PPACK_TYPE_UINT16,
                      .start_bit = 0,
                      .bit_length = 16,
                      .ptr_offset =
@@ -2877,7 +2877,7 @@ TEST_CASE(test_scaled_saturation)
         {
                 test_struct_scaled_t src = {.field_s16_scaled = 1.0e9f};
                 const struct ppack_field f[] = {
-                    {.type = PPACK_TYPE_S16,
+                    {.type = PPACK_TYPE_INT16,
                      .start_bit = 0,
                      .bit_length = 16,
                      .ptr_offset =
@@ -2902,7 +2902,7 @@ TEST_CASE(test_scaled_saturation)
         {
                 test_struct_scaled_t src = {.field_u32_scaled = 1.0e12f};
                 const struct ppack_field f[] = {
-                    {.type = PPACK_TYPE_U32,
+                    {.type = PPACK_TYPE_UINT32,
                      .start_bit = 0,
                      .bit_length = 32,
                      .ptr_offset =
@@ -2929,7 +2929,7 @@ TEST_CASE(test_scaled_saturation)
         {
                 test_struct_scaled_t src = {.field_s32_scaled = 1.0e12f};
                 const struct ppack_field f[] = {
-                    {.type = PPACK_TYPE_S32,
+                    {.type = PPACK_TYPE_INT32,
                      .start_bit = 0,
                      .bit_length = 32,
                      .ptr_offset =
@@ -3016,9 +3016,9 @@ TEST_CASE(test_f32_special_values)
 TEST_CASE(test_wire_v1_lockdown_byte_aligned)
 {
         /* Layout:
-         *   bits  0..15  PPACK_TYPE_U16  (uint16_t  = 0x1234)
-         *   bits 16..31  PPACK_TYPE_S16  (int16_t   = -100   = 0xFF9C)
-         *   bits 32..63  PPACK_TYPE_U32  (uint32_t  = 0xDEADBEEF)
+         *   bits  0..15  PPACK_TYPE_UINT16  (uint16_t  = 0x1234)
+         *   bits 16..31  PPACK_TYPE_INT16  (int16_t   = -100   = 0xFF9C)
+         *   bits 32..63  PPACK_TYPE_UINT32  (uint32_t  = 0xDEADBEEF)
          */
         test_struct_t data = {
             .field_u16 = 0x1234u,
@@ -3027,17 +3027,17 @@ TEST_CASE(test_wire_v1_lockdown_byte_aligned)
         };
 
         const struct ppack_field fields[] = {
-            {.type = PPACK_TYPE_U16,
+            {.type = PPACK_TYPE_UINT16,
              .start_bit = 0,
              .bit_length = 16,
              .ptr_offset = offsetof(test_struct_t, field_u16),
              .behaviour = PPACK_BEHAVIOUR_RAW},
-            {.type = PPACK_TYPE_S16,
+            {.type = PPACK_TYPE_INT16,
              .start_bit = 16,
              .bit_length = 16,
              .ptr_offset = offsetof(test_struct_t, field_s16),
              .behaviour = PPACK_BEHAVIOUR_RAW},
-            {.type = PPACK_TYPE_U32,
+            {.type = PPACK_TYPE_UINT32,
              .start_bit = 32,
              .bit_length = 32,
              .ptr_offset = offsetof(test_struct_t, field_u32),
@@ -3059,8 +3059,8 @@ TEST_CASE(test_wire_v1_lockdown_float_and_small_types)
 {
         /* Layout:
          *   bits  0..31  PPACK_TYPE_F32  (float    = 1.0f = 0x3F800000)
-         *   bits 32..47  PPACK_TYPE_U16  (uint16_t = 0xCAFE)
-         *   bits 48..55  PPACK_TYPE_U8   (uint8_t  = 0xAB)
+         *   bits 32..47  PPACK_TYPE_UINT16  (uint16_t = 0xCAFE)
+         *   bits 48..55  PPACK_TYPE_UINT8   (uint8_t  = 0xAB)
          *   bits 56..63  PPACK_TYPE_BITS (uint32_t = 0xCD, 8-bit field)
          */
         test_struct_t data = {0};
@@ -3075,12 +3075,12 @@ TEST_CASE(test_wire_v1_lockdown_float_and_small_types)
              .bit_length = 32,
              .ptr_offset = offsetof(test_struct_t, field_f32),
              .behaviour = PPACK_BEHAVIOUR_RAW},
-            {.type = PPACK_TYPE_U16,
+            {.type = PPACK_TYPE_UINT16,
              .start_bit = 32,
              .bit_length = 16,
              .ptr_offset = offsetof(test_struct_t, field_u16),
              .behaviour = PPACK_BEHAVIOUR_RAW},
-            {.type = PPACK_TYPE_U8,
+            {.type = PPACK_TYPE_UINT8,
              .start_bit = 48,
              .bit_length = 8,
              .ptr_offset = offsetof(test_struct_t, field_u8),
@@ -3105,13 +3105,13 @@ TEST_CASE(test_wire_v1_lockdown_float_and_small_types)
 
 TEST_CASE(test_wire_v1_lockdown_cross_byte_boundary)
 {
-        /* Layout: a single PPACK_TYPE_U16 = 0xABCD shifted left by 4 bits.
+        /* Layout: a single PPACK_TYPE_UINT16 = 0xABCD shifted left by 4 bits.
          * Verifies the LSB-first / little-endian bit ordering on a non-
          * byte-aligned start position. Bits 0..3 and 20..63 are zero. */
         test_struct_t data = {.field_u16 = 0xABCDu};
 
         const struct ppack_field fields[] = {
-            {.type = PPACK_TYPE_U16,
+            {.type = PPACK_TYPE_UINT16,
              .start_bit = 4,
              .bit_length = 16,
              .ptr_offset = offsetof(test_struct_t, field_u16),

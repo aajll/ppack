@@ -1,7 +1,7 @@
 project(
   'ppack',
   'c',
-  version: '1.4.1',
+  version: '2.0.0',
   default_options: [
     'c_std=c11',
     'warning_level=3',

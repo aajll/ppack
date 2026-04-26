@@ -83,7 +83,7 @@ _Static_assert((PPACK_PAYLOAD_UNITS) * (PPACK_ADDR_UNIT_BITS) == 64u,
  *
  *    @b Saturation: pack silently clamps the raw integer to the
  *    destination type's representable range (e.g. 0..65535 for
- *    @c PPACK_TYPE_U16). For safety-critical applications where an
+ *    @c PPACK_TYPE_UINT16). For safety-critical applications where an
  *    out-of-range physical value MUST be detected, validate the
  *    input before calling @c ppack_pack.
  *
@@ -93,7 +93,7 @@ _Static_assert((PPACK_PAYLOAD_UNITS) * (PPACK_ADDR_UNIT_BITS) == 64u,
  *    For round-to-nearest behaviour, pre-add
  *    @c 0.5f*scale*sign(physical) at the call site before pack.
  *
- *    @b Float-range clamp: for @c PPACK_TYPE_U32 / @c PPACK_TYPE_S32
+ *    @b Float-range clamp: for @c PPACK_TYPE_UINT32 / @c PPACK_TYPE_INT32
  *    scaled fields the upper/lower clamp is the largest float that
  *    is exactly representable AND fits in the destination integer.
  *    @c UINT32_MAX (4294967295) and @c INT32_MAX (2147483647) round
@@ -109,7 +109,7 @@ _Static_assert((PPACK_PAYLOAD_UNITS) * (PPACK_ADDR_UNIT_BITS) == 64u,
  *    selects a 16-bit storage unit internally. The wire format is
  *    unchanged. Two contract points specific to this platform:
  *
- *    @li A @c PPACK_TYPE_U8 field reads and writes only the LOW 8
+ *    @li A @c PPACK_TYPE_UINT8 field reads and writes only the LOW 8
  *        bits of its struct member's storage. On C2000 the member's
  *        underlying @c uint16_t can technically hold 0..65535, but
  *        only the low 8 bits round-trip through the wire.
@@ -155,13 +155,13 @@ _Static_assert((PPACK_PAYLOAD_UNITS) * (PPACK_ADDR_UNIT_BITS) == 64u,
  * @c PPACK_BEHAVIOUR_SCALED the struct member must always be @c float.
  */
 enum ppack_type {
-        PPACK_TYPE_U8 = 0, /**< 8-bit unsigned  (struct member: uint8_t)  */
-        PPACK_TYPE_U16,    /**< 16-bit unsigned (struct member: uint16_t) */
-        PPACK_TYPE_S16,    /**< 16-bit signed   (struct member: int16_t)  */
-        PPACK_TYPE_S32,    /**< 32-bit signed   (struct member: int32_t)  */
-        PPACK_TYPE_U32,    /**< 32-bit unsigned (struct member: uint32_t) */
-        PPACK_TYPE_F32,    /**< 32-bit float    (struct member: float)    */
-        PPACK_TYPE_BITS,   /**< Raw bitfield    (struct member: uint32_t) */
+        PPACK_TYPE_UINT8 = 0, /**< 8-bit unsigned  (struct member: uint8_t)  */
+        PPACK_TYPE_UINT16,    /**< 16-bit unsigned (struct member: uint16_t) */
+        PPACK_TYPE_INT16,     /**< 16-bit signed   (struct member: int16_t)  */
+        PPACK_TYPE_INT32,     /**< 32-bit signed   (struct member: int32_t)  */
+        PPACK_TYPE_UINT32,    /**< 32-bit unsigned (struct member: uint32_t) */
+        PPACK_TYPE_F32,       /**< 32-bit float    (struct member: float)    */
+        PPACK_TYPE_BITS,      /**< Raw bitfield    (struct member: uint32_t) */
 };
 
 /**
@@ -170,7 +170,7 @@ enum ppack_type {
  * @note  @c PPACK_TYPE_F32 ignores @c behaviour and always performs a
  *        raw bit-copy. @c PPACK_TYPE_BITS also ignores @c behaviour
  *        and always treats its source as a raw 32-bit pattern.
- *        @c PPACK_TYPE_U8 rejects @c PPACK_BEHAVIOUR_SCALED with
+ *        @c PPACK_TYPE_UINT8 rejects @c PPACK_BEHAVIOUR_SCALED with
  *        @c PPACK_ERR_INVALARG.
  */
 enum ppack_behaviour {
@@ -234,7 +234,7 @@ struct ppack_field {
  * @return -PPACK_ERR_NULLPTR   if @c base_ptr or @c payload is NULL
  * @return -PPACK_ERR_INVALARG  if @c field_count is 0, @c fields is NULL,
  *                               @c bit_length is 0 or > 32, or scaling is
- *                               requested for @c PPACK_TYPE_U8
+ *                               requested for @c PPACK_TYPE_UINT8
  * @return -PPACK_ERR_OVERFLOW  if @c start_bit + bit_length exceeds 64,
  *                               or @c scale is 0.0 on a SCALED field
  * @return -PPACK_ERR_NOTFOUND  if an unknown field type is encountered
@@ -268,7 +268,7 @@ int ppack_pack(const void *base_ptr, void *payload,
  * @return -PPACK_ERR_NULLPTR   if @c base_ptr or @c payload is NULL
  * @return -PPACK_ERR_INVALARG  if @c field_count is 0, @c fields is NULL,
  *                               @c bit_length is 0 or > 32, or scaling is
- *                               requested for @c PPACK_TYPE_U8
+ *                               requested for @c PPACK_TYPE_UINT8
  * @return -PPACK_ERR_OVERFLOW  if @c start_bit + bit_length exceeds 64
  * @return -PPACK_ERR_NOTFOUND  if an unknown field type is encountered
  *

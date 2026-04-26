@@ -63,14 +63,14 @@ typedef struct {
 
 static const struct ppack_field fields[] = {
         {
-                .type       = PPACK_TYPE_U16,
+                .type       = PPACK_TYPE_UINT16,
                 .start_bit  = 0,
                 .bit_length = 16,
                 .ptr_offset = offsetof(engine_data_t, rpm),
                 .behaviour  = PPACK_BEHAVIOUR_RAW,
         },
         {
-                .type       = PPACK_TYPE_S16,
+                .type       = PPACK_TYPE_INT16,
                 .start_bit  = 16,
                 .bit_length = 16,
                 .ptr_offset = offsetof(engine_data_t, temperature),
@@ -83,7 +83,7 @@ static const struct ppack_field fields[] = {
          * IEEE 754 copy and does not support scale/offset.
          */
         {
-                .type       = PPACK_TYPE_U16,
+                .type       = PPACK_TYPE_UINT16,
                 .start_bit  = 32,
                 .bit_length = 16,
                 .ptr_offset = offsetof(engine_data_t, voltage),
@@ -174,11 +174,11 @@ struct ppack_field {
 
 | Type | Description | Struct member type (RAW) |
 |---|---|---|
-| `PPACK_TYPE_U8` | 8-bit unsigned | `uint8_t` |
-| `PPACK_TYPE_U16` | 16-bit unsigned | `uint16_t` |
-| `PPACK_TYPE_S16` | 16-bit signed | `int16_t` |
-| `PPACK_TYPE_U32` | 32-bit unsigned | `uint32_t` |
-| `PPACK_TYPE_S32` | 32-bit signed | `int32_t` |
+| `PPACK_TYPE_UINT8` | 8-bit unsigned | `uint8_t` |
+| `PPACK_TYPE_UINT16` | 16-bit unsigned | `uint16_t` |
+| `PPACK_TYPE_INT16` | 16-bit signed | `int16_t` |
+| `PPACK_TYPE_UINT32` | 32-bit unsigned | `uint32_t` |
+| `PPACK_TYPE_INT32` | 32-bit signed | `int32_t` |
 | `PPACK_TYPE_F32` | 32-bit float (raw IEEE-754 bit copy) | `float` |
 | `PPACK_TYPE_BITS` | Raw bitfield, up to 32 bits | `uint32_t` |
 
@@ -189,7 +189,7 @@ For `PPACK_BEHAVIOUR_SCALED` fields the struct member must always be `float`, re
 | Code | Value | Meaning |
 |---|---|---|
 | `PPACK_SUCCESS` | 0 | Operation succeeded |
-| `PPACK_ERR_INVALARG` | 1 | Invalid argument (NULL fields, zero field count, `bit_length` out of range, scaling requested for `PPACK_TYPE_U8`) |
+| `PPACK_ERR_INVALARG` | 1 | Invalid argument (NULL fields, zero field count, `bit_length` out of range, scaling requested for `PPACK_TYPE_UINT8`) |
 | `PPACK_ERR_NOTFOUND` | 3 | Unknown field type |
 | `PPACK_ERR_NULLPTR` | 4 | NULL pointer passed for `base_ptr` or `payload` |
 | `PPACK_ERR_OVERFLOW` | 5 | `start_bit + bit_length > 64`, or `scale == 0` on a `SCALED` field |
@@ -220,9 +220,9 @@ This encodes floating-point physical values into compact integer fields, e.g. vo
 
 ### Saturation
 
-Pack silently clamps the integer value to the destination type's representable range. For example, `PPACK_TYPE_U16` clamps to `0..65535` and `PPACK_TYPE_S16` clamps to `-32768..32767`. Out-of-range physical inputs do NOT produce an error.
+Pack silently clamps the integer value to the destination type's representable range. For example, `PPACK_TYPE_UINT16` clamps to `0..65535` and `PPACK_TYPE_INT16` clamps to `-32768..32767`. Out-of-range physical inputs do NOT produce an error.
 
-For `PPACK_TYPE_U32` and `PPACK_TYPE_S32` scaled fields, the float clamp uses `4294967040` (largest float exactly representable below `UINT32_MAX`) and `2147483520` (largest float below `INT32_MAX`). The true type maxima `UINT32_MAX` and `INT32_MAX` round up to `2^32` / `2^31` as 32-bit floats and would overflow the destination cast.
+For `PPACK_TYPE_UINT32` and `PPACK_TYPE_INT32` scaled fields, the float clamp uses `4294967040` (largest float exactly representable below `UINT32_MAX`) and `2147483520` (largest float below `INT32_MAX`). The true type maxima `UINT32_MAX` and `INT32_MAX` round up to `2^32` / `2^31` as 32-bit floats and would overflow the destination cast.
 
 For safety-critical applications where an out-of-range physical value MUST be detected, validate the input at the call site before calling `ppack_pack`.
 
@@ -263,7 +263,7 @@ On targets where `CHAR_BIT == 16` (the TI C2000 family being the canonical examp
 
 | Point | Rule |
 |---|---|
-| **U8 storage** | A `PPACK_TYPE_U8` field reads and writes only the LOW 8 bits of the struct member's storage. The underlying `uint16_t` can technically hold 0..65535 on a 16-bit-MAU target, but only the low 8 bits round-trip through the wire. Do not store values >= 256 in U8 fields if you expect them to round-trip. |
+| **U8 storage** | A `PPACK_TYPE_UINT8` field reads and writes only the LOW 8 bits of the struct member's storage. The underlying `uint16_t` can technically hold 0..65535 on a 16-bit-MAU target, but only the low 8 bits round-trip through the wire. Do not store values >= 256 in U8 fields if you expect them to round-trip. |
 | **`ptr_offset`** | Always use `offsetof()`. The library treats `ptr_offset` as a `char`-unit offset, which is 16 bits on a 16-bit-MAU target. Manually computing offsets in 8-bit units will fail. |
 
 ### Forcing the simulation flag
@@ -279,10 +279,10 @@ All public APIs validate arguments at the function boundary.
 - A field with `bit_length == 0` or `bit_length > 32` returns `-PPACK_ERR_INVALARG`.
 - A field where `start_bit + bit_length > 64` returns `-PPACK_ERR_OVERFLOW`.
 - A `PPACK_BEHAVIOUR_SCALED` field with `scale == 0.0` returns `-PPACK_ERR_OVERFLOW`.
-- A `PPACK_BEHAVIOUR_SCALED` request on a `PPACK_TYPE_U8` field returns `-PPACK_ERR_INVALARG`.
+- A `PPACK_BEHAVIOUR_SCALED` request on a `PPACK_TYPE_UINT8` field returns `-PPACK_ERR_INVALARG`.
 - An unrecognised field type returns `-PPACK_ERR_NOTFOUND`.
 
-`bit_length` is range-checked against the absolute payload limits (1..32 and 1..64-`start_bit`). It is NOT cross-checked against the natural width of the field's `type`. Declaring a `PPACK_TYPE_U16` with `bit_length=24` is accepted by the library; only the low 16 bits are meaningful, with the upper bits zero or sign-extended depending on type. Match `bit_length` to the type's natural width unless you have a specific reason not to.
+`bit_length` is range-checked against the absolute payload limits (1..32 and 1..64-`start_bit`). It is NOT cross-checked against the natural width of the field's `type`. Declaring a `PPACK_TYPE_UINT16` with `bit_length=24` is accepted by the library; only the low 16 bits are meaningful, with the upper bits zero or sign-extended depending on type. Match `bit_length` to the type's natural width unless you have a specific reason not to.
 
 ## Use Cases
 
@@ -313,5 +313,5 @@ ppack is a serialisation primitive only. The following are explicitly out of sco
 | **Thread safety** | Not thread-safe; caller must provide mutual exclusion when `base_ptr` or `payload` is shared across threads or ISRs |
 | **WCET** | Execution time is bounded and deterministic **when field descriptors are `static const`** (loop bounds are compile-time constants). WCET is not guaranteed if descriptors are constructed at runtime with arbitrary `bit_length` values. |
 | **F32 and scaling** | `PPACK_TYPE_F32` always performs a raw 32-bit IEEE 754 bit-copy; `scale`, `offset`, and `behaviour` are ignored for this type. Use a scaled integer type (`U16`, `S16`, `U32`, `S32`) to encode floating-point physical values with a resolution factor. |
-| **U8 struct member** | `PPACK_TYPE_U8` reads and writes a `uint8_t`. On TI C2000, where `uint8_t` is aliased to `uint16_t`, only the low 8 bits round-trip. |
+| **U8 struct member** | `PPACK_TYPE_UINT8` reads and writes a `uint8_t`. On TI C2000, where `uint8_t` is aliased to `uint16_t`, only the low 8 bits round-trip. |
 | **Version header** | `ppack_version.h` is auto-generated by the Meson build and placed in the output build folder |

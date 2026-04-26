@@ -94,9 +94,9 @@
  * floats: values that are out of range for the destination cast and would
  * invoke UB. Clamp to the next-lower representable float instead.
  */
-#define PPACK_FLOAT_U32_MAX  ((float)0xFFFFFF00u) /* 4294967040 */
-#define PPACK_FLOAT_S32_MAX  ((float)0x7FFFFF80)  /* 2147483520 */
-#define PPACK_FLOAT_S32_MIN  (-2147483648.0f)     /* -2^31, exact */
+#define PPACK_FLOAT_UINT32_MAX ((float)0xFFFFFF00u) /* 4294967040 */
+#define PPACK_FLOAT_INT32_MAX ((float)0x7FFFFF80) /* 2147483520 */
+#define PPACK_FLOAT_INT32_MIN (-2147483648.0f)    /* -2^31, exact */
 
 /* ================ STATIC FUNCTIONS ======================================== */
 
@@ -285,7 +285,7 @@ ppack_unpack(void *base_ptr, const void *payload,
                 uint32_t raw = read_bits(payload, f->start_bit, f->bit_length);
 
                 switch (f->type) {
-                case PPACK_TYPE_U8: {
+                case PPACK_TYPE_UINT8: {
                         if (f->behaviour == PPACK_BEHAVIOUR_SCALED) {
                                 return -PPACK_ERR_INVALARG;
                         }
@@ -294,7 +294,7 @@ ppack_unpack(void *base_ptr, const void *payload,
                         break;
                 }
 
-                case PPACK_TYPE_U16: {
+                case PPACK_TYPE_UINT16: {
                         if (f->behaviour == PPACK_BEHAVIOUR_SCALED) {
                                 float tmp = ((float)(uint16_t)raw) * f->scale
                                             + f->offset;
@@ -306,7 +306,7 @@ ppack_unpack(void *base_ptr, const void *payload,
                         break;
                 }
 
-                case PPACK_TYPE_S16: {
+                case PPACK_TYPE_INT16: {
                         if (f->behaviour == PPACK_BEHAVIOUR_SCALED) {
                                 int32_t sval = sign_extend(raw, f->bit_length);
                                 float tmp =
@@ -320,7 +320,7 @@ ppack_unpack(void *base_ptr, const void *payload,
                         break;
                 }
 
-                case PPACK_TYPE_U32: {
+                case PPACK_TYPE_UINT32: {
                         if (f->behaviour == PPACK_BEHAVIOUR_SCALED) {
                                 float tmp = ((float)raw) * f->scale + f->offset;
                                 (void)memcpy(field_ptr, &tmp, sizeof(tmp));
@@ -330,7 +330,7 @@ ppack_unpack(void *base_ptr, const void *payload,
                         break;
                 }
 
-                case PPACK_TYPE_S32: {
+                case PPACK_TYPE_INT32: {
                         int32_t sval = sign_extend(raw, f->bit_length);
                         if (f->behaviour == PPACK_BEHAVIOUR_SCALED) {
                                 float tmp =
@@ -390,7 +390,7 @@ ppack_pack(const void *base_ptr, void *payload,
                 uint32_t raw = 0u;
 
                 switch (f->type) {
-                case PPACK_TYPE_U8: {
+                case PPACK_TYPE_UINT8: {
                         if (f->behaviour == PPACK_BEHAVIOUR_SCALED) {
                                 return -PPACK_ERR_INVALARG;
                         }
@@ -400,7 +400,7 @@ ppack_pack(const void *base_ptr, void *payload,
                         break;
                 }
 
-                case PPACK_TYPE_U16: {
+                case PPACK_TYPE_UINT16: {
                         if (f->behaviour == PPACK_BEHAVIOUR_SCALED) {
                                 if (f->scale == 0.0f) {
                                         return -PPACK_ERR_OVERFLOW;
@@ -419,7 +419,7 @@ ppack_pack(const void *base_ptr, void *payload,
                         break;
                 }
 
-                case PPACK_TYPE_S16: {
+                case PPACK_TYPE_INT16: {
                         if (f->behaviour == PPACK_BEHAVIOUR_SCALED) {
                                 if (f->scale == 0.0f) {
                                         return -PPACK_ERR_OVERFLOW;
@@ -438,7 +438,7 @@ ppack_pack(const void *base_ptr, void *payload,
                         break;
                 }
 
-                case PPACK_TYPE_U32: {
+                case PPACK_TYPE_UINT32: {
                         if (f->behaviour == PPACK_BEHAVIOUR_SCALED) {
                                 if (f->scale == 0.0f) {
                                         return -PPACK_ERR_OVERFLOW;
@@ -447,7 +447,7 @@ ppack_pack(const void *base_ptr, void *payload,
                                 (void)memcpy(&val, field_ptr, sizeof(val));
                                 float scaled = (val - f->offset) / f->scale;
                                 scaled = ppack_clamp_float(scaled, 0.0f,
-                                                           PPACK_FLOAT_U32_MAX);
+                                                           PPACK_FLOAT_UINT32_MAX);
                                 raw = (uint32_t)scaled;
                         } else {
                                 (void)memcpy(&raw, field_ptr, sizeof(raw));
@@ -455,7 +455,7 @@ ppack_pack(const void *base_ptr, void *payload,
                         break;
                 }
 
-                case PPACK_TYPE_S32: {
+                case PPACK_TYPE_INT32: {
                         if (f->behaviour == PPACK_BEHAVIOUR_SCALED) {
                                 if (f->scale == 0.0f) {
                                         return -PPACK_ERR_OVERFLOW;
@@ -464,8 +464,8 @@ ppack_pack(const void *base_ptr, void *payload,
                                 (void)memcpy(&val, field_ptr, sizeof(val));
                                 float scaled = (val - f->offset) / f->scale;
                                 scaled = ppack_clamp_float(scaled,
-                                                           PPACK_FLOAT_S32_MIN,
-                                                           PPACK_FLOAT_S32_MAX);
+                                                           PPACK_FLOAT_INT32_MIN,
+                                                           PPACK_FLOAT_INT32_MAX);
                                 raw = (uint32_t)(int32_t)scaled;
                         } else {
                                 int32_t tmp;
