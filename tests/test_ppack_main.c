@@ -39,6 +39,7 @@ extern void run_pattern_tests(void);
 extern void run_uint8_shim_tests(void);
 extern void run_fuzz_tests(void);
 extern void run_wire_lockdown_tests(void);
+extern void run_partial_coverage_tests(void);
 
 int
 main(void)
@@ -58,6 +59,7 @@ main(void)
         run_uint8_shim_tests();
         run_fuzz_tests();
         run_wire_lockdown_tests();
+        run_partial_coverage_tests();
 
         fprintf(stdout, "\n=== All tests passed ===\n\n");
         return EXIT_SUCCESS;

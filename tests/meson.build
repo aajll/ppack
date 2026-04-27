@@ -15,6 +15,7 @@ test_sources = [
   'test_exhaustive.c',
   'test_patterns.c',
   'test_fuzz_cases.c',
+  'test_partial_coverage.c',
 ]
 
 test_exe = executable(
