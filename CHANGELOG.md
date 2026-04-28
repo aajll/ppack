@@ -22,7 +22,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - New test module `tests/test_payload_size.c` covering
   `payload_bits` validation, payload-size-relative overflow checks,
   round-trips at 128 / 256 / 512 bits, a sweep across every legal
-  size, and a 128-bit wire-format lockdown.
+  size, and wire-format lockdown at 128, 256, and 512 bits.
 
 ### Changed (BREAKING)
 

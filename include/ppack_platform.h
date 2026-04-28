@@ -143,8 +143,8 @@ _Static_assert(PPACK_PAYLOAD_BITS > 0u
                "PPACK_PAYLOAD_BITS must be a positive multiple of "
                "PPACK_ADDR_UNIT_BITS");
 
-_Static_assert(PPACK_PAYLOAD_UNITS <= 64,
+_Static_assert(PPACK_PAYLOAD_BITS <= 512u,
                "PPACK_PAYLOAD_BITS must be at most 512 "
-               "(64 byte-units / 32 word-units)");
+               "(CAN-FD frame data field ceiling)");
 
 #endif /* PPACK_PLATFORM_H_ */

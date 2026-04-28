@@ -323,6 +323,109 @@ TEST_CASE(test_wire_lockdown_128bit)
         }
 }
 
+TEST_CASE(test_wire_lockdown_256bit)
+{
+        /* Layout (all little-endian):
+         *   bits   0..31   PPACK_TYPE_UINT32 = 0xAABBCCDD
+         *   bits  64..95   PPACK_TYPE_INT32  = -1 (= 0xFFFFFFFF)
+         *   bits 224..255  PPACK_TYPE_UINT32 = 0x12345678
+         * All other bytes are zero (memset by ppack_pack).
+         */
+        test_struct_t data = {0};
+        data.field_uint32 = 0xAABBCCDDu;
+        data.field_int32 = -1;
+        data.field_bits = 0x12345678u;
+
+        const struct ppack_field fields[] = {
+            {.type = PPACK_TYPE_UINT32,
+             .start_bit = 0,
+             .bit_length = 32,
+             .ptr_offset = offsetof(test_struct_t, field_uint32),
+             .behaviour = PPACK_BEHAVIOUR_RAW},
+            {.type = PPACK_TYPE_INT32,
+             .start_bit = 64,
+             .bit_length = 32,
+             .ptr_offset = offsetof(test_struct_t, field_int32),
+             .behaviour = PPACK_BEHAVIOUR_RAW},
+            {.type = PPACK_TYPE_UINT32,
+             .start_bit = 224,
+             .bit_length = 32,
+             .ptr_offset = offsetof(test_struct_t, field_bits),
+             .behaviour = PPACK_BEHAVIOUR_RAW},
+        };
+
+        ppack_byte_t payload[256u / PPACK_ADDR_UNIT_BITS] = {0};
+        TEST_ASSERT(ppack_pack(&data, payload, 256, fields, 3)
+                    == PPACK_SUCCESS);
+
+        static const uint8_t expected[32] = {
+            /* bytes  0..  3: UINT32 = 0xAABBCCDD */
+            0xDDu, 0xCCu, 0xBBu, 0xAAu,
+            /* bytes  4..  7: gap */
+            0x00u, 0x00u, 0x00u, 0x00u,
+            /* bytes  8.. 11: INT32 = -1 */
+            0xFFu, 0xFFu, 0xFFu, 0xFFu,
+            /* bytes 12.. 27: gap */
+            0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+            0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+            /* bytes 28.. 31: UINT32 = 0x12345678 */
+            0x78u, 0x56u, 0x34u, 0x12u,
+        };
+        for (uint16_t i = 0; i < 32; ++i) {
+                TEST_ASSERT(READ_LOGICAL_BYTE(payload, i) == expected[i]);
+        }
+}
+
+TEST_CASE(test_wire_lockdown_512bit)
+{
+        /* Layout (all little-endian) — full CAN-FD frame:
+         *   bits   0.. 15  PPACK_TYPE_UINT16 = 0xBEEF (bottom of frame)
+         *   bits 256..271  PPACK_TYPE_UINT16 = 0xCAFE (middle of frame)
+         *   bits 496..511  PPACK_TYPE_UINT16 = 0xDEAD (top of frame)
+         * All other bytes are zero.
+         */
+        test_struct_t data = {0};
+        data.field_uint16 = 0xBEEFu;
+        data.field_int16 = (int16_t)0xCAFEu;
+        data.field_bits = 0xDEADu;
+
+        const struct ppack_field fields[] = {
+            {.type = PPACK_TYPE_UINT16,
+             .start_bit = 0,
+             .bit_length = 16,
+             .ptr_offset = offsetof(test_struct_t, field_uint16),
+             .behaviour = PPACK_BEHAVIOUR_RAW},
+            {.type = PPACK_TYPE_UINT16,
+             .start_bit = 256,
+             .bit_length = 16,
+             .ptr_offset = offsetof(test_struct_t, field_int16),
+             .behaviour = PPACK_BEHAVIOUR_RAW},
+            {.type = PPACK_TYPE_UINT16,
+             .start_bit = 496,
+             .bit_length = 16,
+             .ptr_offset = offsetof(test_struct_t, field_bits),
+             .behaviour = PPACK_BEHAVIOUR_RAW},
+        };
+
+        ppack_byte_t payload[512u / PPACK_ADDR_UNIT_BITS] = {0};
+        TEST_ASSERT(ppack_pack(&data, payload, 512, fields, 3)
+                    == PPACK_SUCCESS);
+
+        for (uint16_t i = 0; i < 64; ++i) {
+                uint8_t expected;
+                switch (i) {
+                case 0:  expected = 0xEFu; break;
+                case 1:  expected = 0xBEu; break;
+                case 32: expected = 0xFEu; break;
+                case 33: expected = 0xCAu; break;
+                case 62: expected = 0xADu; break;
+                case 63: expected = 0xDEu; break;
+                default: expected = 0x00u; break;
+                }
+                TEST_ASSERT(READ_LOGICAL_BYTE(payload, i) == expected);
+        }
+}
+
 void
 run_payload_size_tests(void)
 {
@@ -347,4 +450,6 @@ run_payload_size_tests(void)
         run_test(test_roundtrip_each_legal_size,
                  "test_roundtrip_each_legal_size");
         run_test(test_wire_lockdown_128bit, "test_wire_lockdown_128bit");
+        run_test(test_wire_lockdown_256bit, "test_wire_lockdown_256bit");
+        run_test(test_wire_lockdown_512bit, "test_wire_lockdown_512bit");
 }

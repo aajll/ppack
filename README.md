@@ -117,6 +117,42 @@ int main(void)
 
 `ppack_byte_t[PPACK_PAYLOAD_UNITS]` defaults to a 64-bit payload (`uint8_t[8]` on byte-addressable targets, `uint16_t[4]` on TI C2000) and is intended as a convenience for the common case. For non-default sizes, override `PPACK_PAYLOAD_BITS` at the toolchain level (e.g. `-DPPACK_PAYLOAD_BITS=512`) or size the buffer manually as `ppack_byte_t payload[N / PPACK_ADDR_UNIT_BITS]`. The wire format is identical across MAU sizes.
 
+### CAN-FD (512-bit) example
+
+For a CAN-FD frame with a full 64-byte data field, declare the
+buffer manually and pass `512` as `payload_bits`:
+
+```c
+typedef struct {
+        uint32_t timestamp_ms;
+        uint16_t sequence;
+        int32_t  current_ma;
+        /* ...up to 512 bits' worth of fields... */
+} canfd_telemetry_t;
+
+static const struct ppack_field canfd_fields[] = {
+        { .type = PPACK_TYPE_UINT32, .start_bit =   0, .bit_length = 32,
+          .ptr_offset = offsetof(canfd_telemetry_t, timestamp_ms),
+          .behaviour = PPACK_BEHAVIOUR_RAW },
+        { .type = PPACK_TYPE_UINT16, .start_bit =  32, .bit_length = 16,
+          .ptr_offset = offsetof(canfd_telemetry_t, sequence),
+          .behaviour = PPACK_BEHAVIOUR_RAW },
+        { .type = PPACK_TYPE_INT32,  .start_bit = 480, .bit_length = 32,
+          .ptr_offset = offsetof(canfd_telemetry_t, current_ma),
+          .behaviour = PPACK_BEHAVIOUR_RAW },
+};
+
+ppack_byte_t payload[512u / PPACK_ADDR_UNIT_BITS] = {0};
+canfd_telemetry_t tx = { .timestamp_ms = 1234, .sequence = 7, .current_ma = -250 };
+
+int ret = ppack_pack(&tx, payload, 512, canfd_fields, 3);
+```
+
+Or, if every payload in your project is 512 bits, set
+`-DPPACK_PAYLOAD_BITS=512` at the toolchain level and continue using
+`ppack_byte_t payload[PPACK_PAYLOAD_UNITS]`. The runtime API still
+takes the size explicitly.
+
 ## Building
 
 ```sh
