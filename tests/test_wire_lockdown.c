@@ -1,15 +1,20 @@
 /*
  * @file: test_wire_lockdown.c
- * @brief Wire-format v1 lockdown tests.
+ * @brief Wire-format lockdown tests for the 64-bit (CAN classic) payload.
  *
  * These tests assert the exact byte sequence produced by ppack_pack
- * for a fixed set of inputs. They define the wire-format contract for
- * the v1.x release line: any change to these expected bytes is a
- * BREAKING change to the protocol that downstream firmware nodes
- * (e.g. Power Module / Supervisory controller CAN bus) rely on.
+ * for a fixed set of inputs at payload_bits=64. The wire format has
+ * been stable across every release of the library; it is the contract
+ * that downstream firmware nodes (e.g. Power Module / Supervisory
+ * controller CAN bus) rely on.
  *
- * Do not edit the expected byte arrays in these tests. If the library
- * needs to produce a different wire layout, that is a v2 release.
+ * Do not edit the expected byte arrays in these tests. A change to
+ * any expected byte is a BREAKING change to the over-the-wire
+ * protocol, regardless of the library version, and must be
+ * coordinated with every downstream consumer.
+ *
+ * Lockdown for non-default payload sizes (e.g. CAN-FD 128 / 256 / 512)
+ * lives in test_payload_size.c.
  */
 
 #include "ppack.h"
@@ -19,7 +24,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-TEST_CASE(test_wire_v1_lockdown_byte_aligned)
+TEST_CASE(test_wire_lockdown_64bit_byte_aligned)
 {
         /* Layout:
          *   bits  0..15  PPACK_TYPE_UINT16  (uint16_t  = 0x1234)
@@ -51,7 +56,7 @@ TEST_CASE(test_wire_v1_lockdown_byte_aligned)
         };
 
         ppack_byte_t payload[PPACK_PAYLOAD_UNITS] = {0};
-        TEST_ASSERT(ppack_pack(&data, payload, fields, 3) == PPACK_SUCCESS);
+        TEST_ASSERT(ppack_pack(&data, payload, 64, fields, 3) == PPACK_SUCCESS);
 
         static const uint8_t expected[8] = {
             0x34u, 0x12u, 0x9Cu, 0xFFu, 0xEFu, 0xBEu, 0xADu, 0xDEu,
@@ -61,7 +66,7 @@ TEST_CASE(test_wire_v1_lockdown_byte_aligned)
         }
 }
 
-TEST_CASE(test_wire_v1_lockdown_float_and_small_types)
+TEST_CASE(test_wire_lockdown_64bit_float_and_small_types)
 {
         /* Layout:
          *   bits  0..31  PPACK_TYPE_F32  (float    = 1.0f = 0x3F800000)
@@ -99,7 +104,7 @@ TEST_CASE(test_wire_v1_lockdown_float_and_small_types)
         };
 
         ppack_byte_t payload[PPACK_PAYLOAD_UNITS] = {0};
-        TEST_ASSERT(ppack_pack(&data, payload, fields, 4) == PPACK_SUCCESS);
+        TEST_ASSERT(ppack_pack(&data, payload, 64, fields, 4) == PPACK_SUCCESS);
 
         static const uint8_t expected[8] = {
             0x00u, 0x00u, 0x80u, 0x3Fu, 0xFEu, 0xCAu, 0xABu, 0xCDu,
@@ -109,7 +114,7 @@ TEST_CASE(test_wire_v1_lockdown_float_and_small_types)
         }
 }
 
-TEST_CASE(test_wire_v1_lockdown_cross_byte_boundary)
+TEST_CASE(test_wire_lockdown_64bit_cross_byte_boundary)
 {
         /* Layout: a single PPACK_TYPE_UINT16 = 0xABCD shifted left by 4 bits.
          * Verifies the LSB-first / little-endian bit ordering on a non-
@@ -125,7 +130,7 @@ TEST_CASE(test_wire_v1_lockdown_cross_byte_boundary)
         };
 
         ppack_byte_t payload[PPACK_PAYLOAD_UNITS] = {0};
-        TEST_ASSERT(ppack_pack(&data, payload, fields, 1) == PPACK_SUCCESS);
+        TEST_ASSERT(ppack_pack(&data, payload, 64, fields, 1) == PPACK_SUCCESS);
 
         static const uint8_t expected[8] = {
             0xD0u, 0xBCu, 0x0Au, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
@@ -138,10 +143,10 @@ TEST_CASE(test_wire_v1_lockdown_cross_byte_boundary)
 void
 run_wire_lockdown_tests(void)
 {
-        run_test(test_wire_v1_lockdown_byte_aligned,
-                 "test_wire_v1_lockdown_byte_aligned");
-        run_test(test_wire_v1_lockdown_float_and_small_types,
-                 "test_wire_v1_lockdown_float_and_small_types");
-        run_test(test_wire_v1_lockdown_cross_byte_boundary,
-                 "test_wire_v1_lockdown_cross_byte_boundary");
+        run_test(test_wire_lockdown_64bit_byte_aligned,
+                 "test_wire_lockdown_64bit_byte_aligned");
+        run_test(test_wire_lockdown_64bit_float_and_small_types,
+                 "test_wire_lockdown_64bit_float_and_small_types");
+        run_test(test_wire_lockdown_64bit_cross_byte_boundary,
+                 "test_wire_lockdown_64bit_cross_byte_boundary");
 }

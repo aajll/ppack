@@ -24,7 +24,7 @@ TEST_CASE(test_pack_scale_zero_uint16_rejected)
              .behaviour = PPACK_BEHAVIOUR_SCALED},
         };
 
-        int ret = ppack_pack(&data, payload, fields, 1);
+        int ret = ppack_pack(&data, payload, 64, fields, 1);
         TEST_ASSERT(ret == -PPACK_ERR_OVERFLOW);
 }
 
@@ -43,7 +43,7 @@ TEST_CASE(test_pack_scale_zero_int16_rejected)
              .behaviour = PPACK_BEHAVIOUR_SCALED},
         };
 
-        int ret = ppack_pack(&data, payload, fields, 1);
+        int ret = ppack_pack(&data, payload, 64, fields, 1);
         TEST_ASSERT(ret == -PPACK_ERR_OVERFLOW);
 }
 
@@ -62,7 +62,7 @@ TEST_CASE(test_pack_scale_zero_uint32_rejected)
              .behaviour = PPACK_BEHAVIOUR_SCALED},
         };
 
-        int ret = ppack_pack(&data, payload, fields, 1);
+        int ret = ppack_pack(&data, payload, 64, fields, 1);
         TEST_ASSERT(ret == -PPACK_ERR_OVERFLOW);
 }
 
@@ -81,7 +81,7 @@ TEST_CASE(test_pack_scale_zero_int32_rejected)
              .behaviour = PPACK_BEHAVIOUR_SCALED},
         };
 
-        int ret = ppack_pack(&data, payload, fields, 1);
+        int ret = ppack_pack(&data, payload, 64, fields, 1);
         TEST_ASSERT(ret == -PPACK_ERR_OVERFLOW);
 }
 
@@ -100,10 +100,10 @@ TEST_CASE(test_pack_scale_uint8_rejected)
              .behaviour = PPACK_BEHAVIOUR_SCALED},
         };
 
-        int ret = ppack_pack(&data, payload, fields, 1);
+        int ret = ppack_pack(&data, payload, 64, fields, 1);
         TEST_ASSERT(ret == -PPACK_ERR_INVALARG);
 
-        int unpack_ret = ppack_unpack(&data, payload, fields, 1);
+        int unpack_ret = ppack_unpack(&data, payload, 64, fields, 1);
         TEST_ASSERT(unpack_ret == -PPACK_ERR_INVALARG);
 }
 

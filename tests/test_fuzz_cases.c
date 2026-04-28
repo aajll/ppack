@@ -38,11 +38,11 @@ TEST_CASE(test_fuzz_uint8_round_trip)
                 };
 
                 ppack_byte_t payload[PPACK_PAYLOAD_UNITS] = {0};
-                TEST_ASSERT(ppack_pack(&src, payload, fields, 1)
+                TEST_ASSERT(ppack_pack(&src, payload, 64, fields, 1)
                             == PPACK_SUCCESS);
 
                 test_struct_t dst = {0};
-                TEST_ASSERT(ppack_unpack(&dst, payload, fields, 1)
+                TEST_ASSERT(ppack_unpack(&dst, payload, 64, fields, 1)
                             == PPACK_SUCCESS);
                 TEST_ASSERT((uint8_t)dst.field_uint8 == value);
         }
@@ -68,11 +68,11 @@ TEST_CASE(test_fuzz_uint16_round_trip)
                 };
 
                 ppack_byte_t payload[PPACK_PAYLOAD_UNITS] = {0};
-                TEST_ASSERT(ppack_pack(&src, payload, fields, 1)
+                TEST_ASSERT(ppack_pack(&src, payload, 64, fields, 1)
                             == PPACK_SUCCESS);
 
                 test_struct_t dst = {0};
-                TEST_ASSERT(ppack_unpack(&dst, payload, fields, 1)
+                TEST_ASSERT(ppack_unpack(&dst, payload, 64, fields, 1)
                             == PPACK_SUCCESS);
                 TEST_ASSERT(dst.field_uint16 == value);
         }
@@ -98,11 +98,11 @@ TEST_CASE(test_fuzz_int16_round_trip)
                 };
 
                 ppack_byte_t payload[PPACK_PAYLOAD_UNITS] = {0};
-                TEST_ASSERT(ppack_pack(&src, payload, fields, 1)
+                TEST_ASSERT(ppack_pack(&src, payload, 64, fields, 1)
                             == PPACK_SUCCESS);
 
                 test_struct_t dst = {0};
-                TEST_ASSERT(ppack_unpack(&dst, payload, fields, 1)
+                TEST_ASSERT(ppack_unpack(&dst, payload, 64, fields, 1)
                             == PPACK_SUCCESS);
                 TEST_ASSERT(dst.field_int16 == value);
         }
@@ -128,11 +128,11 @@ TEST_CASE(test_fuzz_uint32_round_trip)
                 };
 
                 ppack_byte_t payload[PPACK_PAYLOAD_UNITS] = {0};
-                TEST_ASSERT(ppack_pack(&src, payload, fields, 1)
+                TEST_ASSERT(ppack_pack(&src, payload, 64, fields, 1)
                             == PPACK_SUCCESS);
 
                 test_struct_t dst = {0};
-                TEST_ASSERT(ppack_unpack(&dst, payload, fields, 1)
+                TEST_ASSERT(ppack_unpack(&dst, payload, 64, fields, 1)
                             == PPACK_SUCCESS);
                 TEST_ASSERT(dst.field_uint32 == value);
         }
@@ -158,11 +158,11 @@ TEST_CASE(test_fuzz_int32_round_trip)
                 };
 
                 ppack_byte_t payload[PPACK_PAYLOAD_UNITS] = {0};
-                TEST_ASSERT(ppack_pack(&src, payload, fields, 1)
+                TEST_ASSERT(ppack_pack(&src, payload, 64, fields, 1)
                             == PPACK_SUCCESS);
 
                 test_struct_t dst = {0};
-                TEST_ASSERT(ppack_unpack(&dst, payload, fields, 1)
+                TEST_ASSERT(ppack_unpack(&dst, payload, 64, fields, 1)
                             == PPACK_SUCCESS);
                 TEST_ASSERT(dst.field_int32 == value);
         }
@@ -188,11 +188,11 @@ TEST_CASE(test_fuzz_bits_round_trip)
                 };
 
                 ppack_byte_t payload[PPACK_PAYLOAD_UNITS] = {0};
-                TEST_ASSERT(ppack_pack(&src, payload, fields, 1)
+                TEST_ASSERT(ppack_pack(&src, payload, 64, fields, 1)
                             == PPACK_SUCCESS);
 
                 test_struct_t dst = {0};
-                TEST_ASSERT(ppack_unpack(&dst, payload, fields, 1)
+                TEST_ASSERT(ppack_unpack(&dst, payload, 64, fields, 1)
                             == PPACK_SUCCESS);
                 TEST_ASSERT(dst.field_bits == value);
         }
@@ -220,11 +220,11 @@ TEST_CASE(test_fuzz_f32_round_trip)
                 };
 
                 ppack_byte_t payload[PPACK_PAYLOAD_UNITS] = {0};
-                TEST_ASSERT(ppack_pack(&src, payload, fields, 1)
+                TEST_ASSERT(ppack_pack(&src, payload, 64, fields, 1)
                             == PPACK_SUCCESS);
 
                 test_struct_t dst = {0};
-                TEST_ASSERT(ppack_unpack(&dst, payload, fields, 1)
+                TEST_ASSERT(ppack_unpack(&dst, payload, 64, fields, 1)
                             == PPACK_SUCCESS);
 
                 uint32_t out_bits;
@@ -283,11 +283,11 @@ TEST_CASE(test_fuzz_multi_field_mixed)
                 src.field_bits = fuzz_unsigned_in_bits(4);
 
                 ppack_byte_t payload[PPACK_PAYLOAD_UNITS] = {0};
-                TEST_ASSERT(ppack_pack(&src, payload, fields, n_fields)
+                TEST_ASSERT(ppack_pack(&src, payload, 64, fields, n_fields)
                             == PPACK_SUCCESS);
 
                 test_struct_t dst = {0};
-                TEST_ASSERT(ppack_unpack(&dst, payload, fields, n_fields)
+                TEST_ASSERT(ppack_unpack(&dst, payload, 64, fields, n_fields)
                             == PPACK_SUCCESS);
 
                 TEST_ASSERT(dst.field_uint16 == src.field_uint16);
@@ -354,15 +354,15 @@ TEST_CASE(test_fuzz_pack_unpack_pack_idempotent_raw)
                 src.field_bits = fuzz_unsigned_in_bits(4);
 
                 ppack_byte_t wire1[PPACK_PAYLOAD_UNITS] = {0};
-                TEST_ASSERT(ppack_pack(&src, wire1, fields, n_fields)
+                TEST_ASSERT(ppack_pack(&src, wire1, 64, fields, n_fields)
                             == PPACK_SUCCESS);
 
                 test_struct_t mid = {0};
-                TEST_ASSERT(ppack_unpack(&mid, wire1, fields, n_fields)
+                TEST_ASSERT(ppack_unpack(&mid, wire1, 64, fields, n_fields)
                             == PPACK_SUCCESS);
 
                 ppack_byte_t wire2[PPACK_PAYLOAD_UNITS] = {0};
-                TEST_ASSERT(ppack_pack(&mid, wire2, fields, n_fields)
+                TEST_ASSERT(ppack_pack(&mid, wire2, 64, fields, n_fields)
                             == PPACK_SUCCESS);
 
                 TEST_ASSERT(memcmp(wire1, wire2, sizeof(wire1)) == 0);
@@ -414,8 +414,8 @@ TEST_CASE(test_pack_is_deterministic)
                 ppack_byte_t p1[PPACK_PAYLOAD_UNITS] = {0};
                 ppack_byte_t p2[PPACK_PAYLOAD_UNITS] = {0};
 
-                TEST_ASSERT(ppack_pack(&src, p1, fields, 3) == PPACK_SUCCESS);
-                TEST_ASSERT(ppack_pack(&src, p2, fields, 3) == PPACK_SUCCESS);
+                TEST_ASSERT(ppack_pack(&src, p1, 64, fields, 3) == PPACK_SUCCESS);
+                TEST_ASSERT(ppack_pack(&src, p2, 64, fields, 3) == PPACK_SUCCESS);
                 TEST_ASSERT(memcmp(p1, p2, sizeof(p1)) == 0);
         }
 }
@@ -480,11 +480,11 @@ TEST_CASE(test_scaled_quantization_bounded)
                         };
 
                         ppack_byte_t payload[PPACK_PAYLOAD_UNITS] = {0};
-                        TEST_ASSERT(ppack_pack(&src, payload, fields, 1)
+                        TEST_ASSERT(ppack_pack(&src, payload, 64, fields, 1)
                                     == PPACK_SUCCESS);
 
                         test_struct_scaled_t dst = {0};
-                        TEST_ASSERT(ppack_unpack(&dst, payload, fields, 1)
+                        TEST_ASSERT(ppack_unpack(&dst, payload, 64, fields, 1)
                                     == PPACK_SUCCESS);
 
                         float unpacked;
@@ -519,14 +519,14 @@ TEST_CASE(test_scaled_saturation)
                      .behaviour = PPACK_BEHAVIOUR_SCALED},
                 };
                 ppack_byte_t p[PPACK_PAYLOAD_UNITS] = {0};
-                TEST_ASSERT(ppack_pack(&src, p, f, 1) == PPACK_SUCCESS);
+                TEST_ASSERT(ppack_pack(&src, p, 64, f, 1) == PPACK_SUCCESS);
                 test_struct_scaled_t dst = {0};
-                TEST_ASSERT(ppack_unpack(&dst, p, f, 1) == PPACK_SUCCESS);
+                TEST_ASSERT(ppack_unpack(&dst, p, 64, f, 1) == PPACK_SUCCESS);
                 TEST_ASSERT(dst.field_uint16_scaled == 65535.0f);
 
                 src.field_uint16_scaled = -1.0e9f;
-                TEST_ASSERT(ppack_pack(&src, p, f, 1) == PPACK_SUCCESS);
-                TEST_ASSERT(ppack_unpack(&dst, p, f, 1) == PPACK_SUCCESS);
+                TEST_ASSERT(ppack_pack(&src, p, 64, f, 1) == PPACK_SUCCESS);
+                TEST_ASSERT(ppack_unpack(&dst, p, 64, f, 1) == PPACK_SUCCESS);
                 TEST_ASSERT(dst.field_uint16_scaled == 0.0f);
         }
 
@@ -544,14 +544,14 @@ TEST_CASE(test_scaled_saturation)
                      .behaviour = PPACK_BEHAVIOUR_SCALED},
                 };
                 ppack_byte_t p[PPACK_PAYLOAD_UNITS] = {0};
-                TEST_ASSERT(ppack_pack(&src, p, f, 1) == PPACK_SUCCESS);
+                TEST_ASSERT(ppack_pack(&src, p, 64, f, 1) == PPACK_SUCCESS);
                 test_struct_scaled_t dst = {0};
-                TEST_ASSERT(ppack_unpack(&dst, p, f, 1) == PPACK_SUCCESS);
+                TEST_ASSERT(ppack_unpack(&dst, p, 64, f, 1) == PPACK_SUCCESS);
                 TEST_ASSERT(dst.field_int16_scaled == 32767.0f);
 
                 src.field_int16_scaled = -1.0e9f;
-                TEST_ASSERT(ppack_pack(&src, p, f, 1) == PPACK_SUCCESS);
-                TEST_ASSERT(ppack_unpack(&dst, p, f, 1) == PPACK_SUCCESS);
+                TEST_ASSERT(ppack_pack(&src, p, 64, f, 1) == PPACK_SUCCESS);
+                TEST_ASSERT(ppack_unpack(&dst, p, 64, f, 1) == PPACK_SUCCESS);
                 TEST_ASSERT(dst.field_int16_scaled == -32768.0f);
         }
 
@@ -569,16 +569,16 @@ TEST_CASE(test_scaled_saturation)
                      .behaviour = PPACK_BEHAVIOUR_SCALED},
                 };
                 ppack_byte_t p[PPACK_PAYLOAD_UNITS] = {0};
-                TEST_ASSERT(ppack_pack(&src, p, f, 1) == PPACK_SUCCESS);
+                TEST_ASSERT(ppack_pack(&src, p, 64, f, 1) == PPACK_SUCCESS);
                 test_struct_scaled_t dst = {0};
-                TEST_ASSERT(ppack_unpack(&dst, p, f, 1) == PPACK_SUCCESS);
+                TEST_ASSERT(ppack_unpack(&dst, p, 64, f, 1) == PPACK_SUCCESS);
                 /* UINT32 scaled-unpack goes through uint32_t so float precision
                  * may not represent 4294967295 exactly; check within 1 LSB. */
                 TEST_ASSERT(dst.field_uint32_scaled >= 4.294e9f);
 
                 src.field_uint32_scaled = -1.0f;
-                TEST_ASSERT(ppack_pack(&src, p, f, 1) == PPACK_SUCCESS);
-                TEST_ASSERT(ppack_unpack(&dst, p, f, 1) == PPACK_SUCCESS);
+                TEST_ASSERT(ppack_pack(&src, p, 64, f, 1) == PPACK_SUCCESS);
+                TEST_ASSERT(ppack_unpack(&dst, p, 64, f, 1) == PPACK_SUCCESS);
                 TEST_ASSERT(dst.field_uint32_scaled == 0.0f);
         }
 
@@ -596,14 +596,14 @@ TEST_CASE(test_scaled_saturation)
                      .behaviour = PPACK_BEHAVIOUR_SCALED},
                 };
                 ppack_byte_t p[PPACK_PAYLOAD_UNITS] = {0};
-                TEST_ASSERT(ppack_pack(&src, p, f, 1) == PPACK_SUCCESS);
+                TEST_ASSERT(ppack_pack(&src, p, 64, f, 1) == PPACK_SUCCESS);
                 test_struct_scaled_t dst = {0};
-                TEST_ASSERT(ppack_unpack(&dst, p, f, 1) == PPACK_SUCCESS);
+                TEST_ASSERT(ppack_unpack(&dst, p, 64, f, 1) == PPACK_SUCCESS);
                 TEST_ASSERT(dst.field_int32_scaled >= 2.1474e9f);
 
                 src.field_int32_scaled = -1.0e12f;
-                TEST_ASSERT(ppack_pack(&src, p, f, 1) == PPACK_SUCCESS);
-                TEST_ASSERT(ppack_unpack(&dst, p, f, 1) == PPACK_SUCCESS);
+                TEST_ASSERT(ppack_pack(&src, p, 64, f, 1) == PPACK_SUCCESS);
+                TEST_ASSERT(ppack_unpack(&dst, p, 64, f, 1) == PPACK_SUCCESS);
                 TEST_ASSERT(dst.field_int32_scaled <= -2.1474e9f);
         }
 }
@@ -643,11 +643,11 @@ TEST_CASE(test_f32_special_values)
                 };
 
                 ppack_byte_t payload[PPACK_PAYLOAD_UNITS] = {0};
-                TEST_ASSERT(ppack_pack(&src, payload, fields, 1)
+                TEST_ASSERT(ppack_pack(&src, payload, 64, fields, 1)
                             == PPACK_SUCCESS);
 
                 test_struct_t dst = {0};
-                TEST_ASSERT(ppack_unpack(&dst, payload, fields, 1)
+                TEST_ASSERT(ppack_unpack(&dst, payload, 64, fields, 1)
                             == PPACK_SUCCESS);
 
                 uint32_t out_bits;

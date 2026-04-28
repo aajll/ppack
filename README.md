@@ -7,6 +7,7 @@ A generic payload serialisation library for bit-aligned data fields in C.
 ## Features
 
 - **Bit-aligned fields** - Fields can start at any bit position and span arbitrary bit ranges
+- **Variable payload size** - Caller supplies the payload size in bits (multiple of 8, up to 512); supports CAN classic (64) and CAN-FD (up to 512)
 - **No dynamic memory** - Fixed-size operations, no `malloc` / `free`
 - **Deterministic WCET** - All operations have bounded execution time
 - **Scaled fields** - Linear scale/offset transformations for physical-unit encoding
@@ -99,20 +100,22 @@ int main(void)
         engine_data_t tx = {.rpm = 3000, .temperature = -10, .voltage = 12.5f};
         engine_data_t rx = {0};
 
-        /* Pack structure into 64-bit payload */
-        int ret = ppack_pack(&tx, payload, fields, 3);
+        /* Pack structure into a 64-bit payload (CAN classic). The third
+         * argument is the payload size in bits — pass 128, 256, 512,
+         * etc. for CAN-FD or other larger frames. */
+        int ret = ppack_pack(&tx, payload, 64, fields, 3);
         if (ret != PPACK_SUCCESS) {
                 return ret;
         }
 
         /* Unpack payload back into structure */
-        ret = ppack_unpack(&rx, payload, fields, 3);
+        ret = ppack_unpack(&rx, payload, 64, fields, 3);
 
         return ret;
 }
 ```
 
-`ppack_byte_t[PPACK_PAYLOAD_UNITS]` resolves to `uint8_t[8]` on byte-addressable targets and `uint16_t[4]` on TI C2000. The wire format is identical in both cases.
+`ppack_byte_t[PPACK_PAYLOAD_UNITS]` defaults to a 64-bit payload (`uint8_t[8]` on byte-addressable targets, `uint16_t[4]` on TI C2000) and is intended as a convenience for the common case. For non-default sizes, override `PPACK_PAYLOAD_BITS` at the toolchain level (e.g. `-DPPACK_PAYLOAD_BITS=512`) or size the buffer manually as `ppack_byte_t payload[N / PPACK_ADDR_UNIT_BITS]`. The wire format is identical across MAU sizes.
 
 ## Building
 
@@ -149,19 +152,21 @@ CI gates on 100% line and 100% branch coverage. The library's safety case depend
 ### Pack / Unpack
 
 ```c
-int ppack_pack(const void *base_ptr, void *payload,
+int ppack_pack(const void *base_ptr, void *payload, size_t payload_bits,
                const struct ppack_field *fields, size_t field_count);
 
-int ppack_unpack(void *base_ptr, const void *payload,
+int ppack_unpack(void *base_ptr, const void *payload, size_t payload_bits,
                  const struct ppack_field *fields, size_t field_count);
 ```
+
+`payload_bits` is the payload size in bits. Must be a positive multiple of `PPACK_ADDR_UNIT_BITS` (8 on byte-addressable targets, 16 on TI C2000) and no greater than 512 (CAN-FD frame data field). Common values: `64` for CAN classic, `512` for full CAN-FD frames.
 
 ### Field Descriptor
 
 ```c
 struct ppack_field {
         enum ppack_type      type;        /* Data type */
-        uint16_t             start_bit;   /* Bit position in payload (0-63) */
+        uint16_t             start_bit;   /* Bit position (0..payload_bits-1) */
         uint16_t             bit_length;  /* Number of bits */
         size_t               ptr_offset;  /* offsetof() into base structure */
         float                scale;       /* Scaling factor (default: 1.0) */
@@ -189,21 +194,21 @@ For `PPACK_BEHAVIOUR_SCALED` fields the struct member must always be `float`, re
 | Code | Value | Meaning |
 |---|---|---|
 | `PPACK_SUCCESS` | 0 | Operation succeeded |
-| `PPACK_ERR_INVALARG` | 1 | Invalid argument (NULL fields, zero field count, `bit_length` out of range, scaling requested for `PPACK_TYPE_UINT8`) |
+| `PPACK_ERR_INVALARG` | 1 | Invalid argument (NULL fields, zero field count, `bit_length` out of range, `payload_bits` zero or not a multiple of `PPACK_ADDR_UNIT_BITS` or > 512, scaling requested for `PPACK_TYPE_UINT8`) |
 | `PPACK_ERR_NOTFOUND` | 3 | Unknown field type |
 | `PPACK_ERR_NULLPTR` | 4 | NULL pointer passed for `base_ptr` or `payload` |
-| `PPACK_ERR_OVERFLOW` | 5 | `start_bit + bit_length > 64`, or `scale == 0` on a `SCALED` field |
+| `PPACK_ERR_OVERFLOW` | 5 | `start_bit + bit_length > payload_bits`, or `scale == 0` on a `SCALED` field |
 
 Functions return the negated error code on failure (e.g. `-PPACK_ERR_NULLPTR`). Code `2` is reserved.
 
 ## Wire Format
 
-The payload is 64 bits, addressed as 8 logical bytes numbered 0 to 7.
+The payload is `payload_bits` bits long (a multiple of 8, between 8 and 512), addressed as `payload_bits / 8` logical bytes numbered 0 to `payload_bits / 8 - 1`.
 
 - **Bit numbering**: payload bit `N` lives in logical byte `N / 8`, at position `N mod 8` within that byte.
 - **Within a byte**: bit 0 is the least significant bit.
 - **Multi-byte fields**: little-endian (Intel ordering, equivalent to DBC `byte_order=1`). A field at `start_bit=0`, `bit_length=16` with value `0x1234` produces `0x34` in byte 0 and `0x12` in byte 1.
-- **Cross-platform**: the format is identical on byte-addressable and 16-bit-MAU hosts. Two nodes using ppack interoperate regardless of their addressable-unit size.
+- **Cross-platform**: the format is identical on byte-addressable and 16-bit-MAU hosts. Two nodes using ppack interoperate regardless of their addressable-unit size, provided they agree on `payload_bits`.
 
 `PPACK_TYPE_F32` is a raw 32-bit IEEE-754 bit copy. The wire bytes are the host's `uint32_t` byte order. This is interoperable between any two little-endian hosts (TI C2000, x86_64, ARM Cortex-M, AArch64 in default mode) but NOT between a little-endian and a big-endian host without explicit byte swapping in user code.
 
@@ -276,13 +281,14 @@ All public APIs validate arguments at the function boundary.
 
 - Passing `NULL` for any pointer returns `-PPACK_ERR_NULLPTR`.
 - Passing `NULL` or an empty `fields` array returns `-PPACK_ERR_INVALARG`.
+- A `payload_bits` argument that is zero, not a multiple of `PPACK_ADDR_UNIT_BITS`, or greater than 512 returns `-PPACK_ERR_INVALARG`.
 - A field with `bit_length == 0` or `bit_length > 32` returns `-PPACK_ERR_INVALARG`.
-- A field where `start_bit + bit_length > 64` returns `-PPACK_ERR_OVERFLOW`.
+- A field where `start_bit + bit_length > payload_bits` returns `-PPACK_ERR_OVERFLOW`.
 - A `PPACK_BEHAVIOUR_SCALED` field with `scale == 0.0` returns `-PPACK_ERR_OVERFLOW`.
 - A `PPACK_BEHAVIOUR_SCALED` request on a `PPACK_TYPE_UINT8` field returns `-PPACK_ERR_INVALARG`.
 - An unrecognised field type returns `-PPACK_ERR_NOTFOUND`.
 
-`bit_length` is range-checked against the absolute payload limits (1..32 and 1..64-`start_bit`). It is NOT cross-checked against the natural width of the field's `type`. Declaring a `PPACK_TYPE_UINT16` with `bit_length=24` is accepted by the library; only the low 16 bits are meaningful, with the upper bits zero or sign-extended depending on type. Match `bit_length` to the type's natural width unless you have a specific reason not to.
+`bit_length` is range-checked against the absolute field limit (1..32) and against the runtime payload limit (`bit_length <= payload_bits - start_bit`). It is NOT cross-checked against the natural width of the field's `type`. Declaring a `PPACK_TYPE_UINT16` with `bit_length=24` is accepted by the library; only the low 16 bits are meaningful, with the upper bits zero or sign-extended depending on type. Match `bit_length` to the type's natural width unless you have a specific reason not to.
 
 ## Use Cases
 
@@ -297,8 +303,8 @@ ppack is a serialisation primitive only. The following are explicitly out of sco
 
 - **No integrity checks**: no CRC, checksum, or framing. Caller (or the transport, e.g. the CAN frame CRC) is responsible for detecting bit errors.
 - **No schema versioning**: the field-descriptor layout is the schema. Maintain it in shared headers across nodes.
-- **Fixed 64-bit payload**: matches a CAN classic frame data field. CAN-FD frames up to 64 bytes require multiple ppack calls on chunks.
-- **No multi-buffer / streaming API**: a single payload is always exactly 64 bits.
+- **Payload size capped at 512 bits**: matches a full CAN-FD frame data field. Larger payloads require multiple ppack calls on chunks.
+- **No multi-buffer / streaming API**: a single payload is processed in one call.
 - **No runtime endianness adaptation**: the wire format is little-endian. Big-endian hosts would need explicit byte swapping at the boundary (no such host is currently a target).
 
 ## Notes
@@ -307,7 +313,7 @@ ppack is a serialisation primitive only. The following are explicitly out of sco
 |---|---|
 | **Memory** | All operations use stack memory; no dynamic allocation |
 | **MISRA C:2012 principles** | Designed with MISRA C:2012 principles: no dynamic allocation, no UB shifts, explicit error codes, `memcpy`-based type punning. A deviation record is maintained in the file header of `src/ppack.c` and at each deviation site (search for `MISRA`). Full tool-driven compliance requires running a certified static analyser against the source. |
-| **Payload size** | Fixed 8-byte (64-bit) payload buffer |
+| **Payload size** | Caller-supplied via `payload_bits` (multiple of 8, between 8 and 512). 64 matches CAN classic; 512 matches full CAN-FD. |
 | **Bit ordering** | LSB-first within each byte; multi-byte fields little-endian; fields may span byte boundaries |
 | **Field size** | 1-32 bits per field |
 | **Thread safety** | Not thread-safe; caller must provide mutual exclusion when `base_ptr` or `payload` is shared across threads or ISRs |

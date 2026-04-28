@@ -23,7 +23,7 @@ TEST_CASE(test_invalid_field_type)
              .behaviour = PPACK_BEHAVIOUR_RAW},
         };
 
-        int ret = ppack_pack(&data, payload, fields, 1);
+        int ret = ppack_pack(&data, payload, 64, fields, 1);
         TEST_ASSERT(ret == -PPACK_ERR_NOTFOUND);
 }
 
@@ -42,7 +42,7 @@ TEST_CASE(test_unpack_invalid_field_type)
              .behaviour = PPACK_BEHAVIOUR_RAW},
         };
 
-        int ret = ppack_unpack(&data, payload, fields, 1);
+        int ret = ppack_unpack(&data, payload, 64, fields, 1);
         TEST_ASSERT(ret == -PPACK_ERR_NOTFOUND);
 }
 
@@ -51,7 +51,7 @@ TEST_CASE(test_empty_field_list)
         ppack_byte_t payload[PPACK_PAYLOAD_UNITS] = {0};
         test_struct_t data = {.field_uint16 = 0x1234};
 
-        int ret = ppack_pack(&data, payload, NULL, 0);
+        int ret = ppack_pack(&data, payload, 64, NULL, 0);
         TEST_ASSERT(ret == -PPACK_ERR_INVALARG);
 }
 
@@ -71,7 +71,7 @@ TEST_CASE(test_unpack_zero_field_count)
              .behaviour = PPACK_BEHAVIOUR_RAW},
         };
 
-        int ret = ppack_unpack(&data, payload, fields, 0);
+        int ret = ppack_unpack(&data, payload, 64, fields, 0);
         TEST_ASSERT(ret == -PPACK_ERR_INVALARG);
 }
 
@@ -88,11 +88,11 @@ TEST_CASE(test_small_bit_field)
              .behaviour = PPACK_BEHAVIOUR_RAW},
         };
 
-        int ret = ppack_pack(&data, payload, fields, 1);
+        int ret = ppack_pack(&data, payload, 64, fields, 1);
         TEST_ASSERT(ret == PPACK_SUCCESS);
 
         test_struct_t unpacked = {0};
-        int unpack_ret = ppack_unpack(&unpacked, payload, fields, 1);
+        int unpack_ret = ppack_unpack(&unpacked, payload, 64, fields, 1);
         TEST_ASSERT(unpack_ret == PPACK_SUCCESS);
         TEST_ASSERT(unpacked.field_uint8 == 0x0F);
 }
@@ -110,11 +110,11 @@ TEST_CASE(test_6bit_field)
              .behaviour = PPACK_BEHAVIOUR_RAW},
         };
 
-        int ret = ppack_pack(&data, payload, fields, 1);
+        int ret = ppack_pack(&data, payload, 64, fields, 1);
         TEST_ASSERT(ret == PPACK_SUCCESS);
 
         test_struct_t unpacked = {0};
-        int unpack_ret = ppack_unpack(&unpacked, payload, fields, 1);
+        int unpack_ret = ppack_unpack(&unpacked, payload, 64, fields, 1);
         TEST_ASSERT(unpack_ret == PPACK_SUCCESS);
         TEST_ASSERT(unpacked.field_uint8 == 0x3F);
 }
@@ -140,11 +140,11 @@ TEST_CASE(test_adjacent_bit_fields)
              .behaviour = PPACK_BEHAVIOUR_RAW},
         };
 
-        int ret = ppack_pack(&data, payload, fields, 2);
+        int ret = ppack_pack(&data, payload, 64, fields, 2);
         TEST_ASSERT(ret == PPACK_SUCCESS);
 
         test_struct_t unpacked = {0};
-        int unpack_ret = ppack_unpack(&unpacked, payload, fields, 2);
+        int unpack_ret = ppack_unpack(&unpacked, payload, 64, fields, 2);
         TEST_ASSERT(unpack_ret == PPACK_SUCCESS);
         TEST_ASSERT(unpacked.field_uint8 == 0x55);
         TEST_ASSERT(unpacked.field_bits == 0xAA);
@@ -163,11 +163,11 @@ TEST_CASE(test_negative_int32)
              .behaviour = PPACK_BEHAVIOUR_RAW},
         };
 
-        int ret = ppack_pack(&data, payload, fields, 1);
+        int ret = ppack_pack(&data, payload, 64, fields, 1);
         TEST_ASSERT(ret == PPACK_SUCCESS);
 
         test_struct_t unpacked = {0};
-        int unpack_ret = ppack_unpack(&unpacked, payload, fields, 1);
+        int unpack_ret = ppack_unpack(&unpacked, payload, 64, fields, 1);
         TEST_ASSERT(unpack_ret == PPACK_SUCCESS);
         TEST_ASSERT(unpacked.field_int32 == -1);
 }
@@ -185,11 +185,11 @@ TEST_CASE(test_max_uint16)
              .behaviour = PPACK_BEHAVIOUR_RAW},
         };
 
-        int ret = ppack_pack(&data, payload, fields, 1);
+        int ret = ppack_pack(&data, payload, 64, fields, 1);
         TEST_ASSERT(ret == PPACK_SUCCESS);
 
         test_struct_t unpacked = {0};
-        int unpack_ret = ppack_unpack(&unpacked, payload, fields, 1);
+        int unpack_ret = ppack_unpack(&unpacked, payload, 64, fields, 1);
         TEST_ASSERT(unpack_ret == PPACK_SUCCESS);
         TEST_ASSERT(unpacked.field_uint16 == 0xFFFF);
 }
@@ -207,11 +207,11 @@ TEST_CASE(test_max_int16)
              .behaviour = PPACK_BEHAVIOUR_RAW},
         };
 
-        int ret = ppack_pack(&data, payload, fields, 1);
+        int ret = ppack_pack(&data, payload, 64, fields, 1);
         TEST_ASSERT(ret == PPACK_SUCCESS);
 
         test_struct_t unpacked = {0};
-        int unpack_ret = ppack_unpack(&unpacked, payload, fields, 1);
+        int unpack_ret = ppack_unpack(&unpacked, payload, 64, fields, 1);
         TEST_ASSERT(unpack_ret == PPACK_SUCCESS);
         TEST_ASSERT(unpacked.field_int16 == 32767);
 }
@@ -229,11 +229,11 @@ TEST_CASE(test_min_int16)
              .behaviour = PPACK_BEHAVIOUR_RAW},
         };
 
-        int ret = ppack_pack(&data, payload, fields, 1);
+        int ret = ppack_pack(&data, payload, 64, fields, 1);
         TEST_ASSERT(ret == PPACK_SUCCESS);
 
         test_struct_t unpacked = {0};
-        int unpack_ret = ppack_unpack(&unpacked, payload, fields, 1);
+        int unpack_ret = ppack_unpack(&unpacked, payload, 64, fields, 1);
         TEST_ASSERT(unpack_ret == PPACK_SUCCESS);
         TEST_ASSERT(unpacked.field_int16 == -32768);
 }
@@ -251,11 +251,11 @@ TEST_CASE(test_zero_values)
              .behaviour = PPACK_BEHAVIOUR_RAW},
         };
 
-        int ret = ppack_pack(&data, payload, fields, 1);
+        int ret = ppack_pack(&data, payload, 64, fields, 1);
         TEST_ASSERT(ret == PPACK_SUCCESS);
 
         test_struct_t unpacked = {0};
-        int unpack_ret = ppack_unpack(&unpacked, payload, fields, 1);
+        int unpack_ret = ppack_unpack(&unpacked, payload, 64, fields, 1);
         TEST_ASSERT(unpack_ret == PPACK_SUCCESS);
         TEST_ASSERT(unpacked.field_uint16 == 0);
 }
@@ -273,11 +273,11 @@ TEST_CASE(test_negative_float)
              .behaviour = PPACK_BEHAVIOUR_RAW},
         };
 
-        int ret = ppack_pack(&data, payload, fields, 1);
+        int ret = ppack_pack(&data, payload, 64, fields, 1);
         TEST_ASSERT(ret == PPACK_SUCCESS);
 
         test_struct_t unpacked = {0};
-        int unpack_ret = ppack_unpack(&unpacked, payload, fields, 1);
+        int unpack_ret = ppack_unpack(&unpacked, payload, 64, fields, 1);
         TEST_ASSERT(unpack_ret == PPACK_SUCCESS);
 
         float diff = unpacked.field_f32 - (-3.14159f);
@@ -300,11 +300,11 @@ TEST_CASE(test_float_zero)
              .behaviour = PPACK_BEHAVIOUR_RAW},
         };
 
-        int ret = ppack_pack(&data, payload, fields, 1);
+        int ret = ppack_pack(&data, payload, 64, fields, 1);
         TEST_ASSERT(ret == PPACK_SUCCESS);
 
         test_struct_t unpacked = {0};
-        int unpack_ret = ppack_unpack(&unpacked, payload, fields, 1);
+        int unpack_ret = ppack_unpack(&unpacked, payload, 64, fields, 1);
         TEST_ASSERT(unpack_ret == PPACK_SUCCESS);
         TEST_ASSERT(unpacked.field_f32 == 0.0f);
 }
@@ -322,11 +322,11 @@ TEST_CASE(test_1bit_field)
              .behaviour = PPACK_BEHAVIOUR_RAW},
         };
 
-        int ret = ppack_pack(&data, payload, fields, 1);
+        int ret = ppack_pack(&data, payload, 64, fields, 1);
         TEST_ASSERT(ret == PPACK_SUCCESS);
 
         test_struct_t unpacked = {0};
-        int unpack_ret = ppack_unpack(&unpacked, payload, fields, 1);
+        int unpack_ret = ppack_unpack(&unpacked, payload, 64, fields, 1);
         TEST_ASSERT(unpack_ret == PPACK_SUCCESS);
         TEST_ASSERT(unpacked.field_uint8 == 1);
 }
@@ -344,11 +344,11 @@ TEST_CASE(test_1bit_field_zero)
              .behaviour = PPACK_BEHAVIOUR_RAW},
         };
 
-        int ret = ppack_pack(&data, payload, fields, 1);
+        int ret = ppack_pack(&data, payload, 64, fields, 1);
         TEST_ASSERT(ret == PPACK_SUCCESS);
 
         test_struct_t unpacked = {0};
-        int unpack_ret = ppack_unpack(&unpacked, payload, fields, 1);
+        int unpack_ret = ppack_unpack(&unpacked, payload, 64, fields, 1);
         TEST_ASSERT(unpack_ret == PPACK_SUCCESS);
         TEST_ASSERT(unpacked.field_uint8 == 0);
 }
@@ -372,7 +372,7 @@ TEST_CASE(test_overlapping_fields)
              .behaviour = PPACK_BEHAVIOUR_RAW},
         };
 
-        int ret = ppack_pack(&data, payload, fields, 2);
+        int ret = ppack_pack(&data, payload, 64, fields, 2);
         TEST_ASSERT(ret == PPACK_SUCCESS);
 }
 
@@ -403,7 +403,7 @@ TEST_CASE(test_full_payload)
              .behaviour = PPACK_BEHAVIOUR_RAW},
         };
 
-        int ret = ppack_pack(&data, payload, fields, 3);
+        int ret = ppack_pack(&data, payload, 64, fields, 3);
         TEST_ASSERT(ret == PPACK_SUCCESS);
         TEST_ASSERT(READ_LOGICAL_BYTE(payload, 0) == 0x34);
         TEST_ASSERT(READ_LOGICAL_BYTE(payload, 1) == 0x12);
@@ -415,7 +415,7 @@ TEST_CASE(test_full_payload)
         TEST_ASSERT(READ_LOGICAL_BYTE(payload, 7) == 0x9A);
 
         test_struct_t unpacked = {0};
-        int unpack_ret = ppack_unpack(&unpacked, payload, fields, 3);
+        int unpack_ret = ppack_unpack(&unpacked, payload, 64, fields, 3);
         TEST_ASSERT(unpack_ret == PPACK_SUCCESS);
         TEST_ASSERT(unpacked.field_uint16 == 0x1234);
         TEST_ASSERT(unpacked.field_int16 == 0x5678);

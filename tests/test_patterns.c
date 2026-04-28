@@ -30,11 +30,11 @@ TEST_CASE(test_scaled_int16_negative)
              .behaviour = PPACK_BEHAVIOUR_SCALED},
         };
 
-        int ret = ppack_pack(&data, payload, fields, 1);
+        int ret = ppack_pack(&data, payload, 64, fields, 1);
         TEST_ASSERT(ret == PPACK_SUCCESS);
 
         test_struct_scaled_t unpacked = {0};
-        int unpack_ret = ppack_unpack(&unpacked, payload, fields, 1);
+        int unpack_ret = ppack_unpack(&unpacked, payload, 64, fields, 1);
         TEST_ASSERT(unpack_ret == PPACK_SUCCESS);
 
         float diff = unpacked.field_int16_scaled - (-50.25f);
@@ -60,11 +60,11 @@ TEST_CASE(test_scaled_uint32_large)
              .behaviour = PPACK_BEHAVIOUR_SCALED},
         };
 
-        int ret = ppack_pack(&data, payload, fields, 1);
+        int ret = ppack_pack(&data, payload, 64, fields, 1);
         TEST_ASSERT(ret == PPACK_SUCCESS);
 
         test_struct_scaled_t unpacked = {0};
-        int unpack_ret = ppack_unpack(&unpacked, payload, fields, 1);
+        int unpack_ret = ppack_unpack(&unpacked, payload, 64, fields, 1);
         TEST_ASSERT(unpack_ret == PPACK_SUCCESS);
 
         float diff = unpacked.field_uint32_scaled - 42949.0f;
@@ -91,11 +91,11 @@ TEST_CASE(test_scaled_int32_boundary)
              .behaviour = PPACK_BEHAVIOUR_SCALED},
         };
 
-        int ret = ppack_pack(&data, payload, fields, 1);
+        int ret = ppack_pack(&data, payload, 64, fields, 1);
         TEST_ASSERT(ret == PPACK_SUCCESS);
 
         test_struct_scaled_t unpacked = {0};
-        int unpack_ret = ppack_unpack(&unpacked, payload, fields, 1);
+        int unpack_ret = ppack_unpack(&unpacked, payload, 64, fields, 1);
         TEST_ASSERT(unpack_ret == PPACK_SUCCESS);
 
         float diff = unpacked.field_int32_scaled - (-214700000.0f);
@@ -131,11 +131,11 @@ TEST_CASE(test_sign_ext_min_negative)
                      .behaviour = PPACK_BEHAVIOUR_RAW},
                 };
 
-                int ret = ppack_pack(&data, payload, fields, 1);
+                int ret = ppack_pack(&data, payload, 64, fields, 1);
                 TEST_ASSERT(ret == PPACK_SUCCESS);
 
                 test_struct_t unpacked = {0};
-                int unpack_ret = ppack_unpack(&unpacked, payload, fields, 1);
+                int unpack_ret = ppack_unpack(&unpacked, payload, 64, fields, 1);
                 TEST_ASSERT(unpack_ret == PPACK_SUCCESS);
                 TEST_ASSERT(unpacked.field_int16 == min_val);
         }
@@ -157,11 +157,11 @@ TEST_CASE(test_sign_ext_max_positive)
                      .behaviour = PPACK_BEHAVIOUR_RAW},
                 };
 
-                int ret = ppack_pack(&data, payload, fields, 1);
+                int ret = ppack_pack(&data, payload, 64, fields, 1);
                 TEST_ASSERT(ret == PPACK_SUCCESS);
 
                 test_struct_t unpacked = {0};
-                int unpack_ret = ppack_unpack(&unpacked, payload, fields, 1);
+                int unpack_ret = ppack_unpack(&unpacked, payload, 64, fields, 1);
                 TEST_ASSERT(unpack_ret == PPACK_SUCCESS);
                 TEST_ASSERT(unpacked.field_int16 == max_val);
         }
@@ -191,11 +191,11 @@ TEST_CASE(test_sign_ext_int32_boundary)
                      .behaviour = PPACK_BEHAVIOUR_RAW},
                 };
 
-                int ret = ppack_pack(&data, payload, fields, 1);
+                int ret = ppack_pack(&data, payload, 64, fields, 1);
                 TEST_ASSERT(ret == PPACK_SUCCESS);
 
                 test_struct_t unpacked = {0};
-                int unpack_ret = ppack_unpack(&unpacked, payload, fields, 1);
+                int unpack_ret = ppack_unpack(&unpacked, payload, 64, fields, 1);
                 TEST_ASSERT(unpack_ret == PPACK_SUCCESS);
                 TEST_ASSERT(unpacked.field_int32 == min_val);
         }
@@ -215,7 +215,7 @@ TEST_CASE(test_payload_all_zeros)
             .behaviour = PPACK_BEHAVIOUR_RAW,
         };
         test_struct_t unpacked = {0};
-        TEST_ASSERT(ppack_unpack(&unpacked, zero_payload, &f1, 1)
+        TEST_ASSERT(ppack_unpack(&unpacked, zero_payload, 64, &f1, 1)
                     == PPACK_SUCCESS);
         TEST_ASSERT(unpacked.field_uint16 == 0);
 
@@ -229,7 +229,7 @@ TEST_CASE(test_payload_all_zeros)
         };
         unpacked.field_int32 = -1;
         ppack_byte_t payload[PPACK_PAYLOAD_UNITS] = {0};
-        TEST_ASSERT(ppack_pack(&unpacked, payload, &f2, 1) == PPACK_SUCCESS);
+        TEST_ASSERT(ppack_pack(&unpacked, payload, 64, &f2, 1) == PPACK_SUCCESS);
         /* All bits should be 1 in the INT32 field, 0 elsewhere */
         for (uint16_t i = 0; i < 32; ++i) {
                 ASSERT_PAYLOAD_BIT(payload, 32 + i, 1);
@@ -255,7 +255,7 @@ TEST_CASE(test_payload_all_ones)
             .ptr_offset = offsetof(test_struct_t, field_uint32),
             .behaviour = PPACK_BEHAVIOUR_RAW,
         };
-        TEST_ASSERT(ppack_unpack(&unpacked, ones_payload, &f1, 1)
+        TEST_ASSERT(ppack_unpack(&unpacked, ones_payload, 64, &f1, 1)
                     == PPACK_SUCCESS);
         TEST_ASSERT(unpacked.field_uint32 == 0xFFFFFFFF);
 
@@ -267,7 +267,7 @@ TEST_CASE(test_payload_all_ones)
             .behaviour = PPACK_BEHAVIOUR_RAW,
         };
         unpacked.field_int32 = 0;
-        TEST_ASSERT(ppack_unpack(&unpacked, ones_payload, &f2, 1)
+        TEST_ASSERT(ppack_unpack(&unpacked, ones_payload, 64, &f2, 1)
                     == PPACK_SUCCESS);
         TEST_ASSERT(unpacked.field_int32 == -1);
 }
@@ -287,7 +287,7 @@ TEST_CASE(test_single_bit_bits_type)
                      .behaviour = PPACK_BEHAVIOUR_RAW},
                 };
 
-                int ret = ppack_pack(&data, payload, fields, 1);
+                int ret = ppack_pack(&data, payload, 64, fields, 1);
                 TEST_ASSERT(ret == PPACK_SUCCESS);
 
                 /* Verify only bit_pos is set */
@@ -299,7 +299,7 @@ TEST_CASE(test_single_bit_bits_type)
                 }
 
                 test_struct_t unpacked = {0};
-                int unpack_ret = ppack_unpack(&unpacked, payload, fields, 1);
+                int unpack_ret = ppack_unpack(&unpacked, payload, 64, fields, 1);
                 TEST_ASSERT(unpack_ret == PPACK_SUCCESS);
                 TEST_ASSERT(unpacked.field_bits == 1u);
         }

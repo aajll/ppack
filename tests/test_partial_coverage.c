@@ -42,7 +42,7 @@ TEST_CASE(test_unpack_member_not_targeted_survives)
             .field_b = 0xDEADBEEFu,                  /* sentinel value    */
         };
 
-        int ret = ppack_pack(&src, payload, fields, 1);
+        int ret = ppack_pack(&src, payload, 64, fields, 1);
         TEST_ASSERT(ret == PPACK_SUCCESS);
 
         test_no_cover_t dst = {
@@ -50,7 +50,7 @@ TEST_CASE(test_unpack_member_not_targeted_survives)
             .field_b = 0xBEEFCAFEu, /* Must survive unpack unchanged       */
         };
 
-        int unpack_ret = ppack_unpack(&dst, payload, fields, 1);
+        int unpack_ret = ppack_unpack(&dst, payload, 64, fields, 1);
         TEST_ASSERT(unpack_ret == PPACK_SUCCESS);
 
         /* field_a: lower 16 bits contain sign-extended decoded value.
@@ -89,13 +89,13 @@ TEST_CASE(test_unpack_int16_into_uint32_upper_bytes_survive)
             .field_u32 = (uint32_t)(uint16_t)src_val,
         };
 
-        int ret = ppack_pack(&src, payload, fields, 1);
+        int ret = ppack_pack(&src, payload, 64, fields, 1);
         TEST_ASSERT(ret == PPACK_SUCCESS);
 
         /* Pre-fill with known value: upper 16 bits = 0xBEEF, lower = 0xCAFE */
         test_int16_into_u32_t dst = {.field_u32 = 0xBEEFCAFEu};
 
-        int unpack_ret = ppack_unpack(&dst, payload, fields, 1);
+        int unpack_ret = ppack_unpack(&dst, payload, 64, fields, 1);
         TEST_ASSERT(unpack_ret == PPACK_SUCCESS);
 
         /* INT16 unpack writes sizeof(int16_t) == 2 bytes at offset+0.
@@ -143,13 +143,13 @@ TEST_CASE(test_unpack_uint8_into_uint16_upper_byte_survives_native)
             .field_u16 = (uint16_t)src_val,
         };
 
-        int ret = ppack_pack(&src, payload, fields, 1);
+        int ret = ppack_pack(&src, payload, 64, fields, 1);
         TEST_ASSERT(ret == PPACK_SUCCESS);
 
         /* Pre-fill: upper byte = 0xDE, lower byte = 0xAD */
         test_u8_into_u16_t dst = {.field_u16 = 0xDEADu};
 
-        int unpack_ret = ppack_unpack(&dst, payload, fields, 1);
+        int unpack_ret = ppack_unpack(&dst, payload, 64, fields, 1);
         TEST_ASSERT(unpack_ret == PPACK_SUCCESS);
 
         /* On native (8-bit MAU), UINT8 unpack writes sizeof(ppack_u8_t) == 1
@@ -196,12 +196,12 @@ TEST_CASE(test_unpack_uint32_overwrites_all_bytes)
             .field_u32 = src_val,
         };
 
-        int ret = ppack_pack(&src, payload, fields, 1);
+        int ret = ppack_pack(&src, payload, 64, fields, 1);
         TEST_ASSERT(ret == PPACK_SUCCESS);
 
         test_u32_full_cover_t dst = {.field_u32 = 0xDEADBEEFu};
 
-        int unpack_ret = ppack_unpack(&dst, payload, fields, 1);
+        int unpack_ret = ppack_unpack(&dst, payload, 64, fields, 1);
         TEST_ASSERT(unpack_ret == PPACK_SUCCESS);
 
         /* UINT32 unpack writes sizeof(uint32_t) == 4 bytes. Full overwrite */
@@ -235,13 +235,13 @@ TEST_CASE(test_unpack_uint16_narrow_still_writes_full_type)
             .field_u32 = (uint32_t)src_val,
         };
 
-        int ret = ppack_pack(&src, payload, fields, 1);
+        int ret = ppack_pack(&src, payload, 64, fields, 1);
         TEST_ASSERT(ret == PPACK_SUCCESS);
 
         /* Pre-fill: upper 16 bits = 0xBEEF, lower 16 bits = 0xCAFE */
         test_narrow_bitlen_t dst = {.field_u32 = 0xBEEFCAFEu};
 
-        int unpack_ret = ppack_unpack(&dst, payload, fields, 1);
+        int unpack_ret = ppack_unpack(&dst, payload, 64, fields, 1);
         TEST_ASSERT(unpack_ret == PPACK_SUCCESS);
 
         /* UINT16 unpack writes sizeof(uint16_t) == 2 bytes at offset+0.

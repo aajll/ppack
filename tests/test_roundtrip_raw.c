@@ -22,13 +22,13 @@ TEST_CASE(test_pack_unpack_uint16)
              .behaviour = PPACK_BEHAVIOUR_RAW},
         };
 
-        int ret = ppack_pack(&data, payload, fields, 1);
+        int ret = ppack_pack(&data, payload, 64, fields, 1);
         TEST_ASSERT(ret == PPACK_SUCCESS);
         TEST_ASSERT(READ_LOGICAL_BYTE(payload, 0) == 0x34);
         TEST_ASSERT(READ_LOGICAL_BYTE(payload, 1) == 0x12);
 
         test_struct_t unpacked = {0};
-        int unpack_ret = ppack_unpack(&unpacked, payload, fields, 1);
+        int unpack_ret = ppack_unpack(&unpacked, payload, 64, fields, 1);
         TEST_ASSERT(unpack_ret == PPACK_SUCCESS);
         TEST_ASSERT(unpacked.field_uint16 == 0x1234);
 }
@@ -46,11 +46,11 @@ TEST_CASE(test_pack_unpack_int16)
              .behaviour = PPACK_BEHAVIOUR_RAW},
         };
 
-        int ret = ppack_pack(&data, payload, fields, 1);
+        int ret = ppack_pack(&data, payload, 64, fields, 1);
         TEST_ASSERT(ret == PPACK_SUCCESS);
 
         test_struct_t unpacked = {0};
-        int unpack_ret = ppack_unpack(&unpacked, payload, fields, 1);
+        int unpack_ret = ppack_unpack(&unpacked, payload, 64, fields, 1);
         TEST_ASSERT(unpack_ret == PPACK_SUCCESS);
         TEST_ASSERT(unpacked.field_int16 == -1234);
 }
@@ -68,11 +68,11 @@ TEST_CASE(test_pack_unpack_uint32)
              .behaviour = PPACK_BEHAVIOUR_RAW},
         };
 
-        int ret = ppack_pack(&data, payload, fields, 1);
+        int ret = ppack_pack(&data, payload, 64, fields, 1);
         TEST_ASSERT(ret == PPACK_SUCCESS);
 
         test_struct_t unpacked = {0};
-        int unpack_ret = ppack_unpack(&unpacked, payload, fields, 1);
+        int unpack_ret = ppack_unpack(&unpacked, payload, 64, fields, 1);
         TEST_ASSERT(unpack_ret == PPACK_SUCCESS);
         TEST_ASSERT(unpacked.field_uint32 == 0x12345678);
 }
@@ -90,11 +90,11 @@ TEST_CASE(test_pack_unpack_int32)
              .behaviour = PPACK_BEHAVIOUR_RAW},
         };
 
-        int ret = ppack_pack(&data, payload, fields, 1);
+        int ret = ppack_pack(&data, payload, 64, fields, 1);
         TEST_ASSERT(ret == PPACK_SUCCESS);
 
         test_struct_t unpacked = {0};
-        int unpack_ret = ppack_unpack(&unpacked, payload, fields, 1);
+        int unpack_ret = ppack_unpack(&unpacked, payload, 64, fields, 1);
         TEST_ASSERT(unpack_ret == PPACK_SUCCESS);
         TEST_ASSERT(unpacked.field_int32 == -12345678);
 }
@@ -112,11 +112,11 @@ TEST_CASE(test_pack_unpack_f32)
              .behaviour = PPACK_BEHAVIOUR_RAW},
         };
 
-        int ret = ppack_pack(&data, payload, fields, 1);
+        int ret = ppack_pack(&data, payload, 64, fields, 1);
         TEST_ASSERT(ret == PPACK_SUCCESS);
 
         test_struct_t unpacked = {0};
-        int unpack_ret = ppack_unpack(&unpacked, payload, fields, 1);
+        int unpack_ret = ppack_unpack(&unpacked, payload, 64, fields, 1);
         TEST_ASSERT(unpack_ret == PPACK_SUCCESS);
 
         float diff = unpacked.field_f32 - data.field_f32;
@@ -139,11 +139,11 @@ TEST_CASE(test_pack_unpack_uint8)
              .behaviour = PPACK_BEHAVIOUR_RAW},
         };
 
-        int ret = ppack_pack(&data, payload, fields, 1);
+        int ret = ppack_pack(&data, payload, 64, fields, 1);
         TEST_ASSERT(ret == PPACK_SUCCESS);
 
         test_struct_t unpacked = {0};
-        int unpack_ret = ppack_unpack(&unpacked, payload, fields, 1);
+        int unpack_ret = ppack_unpack(&unpacked, payload, 64, fields, 1);
         TEST_ASSERT(unpack_ret == PPACK_SUCCESS);
         TEST_ASSERT(unpacked.field_uint8 == 0xAB);
 }
@@ -161,11 +161,11 @@ TEST_CASE(test_pack_unpack_bits)
              .behaviour = PPACK_BEHAVIOUR_RAW},
         };
 
-        int ret = ppack_pack(&data, payload, fields, 1);
+        int ret = ppack_pack(&data, payload, 64, fields, 1);
         TEST_ASSERT(ret == PPACK_SUCCESS);
 
         test_struct_t unpacked = {0};
-        int unpack_ret = ppack_unpack(&unpacked, payload, fields, 1);
+        int unpack_ret = ppack_unpack(&unpacked, payload, 64, fields, 1);
         TEST_ASSERT(unpack_ret == PPACK_SUCCESS);
         TEST_ASSERT(unpacked.field_bits == 0xDEADBEEF);
 }

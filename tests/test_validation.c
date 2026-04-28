@@ -23,7 +23,7 @@ TEST_CASE(test_pack_overflow_start_plus_len)
              .behaviour = PPACK_BEHAVIOUR_RAW},
         };
 
-        int ret = ppack_pack(&data, payload, fields, 1);
+        int ret = ppack_pack(&data, payload, 64, fields, 1);
         TEST_ASSERT(ret == -PPACK_ERR_OVERFLOW);
 }
 
@@ -40,7 +40,7 @@ TEST_CASE(test_unpack_overflow_start_plus_len)
              .behaviour = PPACK_BEHAVIOUR_RAW},
         };
 
-        int ret = ppack_unpack(&data, payload, fields, 1);
+        int ret = ppack_unpack(&data, payload, 64, fields, 1);
         TEST_ASSERT(ret == -PPACK_ERR_OVERFLOW);
 }
 
@@ -58,7 +58,7 @@ TEST_CASE(test_pack_exact_boundary_passes)
              .behaviour = PPACK_BEHAVIOUR_RAW},
         };
 
-        int ret = ppack_pack(&data, payload, fields, 1);
+        int ret = ppack_pack(&data, payload, 64, fields, 1);
         TEST_ASSERT(ret == PPACK_SUCCESS);
         TEST_ASSERT(READ_LOGICAL_BYTE(payload, 6) == 0xCD);
         TEST_ASSERT(READ_LOGICAL_BYTE(payload, 7) == 0xAB);
@@ -77,7 +77,7 @@ TEST_CASE(test_pack_bit_length_zero_rejected)
              .behaviour = PPACK_BEHAVIOUR_RAW},
         };
 
-        int ret = ppack_pack(&data, payload, fields, 1);
+        int ret = ppack_pack(&data, payload, 64, fields, 1);
         TEST_ASSERT(ret == -PPACK_ERR_INVALARG);
 }
 
@@ -95,7 +95,7 @@ TEST_CASE(test_pack_bit_length_33_rejected)
              .behaviour = PPACK_BEHAVIOUR_RAW},
         };
 
-        int ret = ppack_pack(&data, payload, fields, 1);
+        int ret = ppack_pack(&data, payload, 64, fields, 1);
         TEST_ASSERT(ret == -PPACK_ERR_INVALARG);
 }
 

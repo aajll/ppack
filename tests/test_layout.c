@@ -22,13 +22,13 @@ TEST_CASE(test_pack_unpack_uint16_offset)
              .behaviour = PPACK_BEHAVIOUR_RAW},
         };
 
-        int ret = ppack_pack(&data, payload, fields, 1);
+        int ret = ppack_pack(&data, payload, 64, fields, 1);
         TEST_ASSERT(ret == PPACK_SUCCESS);
         TEST_ASSERT(READ_LOGICAL_BYTE(payload, 2) == 0x34);
         TEST_ASSERT(READ_LOGICAL_BYTE(payload, 3) == 0x12);
 
         test_struct_t unpacked = {0};
-        int unpack_ret = ppack_unpack(&unpacked, payload, fields, 1);
+        int unpack_ret = ppack_unpack(&unpacked, payload, 64, fields, 1);
         TEST_ASSERT(unpack_ret == PPACK_SUCCESS);
         TEST_ASSERT(unpacked.field_uint16 == 0x1234);
 }
@@ -46,11 +46,11 @@ TEST_CASE(test_pack_unpack_spanning_boundary)
              .behaviour = PPACK_BEHAVIOUR_RAW},
         };
 
-        int ret = ppack_pack(&data, payload, fields, 1);
+        int ret = ppack_pack(&data, payload, 64, fields, 1);
         TEST_ASSERT(ret == PPACK_SUCCESS);
 
         test_struct_t unpacked = {0};
-        int unpack_ret = ppack_unpack(&unpacked, payload, fields, 1);
+        int unpack_ret = ppack_unpack(&unpacked, payload, 64, fields, 1);
         TEST_ASSERT(unpack_ret == PPACK_SUCCESS);
         TEST_ASSERT(unpacked.field_uint32 == 0x12345678);
 }
@@ -82,7 +82,7 @@ TEST_CASE(test_pack_multiple_fields)
              .behaviour = PPACK_BEHAVIOUR_RAW},
         };
 
-        int ret = ppack_pack(&data, payload, fields, 3);
+        int ret = ppack_pack(&data, payload, 64, fields, 3);
         TEST_ASSERT(ret == PPACK_SUCCESS);
         TEST_ASSERT(READ_LOGICAL_BYTE(payload, 0) == 0x34);
         TEST_ASSERT(READ_LOGICAL_BYTE(payload, 1) == 0x12);
@@ -90,7 +90,7 @@ TEST_CASE(test_pack_multiple_fields)
         TEST_ASSERT(READ_LOGICAL_BYTE(payload, 3) == 0xe9);
 
         test_struct_t unpacked = {0};
-        int unpack_ret = ppack_unpack(&unpacked, payload, fields, 3);
+        int unpack_ret = ppack_unpack(&unpacked, payload, 64, fields, 3);
         TEST_ASSERT(unpack_ret == PPACK_SUCCESS);
         TEST_ASSERT(unpacked.field_uint16 == 0x1234);
         TEST_ASSERT(unpacked.field_int16 == -5678);

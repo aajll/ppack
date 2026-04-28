@@ -27,8 +27,6 @@ extern "C" {
  * ppack_byte_t and PPACK_PAYLOAD_UNITS for portable buffer declarations
  * without needing a separate include.
  */
-_Static_assert((PPACK_PAYLOAD_UNITS) * (PPACK_ADDR_UNIT_BITS) == 64u,
-               "ppack payload must be exactly 64 bits");
 
 /**
  * @defgroup ppack_api Ppack Library
@@ -37,10 +35,15 @@ _Static_assert((PPACK_PAYLOAD_UNITS) * (PPACK_ADDR_UNIT_BITS) == 64u,
  *
  * @details
  *    The ppack library serialises and deserialises C structures into a
- *    fixed 64-bit (8 logical-byte) payload using arbitrary bit-aligned
- *    field descriptors. It supports @c uint8_t, @c uint16_t, @c int16_t,
- *    @c uint32_t, @c int32_t, IEEE-754 @c float, and raw bitfields up to
- *    32 bits wide.
+ *    variable-size payload (any multiple of 8 bits, up to 512 bits)
+ *    using arbitrary bit-aligned field descriptors. It supports
+ *    @c uint8_t, @c uint16_t, @c int16_t, @c uint32_t, @c int32_t,
+ *    IEEE-754 @c float, and raw bitfields up to 32 bits wide. The
+ *    512-bit ceiling matches the maximum CAN-FD frame data field.
+ *
+ *    The payload size is supplied at the call site via the
+ *    @c payload_bits argument; classic 8-byte CAN payloads use
+ *    @c payload_bits=64, CAN-FD frames may use up to 512.
  *
  *    The @c base_ptr parameter for pack/unpack operations should point
  *    to the structure that the @c ptr_offset members refer to. The
@@ -51,9 +54,10 @@ _Static_assert((PPACK_PAYLOAD_UNITS) * (PPACK_ADDR_UNIT_BITS) == 64u,
  *
  *    ## Wire format
  *
- *    The payload is treated as 64 bits numbered 0..63. Bit @c N maps to
- *    bit @c (N mod 8) of logical byte @c (N / 8), where logical byte 0
- *    is the first byte on the wire.
+ *    The payload is treated as N bits numbered 0..N-1, where N is the
+ *    @c payload_bits argument. Bit @c K maps to bit @c (K mod 8) of
+ *    logical byte @c (K / 8), where logical byte 0 is the first byte
+ *    on the wire.
  *
  *    Within each logical byte, bit 0 is the least significant bit.
  *    Multi-byte fields are little-endian (Intel ordering, equivalent
@@ -68,10 +72,12 @@ _Static_assert((PPACK_PAYLOAD_UNITS) * (PPACK_ADDR_UNIT_BITS) == 64u,
  *    in user code.
  *
  *    The payload buffer model is portable across MAU sizes: declare it
- *    as @c ppack_byte_t @c payload[PPACK_PAYLOAD_UNITS]. On byte-
- *    addressable targets this is @c uint8_t[8]; on TI C2000 it is
- *    @c uint16_t[4]. Both produce the same logical byte sequence on
- *    the wire.
+ *    as @c ppack_byte_t @c payload[PPACK_PAYLOAD_UNITS]. The
+ *    @c PPACK_PAYLOAD_UNITS macro defaults to a 64-bit payload (8 bytes
+ *    or 4 16-bit words); override @c PPACK_PAYLOAD_BITS at the
+ *    toolchain level for non-default sizes (e.g.
+ *    @c -DPPACK_PAYLOAD_BITS=512). The runtime API takes the size
+ *    explicitly and is independent of this macro.
  *
  *    ## Scaled-field semantics
  *
@@ -141,7 +147,7 @@ _Static_assert((PPACK_PAYLOAD_UNITS) * (PPACK_ADDR_UNIT_BITS) == 64u,
 /** @brief Null pointer detected */
 #define PPACK_ERR_NULLPTR  4
 
-/** @brief Field descriptor overflows the 64-bit payload boundary */
+/** @brief Field descriptor overflows the payload boundary */
 #define PPACK_ERR_OVERFLOW 5
 
 /* ================ STRUCTURES ============================================== */
@@ -184,8 +190,8 @@ enum ppack_behaviour {
  * @note  Set @c bit_length to match the natural width of the @c type
  *        for predictable behaviour. Values larger than the type's
  *        natural width are accepted (the validation only enforces
- *        @c bit_length <= 32 and @c start_bit + bit_length <= 64) but
- *        only the low bits of the source are meaningful, so the
+ *        @c bit_length <= 32 and @c start_bit + bit_length <= payload_bits)
+ *        but only the low bits of the source are meaningful, so the
  *        upper wire bits will be zero or sign-extended.
  *
  * @note  @c PPACK_TYPE_F32 always uses raw bit-copy semantics; @c behaviour
@@ -198,7 +204,7 @@ enum ppack_behaviour {
  */
 struct ppack_field {
         enum ppack_type type; /**< Data type of the field */
-        uint16_t start_bit;   /**< Starting bit position in payload (0-63) */
+        uint16_t start_bit;   /**< Starting bit position (0..payload_bits-1) */
         uint16_t bit_length;  /**< Number of bits (1-32) */
         size_t ptr_offset;    /**< Offset returned by offsetof() into base */
         float scale;          /**< Scaling factor (ignored for F32 / BITS) */
@@ -218,25 +224,34 @@ struct ppack_field {
 /**
  * @brief Pack a payload from given fields into a buffer.
  *
- * Writes a 64-bit payload to @c payload by reading each field's source
- * value from the @c base_ptr structure, applying any scaling, and
- * placing the bits at the field's @c start_bit. Bits outside the
- * union of the field ranges are cleared to zero.
+ * Writes a payload of @c payload_bits bits to @c payload by reading
+ * each field's source value from the @c base_ptr structure, applying
+ * any scaling, and placing the bits at the field's @c start_bit. Bits
+ * outside the union of the field ranges are cleared to zero.
  *
- * @param[in]  base_ptr    Pointer to source structure
- * @param[out] payload     Destination buffer of exactly 64 bits.
- *                         Declare as @c ppack_byte_t @c [PPACK_PAYLOAD_UNITS]
- *                         for portability across MAU sizes.
- * @param[in]  fields      Array of field descriptors
- * @param[in]  field_count Number of fields
+ * @param[in]  base_ptr     Pointer to source structure
+ * @param[out] payload      Destination buffer of exactly @c payload_bits
+ *                          bits. Declare as @c ppack_byte_t
+ *                          @c [PPACK_PAYLOAD_UNITS] for the default
+ *                          64-bit payload, or size manually as
+ *                          @c [payload_bits / PPACK_ADDR_UNIT_BITS]
+ *                          for non-default sizes.
+ * @param[in]  payload_bits Payload size in bits. Must be a positive
+ *                          multiple of @c PPACK_ADDR_UNIT_BITS and no
+ *                          greater than 512 (CAN-FD frame data field).
+ * @param[in]  fields       Array of field descriptors
+ * @param[in]  field_count  Number of fields
  *
  * @return PPACK_SUCCESS on success
  * @return -PPACK_ERR_NULLPTR   if @c base_ptr or @c payload is NULL
  * @return -PPACK_ERR_INVALARG  if @c field_count is 0, @c fields is NULL,
- *                               @c bit_length is 0 or > 32, or scaling is
+ *                               @c payload_bits is 0, not a multiple of
+ *                               @c PPACK_ADDR_UNIT_BITS, or > 512;
+ *                               @c bit_length is 0 or > 32; or scaling is
  *                               requested for @c PPACK_TYPE_UINT8
- * @return -PPACK_ERR_OVERFLOW  if @c start_bit + bit_length exceeds 64,
- *                               or @c scale is 0.0 on a SCALED field
+ * @return -PPACK_ERR_OVERFLOW  if @c start_bit + bit_length exceeds
+ *                               @c payload_bits, or @c scale is 0.0 on a
+ *                               SCALED field
  * @return -PPACK_ERR_NOTFOUND  if an unknown field type is encountered
  *
  * @note  Not thread-safe. Callers sharing @c base_ptr or @c payload
@@ -246,36 +261,45 @@ struct ppack_field {
  *        type's representable range. See "Scaled-field semantics" in
  *        the file-level docs.
  */
-int ppack_pack(const void *base_ptr, void *payload,
+int ppack_pack(const void *base_ptr, void *payload, size_t payload_bits,
                const struct ppack_field *fields, size_t field_count);
 
 /**
  * @brief Unpack a payload from a buffer into specified field locations.
  *
- * Reads a 64-bit payload from @c payload and writes each field's
- * decoded value to the corresponding offset within the @c base_ptr
- * structure. Existing bytes of struct members not covered by any
- * field are left untouched.
+ * Reads a payload of @c payload_bits bits from @c payload and writes
+ * each field's decoded value to the corresponding offset within the
+ * @c base_ptr structure. Existing bytes of struct members not covered
+ * by any field are left untouched.
  *
- * @param[out] base_ptr    Pointer to destination structure
- * @param[in]  payload     Source buffer of exactly 64 bits.
- *                         Declare as @c ppack_byte_t @c [PPACK_PAYLOAD_UNITS]
- *                         for portability across MAU sizes.
- * @param[in]  fields      Array of field descriptors
- * @param[in]  field_count Number of fields
+ * @param[out] base_ptr     Pointer to destination structure
+ * @param[in]  payload      Source buffer of exactly @c payload_bits
+ *                          bits. Declare as @c ppack_byte_t
+ *                          @c [PPACK_PAYLOAD_UNITS] for the default
+ *                          64-bit payload, or size manually as
+ *                          @c [payload_bits / PPACK_ADDR_UNIT_BITS]
+ *                          for non-default sizes.
+ * @param[in]  payload_bits Payload size in bits. Must be a positive
+ *                          multiple of @c PPACK_ADDR_UNIT_BITS and no
+ *                          greater than 512.
+ * @param[in]  fields       Array of field descriptors
+ * @param[in]  field_count  Number of fields
  *
  * @return PPACK_SUCCESS on success
  * @return -PPACK_ERR_NULLPTR   if @c base_ptr or @c payload is NULL
  * @return -PPACK_ERR_INVALARG  if @c field_count is 0, @c fields is NULL,
- *                               @c bit_length is 0 or > 32, or scaling is
+ *                               @c payload_bits is 0, not a multiple of
+ *                               @c PPACK_ADDR_UNIT_BITS, or > 512;
+ *                               @c bit_length is 0 or > 32; or scaling is
  *                               requested for @c PPACK_TYPE_UINT8
- * @return -PPACK_ERR_OVERFLOW  if @c start_bit + bit_length exceeds 64
+ * @return -PPACK_ERR_OVERFLOW  if @c start_bit + bit_length exceeds
+ *                               @c payload_bits
  * @return -PPACK_ERR_NOTFOUND  if an unknown field type is encountered
  *
  * @note  Not thread-safe. Callers sharing @c base_ptr or @c payload
  *        across threads or ISRs must provide their own mutual exclusion.
  */
-int ppack_unpack(void *base_ptr, const void *payload,
+int ppack_unpack(void *base_ptr, const void *payload, size_t payload_bits,
                  const struct ppack_field *fields, size_t field_count);
 
 /** @} */

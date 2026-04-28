@@ -25,11 +25,11 @@ TEST_CASE(test_pack_scaled_uint16)
         };
 
         test_struct_scaled_t data = {.field_uint16_scaled = input_val};
-        int ret = ppack_pack(&data, payload, fields, 1);
+        int ret = ppack_pack(&data, payload, 64, fields, 1);
         TEST_ASSERT(ret == PPACK_SUCCESS);
 
         test_struct_scaled_t unpacked = {0};
-        int unpack_ret = ppack_unpack(&unpacked, payload, fields, 1);
+        int unpack_ret = ppack_unpack(&unpacked, payload, 64, fields, 1);
         TEST_ASSERT(unpack_ret == PPACK_SUCCESS);
 
         float diff = unpacked.field_uint16_scaled - 123.45f;
@@ -55,11 +55,11 @@ TEST_CASE(test_pack_scaled_int16_with_offset)
         };
 
         test_struct_scaled_t data = {.field_int16_scaled = input_val};
-        int ret = ppack_pack(&data, payload, fields, 1);
+        int ret = ppack_pack(&data, payload, 64, fields, 1);
         TEST_ASSERT(ret == PPACK_SUCCESS);
 
         test_struct_scaled_t unpacked = {0};
-        int unpack_ret = ppack_unpack(&unpacked, payload, fields, 1);
+        int unpack_ret = ppack_unpack(&unpacked, payload, 64, fields, 1);
         TEST_ASSERT(unpack_ret == PPACK_SUCCESS);
 
         float diff = unpacked.field_int16_scaled - (-25.5f);
@@ -85,11 +85,11 @@ TEST_CASE(test_pack_scaled_uint32)
         };
 
         test_struct_scaled_t data = {.field_uint32_scaled = input_val};
-        int ret = ppack_pack(&data, payload, fields, 1);
+        int ret = ppack_pack(&data, payload, 64, fields, 1);
         TEST_ASSERT(ret == PPACK_SUCCESS);
 
         test_struct_scaled_t unpacked = {0};
-        int unpack_ret = ppack_unpack(&unpacked, payload, fields, 1);
+        int unpack_ret = ppack_unpack(&unpacked, payload, 64, fields, 1);
         TEST_ASSERT(unpack_ret == PPACK_SUCCESS);
 
         float diff = unpacked.field_uint32_scaled - 12345.678f;
@@ -115,11 +115,11 @@ TEST_CASE(test_pack_scaled_int32)
         };
 
         test_struct_scaled_t data = {.field_int32_scaled = input_val};
-        int ret = ppack_pack(&data, payload, fields, 1);
+        int ret = ppack_pack(&data, payload, 64, fields, 1);
         TEST_ASSERT(ret == PPACK_SUCCESS);
 
         test_struct_scaled_t unpacked = {0};
-        int unpack_ret = ppack_unpack(&unpacked, payload, fields, 1);
+        int unpack_ret = ppack_unpack(&unpacked, payload, 64, fields, 1);
         TEST_ASSERT(unpack_ret == PPACK_SUCCESS);
 
         float diff = unpacked.field_int32_scaled - (-500.0f);

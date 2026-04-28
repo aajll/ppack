@@ -70,11 +70,11 @@
 
 /* ================ DEFINES ================================================= */
 
-/** Maximum payload size in bits (fixed 8-byte buffer). */
-#define PPACK_PAYLOAD_BITS   64u
+/** Maximum supported payload size in bits (CAN-FD frame data field). */
+#define PPACK_MAX_PAYLOAD_BITS 512u
 
 /** Maximum supported field width in bits. */
-#define PPACK_MAX_FIELD_BITS 32u
+#define PPACK_MAX_FIELD_BITS   32u
 
 /* ================ STRUCTURES ============================================== */
 
@@ -124,13 +124,13 @@ ppack_clamp_float(float val, float lo, float hi)
 /**
  * @brief Write a bitfield of arbitrary length into a payload buffer.
  *
- * @param[in,out] payload   Output buffer (8 bytes)
- * @param[in]     start_bit Starting bit position (0-63)
+ * @param[in,out] payload   Output buffer
+ * @param[in]     start_bit Starting bit position within the payload
  * @param[in]     bit_len   Number of bits to write (1-32)
  * @param[in]     value     Raw 32-bit value (lower bit_len bits written)
  *
- * @pre  start_bit + bit_len <= 64  (caller must validate)
- * @pre  bit_len <= 32              (caller must validate)
+ * @pre  start_bit + bit_len <= payload size  (caller must validate)
+ * @pre  bit_len <= 32                        (caller must validate)
  */
 static void
 write_bits(void *payload, uint16_t start_bit, uint16_t bit_len, uint32_t value)
@@ -166,14 +166,14 @@ write_bits(void *payload, uint16_t start_bit, uint16_t bit_len, uint32_t value)
 /**
  * @brief Read a bitfield of arbitrary length from a payload buffer.
  *
- * @param[in] payload   Input buffer (8 bytes)
- * @param[in] start_bit Starting bit position (0-63)
+ * @param[in] payload   Input buffer
+ * @param[in] start_bit Starting bit position within the payload
  * @param[in] bit_len   Number of bits to read (1-32)
  *
  * @return 32-bit value with extracted bits in LSB positions
  *
- * @pre  start_bit + bit_len <= 64  (caller must validate)
- * @pre  bit_len <= 32              (caller must validate)
+ * @pre  start_bit + bit_len <= payload size  (caller must validate)
+ * @pre  bit_len <= 32                        (caller must validate)
  */
 static uint32_t
 read_bits(const void *payload, uint16_t start_bit, uint16_t bit_len)
@@ -235,23 +235,46 @@ sign_extend(uint32_t value, uint16_t width)
 }
 
 /**
- * @brief Validate a field descriptor for use with an 8-byte payload.
+ * @brief Validate a field descriptor against the runtime payload size.
  *
- * @param[in] f  Pointer to the field descriptor to check
+ * @param[in] f            Pointer to the field descriptor to check
+ * @param[in] payload_bits Payload size in bits (caller-validated)
  *
  * @return PPACK_SUCCESS on success
  * @return -PPACK_ERR_INVALARG  if bit_length is 0 or > 32
- * @return -PPACK_ERR_OVERFLOW  if start_bit + bit_length exceeds 64
+ * @return -PPACK_ERR_OVERFLOW  if start_bit + bit_length exceeds
+ *                              payload_bits
  */
 static int
-validate_field(const struct ppack_field *f)
+validate_field(const struct ppack_field *f, size_t payload_bits)
 {
         if (f->bit_length == 0u || f->bit_length > PPACK_MAX_FIELD_BITS) {
                 return -PPACK_ERR_INVALARG;
         }
-        if ((uint32_t)f->start_bit + (uint32_t)f->bit_length
-            > PPACK_PAYLOAD_BITS) {
+        if ((size_t)f->start_bit + (size_t)f->bit_length > payload_bits) {
                 return -PPACK_ERR_OVERFLOW;
+        }
+        return PPACK_SUCCESS;
+}
+
+/**
+ * @brief Validate the @c payload_bits argument supplied to pack/unpack.
+ *
+ * @param[in] payload_bits Caller-supplied payload size in bits
+ *
+ * @return PPACK_SUCCESS on success
+ * @return -PPACK_ERR_INVALARG  if @c payload_bits is 0, not a multiple
+ *                              of @c PPACK_ADDR_UNIT_BITS, or exceeds
+ *                              @c PPACK_MAX_PAYLOAD_BITS
+ */
+static int
+validate_payload_bits(size_t payload_bits)
+{
+        if (payload_bits == 0u || payload_bits > PPACK_MAX_PAYLOAD_BITS) {
+                return -PPACK_ERR_INVALARG;
+        }
+        if ((payload_bits % (size_t)PPACK_ADDR_UNIT_BITS) != 0u) {
+                return -PPACK_ERR_INVALARG;
         }
         return PPACK_SUCCESS;
 }
@@ -259,7 +282,7 @@ validate_field(const struct ppack_field *f)
 /* ================ GLOBAL PROTOTYPES ======================================= */
 
 int
-ppack_unpack(void *base_ptr, const void *payload,
+ppack_unpack(void *base_ptr, const void *payload, size_t payload_bits,
              const struct ppack_field *fields, size_t field_count)
 {
         if (base_ptr == NULL || payload == NULL) {
@@ -270,10 +293,15 @@ ppack_unpack(void *base_ptr, const void *payload,
                 return -PPACK_ERR_INVALARG;
         }
 
+        int pret = validate_payload_bits(payload_bits);
+        if (pret != PPACK_SUCCESS) {
+                return pret;
+        }
+
         for (size_t i = 0; i < field_count; ++i) {
                 const struct ppack_field *f = &fields[i];
 
-                int vret = validate_field(f);
+                int vret = validate_field(f, payload_bits);
                 if (vret != PPACK_SUCCESS) {
                         return vret;
                 }
@@ -362,7 +390,7 @@ ppack_unpack(void *base_ptr, const void *payload,
 }
 
 int
-ppack_pack(const void *base_ptr, void *payload,
+ppack_pack(const void *base_ptr, void *payload, size_t payload_bits,
            const struct ppack_field *fields, size_t field_count)
 {
         if (base_ptr == NULL || payload == NULL) {
@@ -373,12 +401,18 @@ ppack_pack(const void *base_ptr, void *payload,
                 return -PPACK_ERR_INVALARG;
         }
 
-        (void)memset(payload, 0, sizeof(ppack_byte_t) * PPACK_PAYLOAD_UNITS);
+        int pret = validate_payload_bits(payload_bits);
+        if (pret != PPACK_SUCCESS) {
+                return pret;
+        }
+
+        size_t payload_units = payload_bits / (size_t)PPACK_ADDR_UNIT_BITS;
+        (void)memset(payload, 0, sizeof(ppack_byte_t) * payload_units);
 
         for (size_t i = 0; i < field_count; ++i) {
                 const struct ppack_field *f = &fields[i];
 
-                int vret = validate_field(f);
+                int vret = validate_field(f, payload_bits);
                 if (vret != PPACK_SUCCESS) {
                         return vret;
                 }
