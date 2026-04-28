@@ -52,7 +52,7 @@
 #if defined(PPACK_SIMULATE_16BIT_MAU) || CHAR_BIT > 8 || UCHAR_MAX > 255u
 /** @brief Bits per minimum addressable unit on this target. */
 #define PPACK_ADDR_UNIT_BITS 16u
-/** @brief Storage unit used for the 64-bit payload buffer. */
+/** @brief Storage unit used for the payload buffer. */
 typedef uint16_t ppack_byte_t;
 #else
 #define PPACK_ADDR_UNIT_BITS 8u

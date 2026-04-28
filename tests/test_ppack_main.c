@@ -16,15 +16,16 @@
 
 /*
  * Compile-time verification that ppack_byte_t resolves correctly.
- * On byte-addressable platforms: ppack_byte_t == uint8_t, PPACK_PAYLOAD_UNITS
- * == 8 On word-addressable platforms: ppack_byte_t == uint16_t,
- * PPACK_PAYLOAD_UNITS == 4
+ * On byte-addressable platforms ppack_byte_t == uint8_t (1 byte);
+ * on word-addressable platforms ppack_byte_t == uint16_t (2 bytes).
+ *
+ * PPACK_PAYLOAD_UNITS is bounded by the library's own static asserts
+ * in ppack_platform.h (multiple of PPACK_ADDR_UNIT_BITS, ≤ 512 bits);
+ * we deliberately do not duplicate that bound here so tests build
+ * cleanly under any legal PPACK_PAYLOAD_BITS override.
  */
 _Static_assert(sizeof(ppack_byte_t) == 1 || sizeof(ppack_byte_t) == 2,
                "ppack_byte_t must be 8 or 16 bits");
-
-_Static_assert(PPACK_PAYLOAD_UNITS == 8 || PPACK_PAYLOAD_UNITS == 4,
-               "PPACK_PAYLOAD_UNITS must be 4 or 8");
 
 extern void run_null_arg_tests(void);
 extern void run_validation_tests(void);
