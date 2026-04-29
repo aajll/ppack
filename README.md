@@ -11,7 +11,7 @@ A generic payload serialisation library for bit-aligned data fields in C.
 - **No dynamic memory** - Fixed-size operations, no `malloc` / `free`
 - **Deterministic WCET** - All operations have bounded execution time
 - **Scaled fields** - Linear scale/offset transformations for physical-unit encoding
-- **Multiple types** - Supports `u8`, `u16`, `s16`, `u32`, `s32`, `f32`, and raw bitfields
+- **Multiple types** - Supports `u8`, `u16`, `i16`, `u32`, `i32`, `f32`, and raw bitfields
 - **Cross-platform** - Works on any C11 target with an 8-bit or 16-bit minimum addressable unit; auto-detected from `<limits.h>` with no chip-specific code paths
 - **Error codes** - All APIs return explicit error codes; no `errno`, no exceptions
 
