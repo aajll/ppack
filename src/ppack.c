@@ -95,8 +95,8 @@
  * invoke UB. Clamp to the next-lower representable float instead.
  */
 #define PPACK_FLOAT_UINT32_MAX ((float)0xFFFFFF00u) /* 4294967040 */
-#define PPACK_FLOAT_INT32_MAX ((float)0x7FFFFF80) /* 2147483520 */
-#define PPACK_FLOAT_INT32_MIN (-2147483648.0f)    /* -2^31, exact */
+#define PPACK_FLOAT_INT32_MAX  ((float)0x7FFFFF80)  /* 2147483520 */
+#define PPACK_FLOAT_INT32_MIN  (-2147483648.0f)     /* -2^31, exact */
 
 /* ================ STATIC FUNCTIONS ======================================== */
 
@@ -480,8 +480,8 @@ ppack_pack(const void *base_ptr, void *payload, size_t payload_bits,
                                 float val;
                                 (void)memcpy(&val, field_ptr, sizeof(val));
                                 float scaled = (val - f->offset) / f->scale;
-                                scaled = ppack_clamp_float(scaled, 0.0f,
-                                                           PPACK_FLOAT_UINT32_MAX);
+                                scaled = ppack_clamp_float(
+                                    scaled, 0.0f, PPACK_FLOAT_UINT32_MAX);
                                 raw = (uint32_t)scaled;
                         } else {
                                 (void)memcpy(&raw, field_ptr, sizeof(raw));
@@ -497,9 +497,9 @@ ppack_pack(const void *base_ptr, void *payload, size_t payload_bits,
                                 float val;
                                 (void)memcpy(&val, field_ptr, sizeof(val));
                                 float scaled = (val - f->offset) / f->scale;
-                                scaled = ppack_clamp_float(scaled,
-                                                           PPACK_FLOAT_INT32_MIN,
-                                                           PPACK_FLOAT_INT32_MAX);
+                                scaled = ppack_clamp_float(
+                                    scaled, PPACK_FLOAT_INT32_MIN,
+                                    PPACK_FLOAT_INT32_MAX);
                                 raw = (uint32_t)(int32_t)scaled;
                         } else {
                                 int32_t tmp;
