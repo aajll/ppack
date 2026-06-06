@@ -15,7 +15,7 @@ meson setup build --buildtype=debug -Dbuild_tests=true \
 meson compile -C build
 meson test -C build --verbose
 
-# Coverage (CI gate is 100% line + 100% branch)
+# Coverage (CI gate is 80% line + 70% branch)
 meson setup build_cov --buildtype=debug -Dbuild_tests=true \
                       -Db_coverage=true
 meson compile -C build_cov && meson test -C build_cov
@@ -62,7 +62,7 @@ currently have zero required-rule deviations and want to keep it that way.
 - Add a test for every new feature.
 - All tests must pass on both build configurations: 8-bit native and
   16-bit MAU simulated (`-DPPACK_SIMULATE_16BIT_MAU`).
-- 100% line and branch coverage is enforced by CI. New code without
+- CI enforces an 80% line / 70% branch coverage gate. New code without
   tests will fail the coverage gate.
 - Tests live in `tests/test_*.c`.
 - Fuzz seeds are fixed (`0xBEEF000N`) so failures are reproducible from
