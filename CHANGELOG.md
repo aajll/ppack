@@ -4,10 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [Unreleased]
+## [2.3.0] - 2026-06-19
 
 ### Changed
 
+- Aligned the memory layout on 16-bit MAU platforms to one octet per addressable unit to ensure seamless interoperability with the `ucrc` CRC library.
+- Decoupled logical payload units from physical MAU size, ensuring `PPACK_ADDR_UNIT_BITS` is always 8.
+- Updated documentation to use generic "16-bit MAU" terminology instead of vendor-specific references.
 - Changed the default `build_tests` Meson option to `false`; CI continues to opt into tests explicitly with `-Dbuild_tests=true`.
 - Adjusted the CI coverage gate to the shared primitive baseline of 80% line / 70% branch coverage.
 
