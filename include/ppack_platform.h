@@ -11,10 +11,11 @@
  *    On byte-addressable targets (x86_64, ARM, AArch64, RISC-V, AVR, etc.)
  *    @c ppack_byte_t is @c uint8_t.
  *
- *    On word-addressable targets where @c CHAR_BIT is 16 (e.g. the
- *    Texas Instruments C2000 family, including the F28379D),
- *    @c ppack_byte_t is @c uint16_t. All internal pack/unpack operations
- *    then work in 16-bit units.
+ *    On word-addressable targets where @c CHAR_BIT is 16 (e.g. 16-bit MAU
+ *    platforms), @c ppack_byte_t is @c uint16_t. Regardless of MAU size,
+ *    ppack treats the payload as a sequence of 8-bit logical units to
+ *    ensure interoperability with other primitives (like @c ucrc).
+
  *
  *    @c PPACK_PAYLOAD_BITS is a user-overridable convenience macro that
  *    sizes @c PPACK_PAYLOAD_UNITS for stack buffer declarations. Define
@@ -50,11 +51,14 @@
  * branch on byte-addressable hosts for unit-test simulation.
  */
 #if defined(PPACK_SIMULATE_16BIT_MAU) || CHAR_BIT > 8 || UCHAR_MAX > 255u
-/** @brief Bits per minimum addressable unit on this target. */
-#define PPACK_ADDR_UNIT_BITS 16u
+#define PPACK_IS_16BIT_MAU   1
+/** @brief Logical bits per payload unit. Always 8 for interoperability. */
+#define PPACK_ADDR_UNIT_BITS 8u
 /** @brief Storage unit used for the payload buffer. */
 typedef uint16_t ppack_byte_t;
 #else
+#define PPACK_IS_16BIT_MAU   0
+/** @brief Logical bits per payload unit. Always 8 for interoperability. */
 #define PPACK_ADDR_UNIT_BITS 8u
 typedef uint8_t ppack_byte_t;
 #endif
@@ -63,9 +67,10 @@ typedef uint8_t ppack_byte_t;
  * @brief Storage type that a user's `uint8_t` struct member resolves
  *        to on the current target.
  *
- * On byte-addressable hosts this is @c uint8_t. On TI C2000 the
- * compiler aliases @c uint8_t to @c uint16_t, and this typedef
+ * On byte-addressable hosts this is @c uint8_t. On 16-bit MAU platforms
+ * the compiler aliases @c uint8_t to @c uint16_t, and this typedef
  * mirrors that aliasing.
+
  *
  * @note  This is a library-internal alias used by the implementation
  *        and the unit tests. Application code on real targets should
@@ -96,8 +101,9 @@ typedef ppack_byte_t ppack_u8_t;
  * @brief Number of addressable units occupied by a payload of
  *        @c PPACK_PAYLOAD_BITS bits.
  *
- * Defaults to @c 8 on byte-addressable targets and @c 4 on 16-bit MAU
- * targets, matching the historical 64-bit payload size.
+ * On 16-bit MAU platforms, ppack allocates one addressable unit per
+ *        logical octet. This ensures compatibility with other primitives.
+
  *
  * Use this to declare a portable payload buffer:
  * @code

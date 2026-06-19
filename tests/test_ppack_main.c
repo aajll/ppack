@@ -42,10 +42,12 @@ extern void run_fuzz_tests(void);
 extern void run_wire_lockdown_tests(void);
 extern void run_partial_coverage_tests(void);
 extern void run_payload_size_tests(void);
+extern void run_mau_layout_tests(void);
 
 int
 main(void)
 {
+
         fprintf(stdout, "\n=== Running ppack unit tests ===\n\n");
 
         run_null_arg_tests();
@@ -63,6 +65,7 @@ main(void)
         run_wire_lockdown_tests();
         run_partial_coverage_tests();
         run_payload_size_tests();
+        run_mau_layout_tests();
 
         fprintf(stdout, "\n=== All tests passed ===\n\n");
         return EXIT_SUCCESS;

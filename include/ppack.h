@@ -108,23 +108,26 @@ extern "C" {
  *    @c 2147483520 respectively (the next representable float
  *    below the type's true maximum).
  *
- *    ## TI C2000 / 16-bit MAU notes
+ *    ## 16-bit MAU Platform Notes
  *
- *    On the TI C2000 family (e.g. F28379D) @c uint8_t is aliased to
- *    @c uint16_t and @c CHAR_BIT is 16. ppack auto-detects this and
- *    selects a 16-bit storage unit internally. The wire format is
- *    unchanged. Two contract points specific to this platform:
+ *    On platforms with a 16-bit minimum addressable unit (MAU) (e.g. the
+ *    TI C2000 family), @c uint8_t is typically aliased to @c uint16_t and
+ *    @c CHAR_BIT is 16. ppack auto-detects this and selects a 16-bit
+ *    storage unit internally, but maintains a logical 8-bit layout to
+ *    ensure interoperability with other primitives. Two contract points
+ *    specific to this platform:
  *
  *    @li A @c PPACK_TYPE_UINT8 field reads and writes only the LOW 8
- *        bits of its struct member's storage. On C2000 the member's
- *        underlying @c uint16_t can technically hold 0..65535, but
- *        only the low 8 bits round-trip through the wire.
+ *        bits of its struct member's storage. On 16-bit MAU platforms
+ *        the member's underlying @c uint16_t can technically hold 0..65535,
+ *        but only the low 8 bits round-trip through the wire.
  *
  *    @li The @c ptr_offset value comes from @c offsetof(), which
- *        returns @c char-units. On C2000 a @c char is 16 bits, so
- *        the value is naturally in 16-bit units; the library does
- *        not need to translate it. Always use @c offsetof() rather
+ *        returns @c char-units. On 16-bit MAU platforms a @c char is 16
+ *        bits, so the value is naturally in 16-bit units; the library
+ *        does not need to translate it. Always use @c offsetof() rather
  *        than computing offsets by hand.
+
  *
  * @{
  */
