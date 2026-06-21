@@ -118,5 +118,6 @@ run_scale_zero_tests(void)
                  "test_pack_scale_zero_uint32_rejected");
         run_test(test_pack_scale_zero_int32_rejected,
                  "test_pack_scale_zero_int32_rejected");
-        run_test(test_pack_scale_uint8_rejected, "test_pack_scale_uint8_rejected");
+        run_test(test_pack_scale_uint8_rejected,
+                 "test_pack_scale_uint8_rejected");
 }

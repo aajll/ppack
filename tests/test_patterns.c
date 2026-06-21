@@ -76,8 +76,8 @@ TEST_CASE(test_scaled_uint32_large)
 
 TEST_CASE(test_scaled_int32_boundary)
 {
-        /* Scaled INT32 with large negative value - tests float-to-int round-trip
-         * at the extreme end of the range. */
+        /* Scaled INT32 with large negative value - tests float-to-int
+         * round-trip at the extreme end of the range. */
         ppack_byte_t payload[PPACK_PAYLOAD_UNITS] = {0};
         test_struct_scaled_t data = {.field_int32_scaled = -214700000.0f};
 
@@ -135,7 +135,8 @@ TEST_CASE(test_sign_ext_min_negative)
                 TEST_ASSERT(ret == PPACK_SUCCESS);
 
                 test_struct_t unpacked = {0};
-                int unpack_ret = ppack_unpack(&unpacked, payload, 64, fields, 1);
+                int unpack_ret =
+                    ppack_unpack(&unpacked, payload, 64, fields, 1);
                 TEST_ASSERT(unpack_ret == PPACK_SUCCESS);
                 TEST_ASSERT(unpacked.field_int16 == min_val);
         }
@@ -161,7 +162,8 @@ TEST_CASE(test_sign_ext_max_positive)
                 TEST_ASSERT(ret == PPACK_SUCCESS);
 
                 test_struct_t unpacked = {0};
-                int unpack_ret = ppack_unpack(&unpacked, payload, 64, fields, 1);
+                int unpack_ret =
+                    ppack_unpack(&unpacked, payload, 64, fields, 1);
                 TEST_ASSERT(unpack_ret == PPACK_SUCCESS);
                 TEST_ASSERT(unpacked.field_int16 == max_val);
         }
@@ -195,7 +197,8 @@ TEST_CASE(test_sign_ext_int32_boundary)
                 TEST_ASSERT(ret == PPACK_SUCCESS);
 
                 test_struct_t unpacked = {0};
-                int unpack_ret = ppack_unpack(&unpacked, payload, 64, fields, 1);
+                int unpack_ret =
+                    ppack_unpack(&unpacked, payload, 64, fields, 1);
                 TEST_ASSERT(unpack_ret == PPACK_SUCCESS);
                 TEST_ASSERT(unpacked.field_int32 == min_val);
         }
@@ -229,7 +232,8 @@ TEST_CASE(test_payload_all_zeros)
         };
         unpacked.field_int32 = -1;
         ppack_byte_t payload[PPACK_PAYLOAD_UNITS] = {0};
-        TEST_ASSERT(ppack_pack(&unpacked, payload, 64, &f2, 1) == PPACK_SUCCESS);
+        TEST_ASSERT(ppack_pack(&unpacked, payload, 64, &f2, 1)
+                    == PPACK_SUCCESS);
         /* All bits should be 1 in the INT32 field, 0 elsewhere */
         for (uint16_t i = 0; i < 32; ++i) {
                 ASSERT_PAYLOAD_BIT(payload, 32 + i, 1);
@@ -299,7 +303,8 @@ TEST_CASE(test_single_bit_bits_type)
                 }
 
                 test_struct_t unpacked = {0};
-                int unpack_ret = ppack_unpack(&unpacked, payload, 64, fields, 1);
+                int unpack_ret =
+                    ppack_unpack(&unpacked, payload, 64, fields, 1);
                 TEST_ASSERT(unpack_ret == PPACK_SUCCESS);
                 TEST_ASSERT(unpacked.field_bits == 1u);
         }

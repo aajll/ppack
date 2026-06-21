@@ -30,16 +30,16 @@ TEST_CASE(test_unpack_member_not_targeted_survives)
         const int16_t src_val = -42;
 
         const struct ppack_field fields[] = {
-            {.type       = PPACK_TYPE_INT16,
-             .start_bit  = 0,
+            {.type = PPACK_TYPE_INT16,
+             .start_bit = 0,
              .bit_length = 16,
              .ptr_offset = offsetof(test_no_cover_t, field_a),
-             .behaviour  = PPACK_BEHAVIOUR_RAW},
+             .behaviour = PPACK_BEHAVIOUR_RAW},
         };
 
         test_no_cover_t src = {
             .field_a = (uint32_t)(uint16_t)src_val, /* raw bit pattern   */
-            .field_b = 0xDEADBEEFu,                  /* sentinel value    */
+            .field_b = 0xDEADBEEFu,                 /* sentinel value    */
         };
 
         int ret = ppack_pack(&src, payload, 64, fields, 1);
@@ -78,11 +78,11 @@ TEST_CASE(test_unpack_int16_into_uint32_upper_bytes_survive)
         const int16_t src_val = -42;
 
         const struct ppack_field fields[] = {
-            {.type       = PPACK_TYPE_INT16,
-             .start_bit  = 0,
+            {.type = PPACK_TYPE_INT16,
+             .start_bit = 0,
              .bit_length = 16,
              .ptr_offset = offsetof(test_int16_into_u32_t, field_u32),
-             .behaviour  = PPACK_BEHAVIOUR_RAW},
+             .behaviour = PPACK_BEHAVIOUR_RAW},
         };
 
         test_int16_into_u32_t src = {
@@ -113,11 +113,11 @@ TEST_CASE(test_unpack_int16_into_uint32_upper_bytes_survive)
 }
 
 /* -------------------------------------------------------------------------- */
-/* Test 3: UINT8 partial coverage of uint16_t on native (8-bit MAU).         */
-/* On native, sizeof(ppack_u8_t) == 1 so only the low byte is written.       */
-/* The upper byte must survive unchanged.                                    */
-/* On simulated 16-bit MAU, sizeof(ppack_u8_t) == 2 and both bytes are      */
-/* overwritten — that is documented contract behaviour for C2000 targets.    */
+/* Test 3: UINT8 partial coverage of uint16_t. */
+/* On 8-bit MAU: sizeof(ppack_u8_t) == 1 so only the low byte is written. */
+/* The upper byte must survive unchanged. */
+/* On 16-bit MAU: sizeof(ppack_u8_t) == 2 and both bytes are */
+/* overwritten — that is documented contract behaviour. */
 /* -------------------------------------------------------------------------- */
 
 typedef struct {
@@ -126,17 +126,17 @@ typedef struct {
 
 TEST_CASE(test_unpack_uint8_into_uint16_upper_byte_survives_native)
 {
-#if PPACK_ADDR_UNIT_BITS == 8
+#if !PPACK_IS_16BIT_MAU
         ppack_byte_t payload[PPACK_PAYLOAD_UNITS] = {0};
 
         const uint8_t src_val = 0x5Au;
 
         const struct ppack_field fields[] = {
-            {.type       = PPACK_TYPE_UINT8,
-             .start_bit  = 0,
+            {.type = PPACK_TYPE_UINT8,
+             .start_bit = 0,
              .bit_length = 8,
              .ptr_offset = offsetof(test_u8_into_u16_t, field_u16),
-             .behaviour  = PPACK_BEHAVIOUR_RAW},
+             .behaviour = PPACK_BEHAVIOUR_RAW},
         };
 
         test_u8_into_u16_t src = {
@@ -163,9 +163,10 @@ TEST_CASE(test_unpack_uint8_into_uint16_upper_byte_survives_native)
         TEST_ASSERT(hi == 0xDEu);
 #else
         /* On simulated 16-bit MAU, sizeof(ppack_u8_t) == 2 so both bytes are
-         * overwritten. This is documented contract behaviour for C2000 where
-         * uint8_t aliases to uint16_t. No assertion needed — the unpack
-         * writes sizeof(ppack_u8_t) == 2 and clears upper bits per design.   */
+         * overwritten. This is documented contract behaviour for 16-bit MAU
+         * platforms where uint8_t aliases to uint16_t. No assertion needed —
+         * the unpack writes sizeof(ppack_u8_t) == 2 and clears upper bits per
+         * design.   */
 #endif
 }
 
@@ -185,11 +186,11 @@ TEST_CASE(test_unpack_uint32_overwrites_all_bytes)
         const uint32_t src_val = 0x12345678u;
 
         const struct ppack_field fields[] = {
-            {.type       = PPACK_TYPE_UINT32,
-             .start_bit  = 0,
+            {.type = PPACK_TYPE_UINT32,
+             .start_bit = 0,
              .bit_length = 32,
              .ptr_offset = offsetof(test_u32_full_cover_t, field_u32),
-             .behaviour  = PPACK_BEHAVIOUR_RAW},
+             .behaviour = PPACK_BEHAVIOUR_RAW},
         };
 
         test_u32_full_cover_t src = {
@@ -224,11 +225,11 @@ TEST_CASE(test_unpack_uint16_narrow_still_writes_full_type)
         const uint16_t src_val = 0x42u; /* Only low 8 bits meaningful       */
 
         const struct ppack_field fields[] = {
-            {.type       = PPACK_TYPE_UINT16,
-             .start_bit  = 0,
-             .bit_length = 8,  /* Narrow: only 8 bits on wire              */
+            {.type = PPACK_TYPE_UINT16,
+             .start_bit = 0,
+             .bit_length = 8, /* Narrow: only 8 bits on wire              */
              .ptr_offset = offsetof(test_narrow_bitlen_t, field_u32),
-             .behaviour  = PPACK_BEHAVIOUR_RAW},
+             .behaviour = PPACK_BEHAVIOUR_RAW},
         };
 
         test_narrow_bitlen_t src = {

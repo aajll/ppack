@@ -32,7 +32,8 @@ TEST_CASE(test_all_bit_positions_uint8)
                 TEST_ASSERT(ret == PPACK_SUCCESS);
 
                 test_struct_t unpacked = {0};
-                int unpack_ret = ppack_unpack(&unpacked, payload, 64, fields, 1);
+                int unpack_ret =
+                    ppack_unpack(&unpacked, payload, 64, fields, 1);
                 TEST_ASSERT(unpack_ret == PPACK_SUCCESS);
                 TEST_ASSERT(unpacked.field_uint8 == 0xAB);
 
@@ -63,7 +64,8 @@ TEST_CASE(test_all_bit_positions_uint16)
                 TEST_ASSERT(ret == PPACK_SUCCESS);
 
                 test_struct_t unpacked = {0};
-                int unpack_ret = ppack_unpack(&unpacked, payload, 64, fields, 1);
+                int unpack_ret =
+                    ppack_unpack(&unpacked, payload, 64, fields, 1);
                 TEST_ASSERT(unpack_ret == PPACK_SUCCESS);
                 TEST_ASSERT(unpacked.field_uint16 == 0x1234);
 
@@ -93,7 +95,8 @@ TEST_CASE(test_all_bit_positions_int16)
                 TEST_ASSERT(ret == PPACK_SUCCESS);
 
                 test_struct_t unpacked = {0};
-                int unpack_ret = ppack_unpack(&unpacked, payload, 64, fields, 1);
+                int unpack_ret =
+                    ppack_unpack(&unpacked, payload, 64, fields, 1);
                 TEST_ASSERT(unpack_ret == PPACK_SUCCESS);
                 TEST_ASSERT(unpacked.field_int16 == -5678);
 
@@ -123,7 +126,8 @@ TEST_CASE(test_all_bit_positions_uint32)
                 TEST_ASSERT(ret == PPACK_SUCCESS);
 
                 test_struct_t unpacked = {0};
-                int unpack_ret = ppack_unpack(&unpacked, payload, 64, fields, 1);
+                int unpack_ret =
+                    ppack_unpack(&unpacked, payload, 64, fields, 1);
                 TEST_ASSERT(unpack_ret == PPACK_SUCCESS);
                 TEST_ASSERT(unpacked.field_uint32 == 0x12345678);
 
@@ -153,7 +157,8 @@ TEST_CASE(test_all_bit_positions_int32)
                 TEST_ASSERT(ret == PPACK_SUCCESS);
 
                 test_struct_t unpacked = {0};
-                int unpack_ret = ppack_unpack(&unpacked, payload, 64, fields, 1);
+                int unpack_ret =
+                    ppack_unpack(&unpacked, payload, 64, fields, 1);
                 TEST_ASSERT(unpack_ret == PPACK_SUCCESS);
                 TEST_ASSERT(unpacked.field_int32 == -12345678);
 
@@ -185,7 +190,8 @@ TEST_CASE(test_all_bit_lengths_uint8)
                 TEST_ASSERT(ret == PPACK_SUCCESS);
 
                 test_struct_t unpacked = {0};
-                int unpack_ret = ppack_unpack(&unpacked, payload, 64, fields, 1);
+                int unpack_ret =
+                    ppack_unpack(&unpacked, payload, 64, fields, 1);
                 TEST_ASSERT(unpack_ret == PPACK_SUCCESS);
                 /* Only the low bit_len bits should match after truncation */
                 uint8_t mask = (uint8_t)((1u << bit_len) - 1u);
@@ -212,7 +218,8 @@ TEST_CASE(test_all_bit_lengths_uint16)
                 TEST_ASSERT(ret == PPACK_SUCCESS);
 
                 test_struct_t unpacked = {0};
-                int unpack_ret = ppack_unpack(&unpacked, payload, 64, fields, 1);
+                int unpack_ret =
+                    ppack_unpack(&unpacked, payload, 64, fields, 1);
                 TEST_ASSERT(unpack_ret == PPACK_SUCCESS);
                 uint16_t mask = (uint16_t)((1u << bit_len) - 1u);
                 TEST_ASSERT((unpacked.field_uint16 & mask)
@@ -238,7 +245,8 @@ TEST_CASE(test_all_bit_lengths_int16)
                 TEST_ASSERT(ret == PPACK_SUCCESS);
 
                 test_struct_t unpacked = {0};
-                int unpack_ret = ppack_unpack(&unpacked, payload, 64, fields, 1);
+                int unpack_ret =
+                    ppack_unpack(&unpacked, payload, 64, fields, 1);
                 TEST_ASSERT(unpack_ret == PPACK_SUCCESS);
                 /* After sign-extension, low bit_len bits must match */
                 int16_t orig = data.field_int16;
@@ -267,7 +275,8 @@ TEST_CASE(test_all_bit_lengths_uint32)
                 TEST_ASSERT(ret == PPACK_SUCCESS);
 
                 test_struct_t unpacked = {0};
-                int unpack_ret = ppack_unpack(&unpacked, payload, 64, fields, 1);
+                int unpack_ret =
+                    ppack_unpack(&unpacked, payload, 64, fields, 1);
                 TEST_ASSERT(unpack_ret == PPACK_SUCCESS);
                 uint32_t mask = (uint32_t)(((uint64_t)1u << bit_len) - 1u);
                 TEST_ASSERT((unpacked.field_uint32 & mask)
@@ -293,7 +302,8 @@ TEST_CASE(test_all_bit_lengths_int32)
                 TEST_ASSERT(ret == PPACK_SUCCESS);
 
                 test_struct_t unpacked = {0};
-                int unpack_ret = ppack_unpack(&unpacked, payload, 64, fields, 1);
+                int unpack_ret =
+                    ppack_unpack(&unpacked, payload, 64, fields, 1);
                 TEST_ASSERT(unpack_ret == PPACK_SUCCESS);
                 int32_t orig = data.field_int32;
                 int32_t result = unpacked.field_int32;
@@ -420,7 +430,8 @@ TEST_CASE(test_odd_aligned_uint8)
                 TEST_ASSERT(ret == PPACK_SUCCESS);
 
                 test_struct_t unpacked = {0};
-                int unpack_ret = ppack_unpack(&unpacked, payload, 64, fields, 1);
+                int unpack_ret =
+                    ppack_unpack(&unpacked, payload, 64, fields, 1);
                 TEST_ASSERT(unpack_ret == PPACK_SUCCESS);
                 TEST_ASSERT(unpacked.field_uint8 == 0xFF);
 
@@ -611,19 +622,23 @@ void
 run_exhaustive_tests(void)
 {
         run_test(test_all_bit_positions_uint8, "test_all_bit_positions_uint8");
-        run_test(test_all_bit_positions_uint16, "test_all_bit_positions_uint16");
+        run_test(test_all_bit_positions_uint16,
+                 "test_all_bit_positions_uint16");
         run_test(test_all_bit_positions_int16, "test_all_bit_positions_int16");
-        run_test(test_all_bit_positions_uint32, "test_all_bit_positions_uint32");
+        run_test(test_all_bit_positions_uint32,
+                 "test_all_bit_positions_uint32");
         run_test(test_all_bit_positions_int32, "test_all_bit_positions_int32");
         run_test(test_all_bit_lengths_uint8, "test_all_bit_lengths_uint8");
         run_test(test_all_bit_lengths_uint16, "test_all_bit_lengths_uint16");
         run_test(test_all_bit_lengths_int16, "test_all_bit_lengths_int16");
         run_test(test_all_bit_lengths_uint32, "test_all_bit_lengths_uint32");
         run_test(test_all_bit_lengths_int32, "test_all_bit_lengths_int32");
-        run_test(test_cross_byte_boundary_uint16, "test_cross_byte_boundary_uint16");
+        run_test(test_cross_byte_boundary_uint16,
+                 "test_cross_byte_boundary_uint16");
         run_test(test_cross_byte_boundary_uint8_pair,
                  "test_cross_byte_boundary_uint8_pair");
-        run_test(test_adjacent_uint8_same_word, "test_adjacent_uint8_same_word");
+        run_test(test_adjacent_uint8_same_word,
+                 "test_adjacent_uint8_same_word");
         run_test(test_odd_aligned_uint8, "test_odd_aligned_uint8");
         run_test(test_full_layout_uint8x8, "test_full_layout_uint8x8");
         run_test(test_full_layout_int16x4, "test_full_layout_int16x4");
