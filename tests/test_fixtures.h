@@ -51,7 +51,8 @@ typedef struct {
         uint32_t field_uint32;
         int32_t field_int32;
         float field_f32;
-        ppack_u8_t field_uint8; /* Mirrors target-side uint8_t (16-bit on TI) */
+        ppack_u8_t field_uint8; /* Mirrors target-side uint8_t; 16-bit storage
+                                   on a 16-bit MAU */
         uint32_t field_bits;
 } test_struct_t;
 

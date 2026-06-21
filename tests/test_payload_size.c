@@ -205,8 +205,7 @@ TEST_CASE(test_roundtrip_128bit_payload)
              .behaviour = PPACK_BEHAVIOUR_RAW},
         };
 
-        TEST_ASSERT(ppack_pack(&src, payload, 128, fields, 4)
-                    == PPACK_SUCCESS);
+        TEST_ASSERT(ppack_pack(&src, payload, 128, fields, 4) == PPACK_SUCCESS);
 
         test_struct_t dst = {0};
         TEST_ASSERT(ppack_unpack(&dst, payload, 128, fields, 4)
@@ -233,8 +232,7 @@ TEST_CASE(test_roundtrip_256bit_payload)
              .behaviour = PPACK_BEHAVIOUR_RAW},
         };
 
-        TEST_ASSERT(ppack_pack(&src, payload, 256, fields, 1)
-                    == PPACK_SUCCESS);
+        TEST_ASSERT(ppack_pack(&src, payload, 256, fields, 1) == PPACK_SUCCESS);
 
         /* Lower 28 bytes must be untouched zero (memset wrote them). */
         for (uint16_t i = 0; i < 28; ++i) {
@@ -267,7 +265,8 @@ TEST_CASE(test_roundtrip_each_legal_size)
                 }
 
                 ppack_byte_t payload[512u / PPACK_ADDR_UNIT_BITS] = {0};
-                test_struct_t src = {.field_uint16 = (uint16_t)(bits ^ 0xA5A5u)};
+                test_struct_t src = {.field_uint16 =
+                                         (uint16_t)(bits ^ 0xA5A5u)};
                 test_struct_t dst = {0};
 
                 TEST_ASSERT(ppack_pack(&src, payload, bits, fields, 1)
@@ -360,16 +359,42 @@ TEST_CASE(test_wire_lockdown_256bit)
 
         static const uint8_t expected[32] = {
             /* bytes  0..  3: UINT32 = 0xAABBCCDD */
-            0xDDu, 0xCCu, 0xBBu, 0xAAu,
+            0xDDu,
+            0xCCu,
+            0xBBu,
+            0xAAu,
             /* bytes  4..  7: gap */
-            0x00u, 0x00u, 0x00u, 0x00u,
+            0x00u,
+            0x00u,
+            0x00u,
+            0x00u,
             /* bytes  8.. 11: INT32 = -1 */
-            0xFFu, 0xFFu, 0xFFu, 0xFFu,
+            0xFFu,
+            0xFFu,
+            0xFFu,
+            0xFFu,
             /* bytes 12.. 27: gap */
-            0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
-            0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+            0x00u,
+            0x00u,
+            0x00u,
+            0x00u,
+            0x00u,
+            0x00u,
+            0x00u,
+            0x00u,
+            0x00u,
+            0x00u,
+            0x00u,
+            0x00u,
+            0x00u,
+            0x00u,
+            0x00u,
+            0x00u,
             /* bytes 28.. 31: UINT32 = 0x12345678 */
-            0x78u, 0x56u, 0x34u, 0x12u,
+            0x78u,
+            0x56u,
+            0x34u,
+            0x12u,
         };
         for (uint16_t i = 0; i < 32; ++i) {
                 TEST_ASSERT(READ_LOGICAL_BYTE(payload, i) == expected[i]);
@@ -414,8 +439,8 @@ TEST_CASE(test_wire_lockdown_512bit)
         for (uint16_t i = 0; i < 64; ++i) {
                 uint8_t expected;
                 switch (i) {
-                case 0:  expected = 0xEFu; break;
-                case 1:  expected = 0xBEu; break;
+                case 0: expected = 0xEFu; break;
+                case 1: expected = 0xBEu; break;
                 case 32: expected = 0xFEu; break;
                 case 33: expected = 0xCAu; break;
                 case 62: expected = 0xADu; break;

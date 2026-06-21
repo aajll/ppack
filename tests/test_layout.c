@@ -100,7 +100,8 @@ TEST_CASE(test_pack_multiple_fields)
 void
 run_layout_tests(void)
 {
-        run_test(test_pack_unpack_uint16_offset, "test_pack_unpack_uint16_offset");
+        run_test(test_pack_unpack_uint16_offset,
+                 "test_pack_unpack_uint16_offset");
         run_test(test_pack_unpack_spanning_boundary,
                  "test_pack_unpack_spanning_boundary");
         run_test(test_pack_multiple_fields, "test_pack_multiple_fields");

@@ -22,25 +22,25 @@ TEST_CASE(test_16bit_mau_physical_layout)
 #endif
 
         ppack_byte_t payload[PPACK_PAYLOAD_UNITS] = {0};
-        
+
         typedef struct {
                 uint16_t val;
         } layout_t;
 
-        /* Field: 16 bits, value 0xABCD. 
+        /* Field: 16 bits, value 0xABCD.
          * Bit 0-7: 0xCD (byte 0)
          * Bit 8-15: 0xAB (byte 1)
          */
         const struct ppack_field fields[] = {
-            {.type       = PPACK_TYPE_UINT16,
-             .start_bit  = 0,
+            {.type = PPACK_TYPE_UINT16,
+             .start_bit = 0,
              .bit_length = 16,
              .ptr_offset = offsetof(layout_t, val),
-             .behaviour  = PPACK_BEHAVIOUR_RAW},
+             .behaviour = PPACK_BEHAVIOUR_RAW},
         };
 
         layout_t src = {.val = 0xABCD};
-        /* Note: ppack_pack takes a base_ptr. We'll pass &src. 
+        /* Note: ppack_pack takes a base_ptr. We'll pass &src.
          * The ptr_offset for the field is 0.
          */
         int ret = ppack_pack(&src, payload, 64, fields, 1);
@@ -53,7 +53,7 @@ TEST_CASE(test_16bit_mau_physical_layout)
          */
         TEST_ASSERT(payload[0] == 0x00CDu);
         TEST_ASSERT(payload[1] == 0x00ABu);
-        
+
         for (uint16_t i = 2; i < PPACK_PAYLOAD_UNITS; ++i) {
                 TEST_ASSERT(payload[i] == 0u);
         }

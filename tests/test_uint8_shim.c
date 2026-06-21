@@ -1,9 +1,10 @@
 /*
  * @file: test_uint8_shim.c
- * @brief TI C2000 16-bit-MAU uint8_t alias-shim behaviour.
+ * @brief 16-bit-MAU uint8_t alias-shim behaviour.
  *
  * Exercises the path where a user's `uint8_t` struct member is
- * 16-bit storage (on TI) or simulated as such via PPACK_SIMULATE_16BIT_MAU
+ * 16-bit storage (on a 16-bit MAU target) or simulated as such via
+ * PPACK_SIMULATE_16BIT_MAU
  * + the ppack_u8_t alias.
  */
 
@@ -40,8 +41,8 @@ TEST_CASE(test_uint8_pack_bitlen16_masks_upper)
         /*
          * bit_length > 8 is where write_bits no longer masks internally,
          * so the library's explicit `& 0xFFu` is the only guard. Without
-         * it on TI, an out-of-range source leaks its upper 8 bits onto
-         * the wire.
+         * it on a 16-bit MAU target, an out-of-range source leaks its upper 8
+         * bits onto the wire.
          */
         ppack_byte_t payload[PPACK_PAYLOAD_UNITS] = {0};
         test_struct_t data = {0};
@@ -64,9 +65,9 @@ TEST_CASE(test_uint8_pack_bitlen16_masks_upper)
 TEST_CASE(test_uint8_unpack_clears_upper_bits)
 {
         /*
-         * On TI, field_uint8 is 16-bit storage. Unpack must overwrite the
-         * whole storage unit, not just the low 8 bits - otherwise junk
-         * left over from a prior write would leak into subsequent reads.
+         * On a 16-bit MAU target, field_uint8 is 16-bit storage. Unpack must
+         * overwrite the whole storage unit, not just the low 8 bits - otherwise
+         * junk left over from a prior write would leak into subsequent reads.
          */
         ppack_byte_t payload[PPACK_PAYLOAD_UNITS] = {0};
         test_struct_t source = {0};

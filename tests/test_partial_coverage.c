@@ -163,9 +163,10 @@ TEST_CASE(test_unpack_uint8_into_uint16_upper_byte_survives_native)
         TEST_ASSERT(hi == 0xDEu);
 #else
         /* On simulated 16-bit MAU, sizeof(ppack_u8_t) == 2 so both bytes are
-         * overwritten. This is documented contract behaviour for C2000 where
-         * uint8_t aliases to uint16_t. No assertion needed — the unpack
-         * writes sizeof(ppack_u8_t) == 2 and clears upper bits per design.   */
+         * overwritten. This is documented contract behaviour for 16-bit MAU
+         * platforms where uint8_t aliases to uint16_t. No assertion needed —
+         * the unpack writes sizeof(ppack_u8_t) == 2 and clears upper bits per
+         * design.   */
 #endif
 }
 

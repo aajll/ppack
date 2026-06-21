@@ -294,7 +294,8 @@ TEST_CASE(test_fuzz_multi_field_mixed)
                 TEST_ASSERT(dst.field_int16 == src.field_int16);
                 TEST_ASSERT(dst.field_uint32 == src.field_uint32);
                 TEST_ASSERT(dst.field_int32 == src.field_int32);
-                TEST_ASSERT((uint8_t)dst.field_uint8 == (uint8_t)src.field_uint8);
+                TEST_ASSERT((uint8_t)dst.field_uint8
+                            == (uint8_t)src.field_uint8);
                 TEST_ASSERT(dst.field_bits == src.field_bits);
         }
 }
@@ -414,8 +415,10 @@ TEST_CASE(test_pack_is_deterministic)
                 ppack_byte_t p1[PPACK_PAYLOAD_UNITS] = {0};
                 ppack_byte_t p2[PPACK_PAYLOAD_UNITS] = {0};
 
-                TEST_ASSERT(ppack_pack(&src, p1, 64, fields, 3) == PPACK_SUCCESS);
-                TEST_ASSERT(ppack_pack(&src, p2, 64, fields, 3) == PPACK_SUCCESS);
+                TEST_ASSERT(ppack_pack(&src, p1, 64, fields, 3)
+                            == PPACK_SUCCESS);
+                TEST_ASSERT(ppack_pack(&src, p2, 64, fields, 3)
+                            == PPACK_SUCCESS);
                 TEST_ASSERT(memcmp(p1, p2, sizeof(p1)) == 0);
         }
 }
@@ -448,13 +451,15 @@ TEST_CASE(test_scaled_quantization_bounded)
              2000.0f},
             /* Temperature -40..125C at 0.25C, offset-encoded */
             {PPACK_TYPE_UINT16, 0.25f, -40.0f, 10,
-             offsetof(test_struct_scaled_t, field_uint16_scaled), -40.0f, 125.0f},
+             offsetof(test_struct_scaled_t, field_uint16_scaled), -40.0f,
+             125.0f},
             /* Energy counter 0..1e6 kWh at 0.001 */
             {PPACK_TYPE_UINT32, 0.001f, 0.0f, 32,
              offsetof(test_struct_scaled_t, field_uint32_scaled), 0.0f, 1.0e6f},
             /* Power -2e6..2e6 W at 1W */
             {PPACK_TYPE_INT32, 1.0f, 0.0f, 24,
-             offsetof(test_struct_scaled_t, field_int32_scaled), -2.0e6f, 2.0e6f},
+             offsetof(test_struct_scaled_t, field_int32_scaled), -2.0e6f,
+             2.0e6f},
         };
 
         const size_t n_cases = sizeof(cases) / sizeof(cases[0]);

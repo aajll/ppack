@@ -66,8 +66,8 @@ extern "C" {
  *
  *    @c PPACK_TYPE_F32 is a raw 32-bit IEEE-754 bit-copy. The wire
  *    representation is host-endian @c uint32_t. This is interoperable
- *    between any two little-endian IEEE-754 hosts (TI C2000, x86_64,
- *    ARM Cortex-M, AArch64 in default mode). It is NOT safe between a
+ *    between any two little-endian IEEE-754 hosts (e.g. x86_64, ARM Cortex-M,
+ *    AArch64, 16-bit MAU platforms). It is NOT safe between a
  *    little-endian and a big-endian host without explicit byte-swapping
  *    in user code.
  *
@@ -110,16 +110,17 @@ extern "C" {
  *
  *    ## 16-bit MAU Platform Notes
  *
- *    On platforms with a 16-bit minimum addressable unit (MAU) (e.g. the
- *    TI C2000 family), @c uint8_t is typically aliased to @c uint16_t and
- *    @c CHAR_BIT is 16. ppack auto-detects this and selects a 16-bit
+ *    On platforms with a 16-bit minimum addressable unit (MAU)
+ *    (16-bit MAU platforms), @c CHAR_BIT is 16 and any @c uint8_t the
+ *    toolchain provides is backed by 16-bit storage. ppack auto-detects
+ *    this (via @c CHAR_BIT / @c UCHAR_MAX, not @c uint8_t) and selects a 16-bit
  *    storage unit internally, but maintains a logical 8-bit layout to
  *    ensure interoperability with other primitives. Two contract points
  *    specific to this platform:
  *
  *    @li A @c PPACK_TYPE_UINT8 field reads and writes only the LOW 8
  *        bits of its struct member's storage. On 16-bit MAU platforms
- *        the member's underlying @c uint16_t can technically hold 0..65535,
+ *        the member's underlying 16-bit storage can technically hold 0..65535,
  *        but only the low 8 bits round-trip through the wire.
  *
  *    @li The @c ptr_offset value comes from @c offsetof(), which
@@ -212,8 +213,8 @@ struct ppack_field {
         size_t ptr_offset;    /**< Offset returned by offsetof() into base */
         float scale;          /**< Scaling factor (ignored for F32 / BITS) */
         float offset; /**< Offset after scaling (ignored for F32 / BITS) */
-        enum ppack_behaviour
-            behaviour; /**< Raw or scaled (see @c ppack_behaviour) */
+        /** Raw or scaled (see @c ppack_behaviour) */
+        enum ppack_behaviour behaviour;
 };
 
 /* ================ TYPEDEFS ================================================ */

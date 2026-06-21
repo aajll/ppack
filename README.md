@@ -115,7 +115,7 @@ int main(void)
 }
 ```
 
-`ppack_byte_t[PPACK_PAYLOAD_UNITS]` defaults to a 64-bit payload (`uint8_t[8]` on byte-addressable targets, `uint16_t[4]` on TI C2000) and is intended as a convenience for the common case. For non-default sizes, override `PPACK_PAYLOAD_BITS` at the toolchain level (e.g. `-DPPACK_PAYLOAD_BITS=512`) or size the buffer manually as `ppack_byte_t payload[N / PPACK_ADDR_UNIT_BITS]`. The wire format is identical across MAU sizes.
+`ppack_byte_t[PPACK_PAYLOAD_UNITS]` defaults to a 64-bit payload (`uint8_t[8]` on byte-addressable targets, `uint16_t[8]` on 16-bit MAU targets) and is intended as a convenience for the common case. For non-default sizes, override `PPACK_PAYLOAD_BITS` at the toolchain level (e.g. `-DPPACK_PAYLOAD_BITS=512`) or size the buffer manually as `ppack_byte_t payload[N / PPACK_ADDR_UNIT_BITS]`. The wire format is identical across MAU sizes.
 
 ### CAN-FD (512-bit) example
 
@@ -183,7 +183,7 @@ meson compile -C build
 meson test -C build --verbose
 ```
 
-The test target runs twice: once natively (8-bit MAU) and once with `-DPPACK_SIMULATE_16BIT_MAU` to exercise the word-addressable code path that runs on the TI C2000.
+The test target runs twice: once natively (8-bit MAU) and once with `-DPPACK_SIMULATE_16BIT_MAU` to exercise the word-addressable code path that runs on 16-bit MAU platforms.
 
 ### Code coverage
 
@@ -212,7 +212,7 @@ int ppack_unpack(void *base_ptr, const void *payload, size_t payload_bits,
                  const struct ppack_field *fields, size_t field_count);
 ```
 
-`payload_bits` is the payload size in bits. Must be a positive multiple of `PPACK_ADDR_UNIT_BITS` (8 on byte-addressable targets, 16 on TI C2000) and no greater than 512 (CAN-FD frame data field). Common values: `64` for CAN classic, `512` for full CAN-FD frames.
+`payload_bits` is the payload size in bits. Must be a positive multiple of `PPACK_ADDR_UNIT_BITS` (always 8) and no greater than 512 (CAN-FD frame data field). Common values: `64` for CAN classic, `512` for full CAN-FD frames.
 
 ### Field Descriptor
 
@@ -263,7 +263,7 @@ The payload is `payload_bits` bits long (a multiple of 8, between 8 and 512), ad
 - **Multi-byte fields**: little-endian (Intel ordering, equivalent to DBC `byte_order=1`). A field at `start_bit=0`, `bit_length=16` with value `0x1234` produces `0x34` in byte 0 and `0x12` in byte 1.
 - **Cross-platform**: the format is identical on byte-addressable and 16-bit-MAU hosts. Two nodes using ppack interoperate regardless of their addressable-unit size, provided they agree on `payload_bits`.
 
-`PPACK_TYPE_F32` is a raw 32-bit IEEE-754 bit copy. The wire bytes are the host's `uint32_t` byte order. This is interoperable between any two little-endian hosts (TI C2000, x86_64, ARM Cortex-M, AArch64 in default mode) but NOT between a little-endian and a big-endian host without explicit byte swapping in user code.
+`PPACK_TYPE_F32` is a raw 32-bit IEEE-754 bit copy. The wire bytes are the host's `uint32_t` byte order. This is interoperable between any two little-endian hosts (e.g. x86_64, ARM Cortex-M, AArch64 in default mode, 16-bit MAU platforms) but NOT between a little-endian and a big-endian host without explicit byte swapping in user code.
 
 ## Scaled Fields
 
@@ -301,7 +301,7 @@ ppack works on any toolchain meeting the requirements below. There are no chip-s
 | Two's-complement signed integers    | Required for the documented sign-extension and unsigned-to-signed cast behaviour. Universal on real targets. |
 | IEEE-754 binary32 `float`           | Required for `PPACK_TYPE_F32` and scaled fields. Universal on real targets.                                  |
 
-Targets meeting these requirements are expected to work, including (but not limited to) x86_64, AArch64, ARMv7-M, ARMv8-M, RISC-V, AVR, and the TI C2000 family (F2837x, F2807x, F2806x, F28004x, F28002x, F28P55x, etc.).
+Targets meeting these requirements are expected to work, including (but not limited to) x86_64, AArch64, ARMv7-M, ARMv8-M, RISC-V, AVR, and 16-bit MAU platforms.
 
 ### Validated configurations
 
@@ -311,17 +311,17 @@ These configurations are run through the test suite or have been verified on har
 | -------------------------------------------- | ------------------------- | ----------------------------------------------------------------- |
 | GCC, Clang                                   | x86_64 Linux              | Run in CI (8-bit MAU code path)                                   |
 | GCC, Clang with `-DPPACK_SIMULATE_16BIT_MAU` | x86_64 Linux              | Run in CI (16-bit MAU code path)                                  |
-| TI C2000 CGT                                 | C2000 family (16-bit MAU) | Code path covered by host simulation; no live cross-compile in CI |
+| Native Toolchains                           | 16-bit MAU platforms      | Code path covered by host simulation; no live cross-compile in CI |
 
 Other architectures from the supported list above are expected to work but are not yet routinely validated. If you bring up ppack on a new target, please report back so the table can be extended.
 
 ### 16-bit-MAU specifics
 
-On targets where `CHAR_BIT == 16` (the TI C2000 family being the canonical example) `uint8_t` is aliased to `uint16_t`. ppack handles this transparently via `ppack_platform.h`. Two contract points apply:
+On targets where `CHAR_BIT == 16` (16-bit MAU platforms) the narrowest integer type is 16 bits, so any `uint8_t` the toolchain provides is backed by 16-bit storage. ppack detects this from `CHAR_BIT`/`UCHAR_MAX` (not from `uint8_t` itself) and handles it transparently via `ppack_platform.h`. Two contract points apply:
 
 | Point             | Rule                                                                                                                                                                                                                                                                                                              |
 | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **UINT8 storage** | A `PPACK_TYPE_UINT8` field reads and writes only the LOW 8 bits of the struct member's storage. The underlying `uint16_t` can technically hold 0..65535 on a 16-bit-MAU target, but only the low 8 bits round-trip through the wire. Do not store values >= 256 in UINT8 fields if you expect them to round-trip. |
+| **UINT8 storage** | A `PPACK_TYPE_UINT8` field reads and writes only the LOW 8 bits of the struct member's storage. The underlying 16-bit storage can technically hold 0..65535 on a 16-bit-MAU target, but only the low 8 bits round-trip through the wire. Do not store values >= 256 in UINT8 fields if you expect them to round-trip. |
 | **`ptr_offset`**  | Always use `offsetof()`. The library treats `ptr_offset` as a `char`-unit offset, which is 16 bits on a 16-bit-MAU target. Manually computing offsets in 8-bit units will fail.                                                                                                                                   |
 
 ### Forcing the simulation flag
@@ -372,5 +372,5 @@ ppack is a serialisation primitive only. The following are explicitly out of sco
 | **Thread safety**           | Not thread-safe; caller must provide mutual exclusion when `base_ptr` or `payload` is shared across threads or ISRs                                                                                                                                                                                                                               |
 | **WCET**                    | Execution time is bounded and deterministic **when field descriptors are `static const`** (loop bounds are compile-time constants). WCET is not guaranteed if descriptors are constructed at runtime with arbitrary `bit_length` values.                                                                                                          |
 | **F32 and scaling**         | `PPACK_TYPE_F32` always performs a raw 32-bit IEEE 754 bit-copy; `scale`, `offset`, and `behaviour` are ignored for this type. Use a scaled integer type (`UINT16`, `INT16`, `UINT32`, `INT32`) to encode floating-point physical values with a resolution factor.                                                                                |
-| **UINT8 struct member**     | `PPACK_TYPE_UINT8` reads and writes a `uint8_t`. On TI C2000, where `uint8_t` is aliased to `uint16_t`, only the low 8 bits round-trip.                                                                                                                                                                                                           |
+| **UINT8 struct member**     | `PPACK_TYPE_UINT8` reads and writes a `uint8_t`. On 16-bit MAU platforms, where a `uint8_t` member is backed by 16-bit storage, only the low 8 bits round-trip.                                                                                                                                                                                                           |
 | **Version header**          | `ppack_version.h` is auto-generated by the Meson build and placed in the output build folder                                                                                                                                                                                                                                                      |
