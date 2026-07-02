@@ -113,9 +113,6 @@ typedef ppack_byte_t ppack_u8_t;
  */
 #define PPACK_PAYLOAD_UNITS (PPACK_PAYLOAD_BITS / PPACK_ADDR_UNIT_BITS)
 
-/** @brief Bitmask covering one addressable unit. */
-#define PPACK_WORD_MASK     (((uint32_t)1u << PPACK_ADDR_UNIT_BITS) - 1u)
-
 /**
  * @brief Convert a payload bit index to its addressable-unit index.
  *
