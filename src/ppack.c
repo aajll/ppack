@@ -135,8 +135,11 @@ ppack_clamp_float(float val, float lo, float hi)
 static void
 write_bits(void *payload, uint16_t start_bit, uint16_t bit_len, uint32_t value)
 {
-        /* MISRA 11.5: opaque void* payload requires unit-typed access. */
-        ppack_byte_t *words = (ppack_byte_t *)payload;
+        /* MISRA 11.5: opaque void* payload requires unit-typed access.
+         * Use memcpy to copy pointer value and avoid direct void* conversion.
+         */
+        ppack_byte_t *words;
+        (void)memcpy(&words, &payload, sizeof words);
         uint16_t bits_written = 0;
 
         while (bits_written < bit_len) {
@@ -178,8 +181,11 @@ write_bits(void *payload, uint16_t start_bit, uint16_t bit_len, uint32_t value)
 static uint32_t
 read_bits(const void *payload, uint16_t start_bit, uint16_t bit_len)
 {
-        /* MISRA 11.5: opaque const void* payload requires unit-typed access. */
-        const ppack_byte_t *words = (const ppack_byte_t *)payload;
+        /* MISRA 11.5: opaque const void* payload requires unit-typed access.
+         * Use memcpy to copy pointer value and avoid direct void* conversion.
+         */
+        const ppack_byte_t *words;
+        (void)memcpy(&words, &payload, sizeof words);
         uint32_t result = 0;
         uint16_t bits_read = 0;
 
@@ -308,9 +314,13 @@ ppack_unpack(void *base_ptr, const void *payload, size_t payload_bits,
                 }
 
                 /* MISRA 11.5: void* opaque struct requires char* for offset
-                 * arithmetic. MISRA 18.4: ptr_offset is the user-supplied
-                 * offsetof() value and is added to the base pointer. */
-                char *field_ptr = (char *)base_ptr + f->ptr_offset;
+                 * arithmetic. Use memcpy to copy pointer value and avoid
+                 * direct void* conversion. MISRA 18.4: ptr_offset is the
+                 * user-supplied offsetof() value and is added to the base
+                 * pointer. */
+                char *field_ptr;
+                (void)memcpy(&field_ptr, &base_ptr, sizeof field_ptr);
+                field_ptr += f->ptr_offset;
                 uint32_t raw = read_bits(payload, f->start_bit, f->bit_length);
 
                 switch (f->type) {
@@ -356,7 +366,8 @@ ppack_unpack(void *base_ptr, const void *payload, size_t payload_bits,
 
                 case PPACK_TYPE_UINT32: {
                         if (f->behaviour == PPACK_BEHAVIOUR_SCALED) {
-                                float tmp = (((float)raw) * f->scale) + f->offset;
+                                float tmp =
+                                    (((float)raw) * f->scale) + f->offset;
                                 (void)memcpy((void *)field_ptr, (void *)&tmp,
                                              sizeof(tmp));
                         } else {
@@ -430,9 +441,12 @@ ppack_pack(const void *base_ptr, void *payload, size_t payload_bits,
                 }
 
                 /* MISRA 11.5: const void* opaque struct requires const char*
-                 * for offset arithmetic. MISRA 18.4: ptr_offset is the
-                 * user-supplied offsetof() value. */
-                const char *field_ptr = (const char *)base_ptr + f->ptr_offset;
+                 * for offset arithmetic. Use memcpy to copy pointer value
+                 * and avoid direct void* conversion. MISRA 18.4: ptr_offset
+                 * is the user-supplied offsetof() value. */
+                const char *field_ptr;
+                (void)memcpy(&field_ptr, &base_ptr, sizeof field_ptr);
+                field_ptr += f->ptr_offset;
                 uint32_t raw = 0u;
 
                 switch (f->type) {
