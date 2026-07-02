@@ -11,3 +11,5 @@
 # acquire a resource, take a lock, or have any teardown, so there is no shared
 # cleanup that a single exit point would protect. Advisory; deviation accepted.
 misra-c2012-15.5
+
+

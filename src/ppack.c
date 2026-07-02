@@ -289,6 +289,7 @@ validate_payload_bits(size_t payload_bits)
 /* ================ GLOBAL PROTOTYPES ======================================= */
 
 int
+/* cppcheck-suppress misra-c2012-8.7 ; @deviation Public API function consumed by external translation units. */
 ppack_unpack(void *base_ptr, const void *payload, size_t payload_bits,
              const struct ppack_field *fields, size_t field_count)
 {
@@ -414,6 +415,7 @@ ppack_unpack(void *base_ptr, const void *payload, size_t payload_bits,
 }
 
 int
+/* cppcheck-suppress misra-c2012-8.7 ; @deviation Public API function consumed by external translation units. */
 ppack_pack(const void *base_ptr, void *payload, size_t payload_bits,
            const struct ppack_field *fields, size_t field_count)
 {
