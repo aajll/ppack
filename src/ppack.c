@@ -320,6 +320,7 @@ ppack_unpack(void *base_ptr, const void *payload, size_t payload_bits,
                  * pointer. */
                 char *field_ptr;
                 (void)memcpy(&field_ptr, &base_ptr, sizeof field_ptr);
+                /* cppcheck-suppress misra-c2012-18.4 ; @deviation ptr_offset is the user-supplied offsetof() value and is added to the base pointer. */
                 field_ptr += f->ptr_offset;
                 uint32_t raw = read_bits(payload, f->start_bit, f->bit_length);
 
@@ -446,6 +447,7 @@ ppack_pack(const void *base_ptr, void *payload, size_t payload_bits,
                  * is the user-supplied offsetof() value. */
                 const char *field_ptr;
                 (void)memcpy(&field_ptr, &base_ptr, sizeof field_ptr);
+                /* cppcheck-suppress misra-c2012-18.4 ; @deviation ptr_offset is the user-supplied offsetof() value. */
                 field_ptr += f->ptr_offset;
                 uint32_t raw = 0u;
 
