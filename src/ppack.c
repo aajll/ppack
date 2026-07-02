@@ -249,7 +249,7 @@ sign_extend(uint32_t value, uint16_t width)
 static int
 validate_field(const struct ppack_field *f, size_t payload_bits)
 {
-        if (f->bit_length == 0u || f->bit_length > PPACK_MAX_FIELD_BITS) {
+        if ((f->bit_length == 0u) || (f->bit_length > PPACK_MAX_FIELD_BITS)) {
                 return -PPACK_ERR_INVALARG;
         }
         if ((size_t)f->start_bit + (size_t)f->bit_length > payload_bits) {
@@ -271,7 +271,7 @@ validate_field(const struct ppack_field *f, size_t payload_bits)
 static int
 validate_payload_bits(size_t payload_bits)
 {
-        if (payload_bits == 0u || payload_bits > PPACK_MAX_PAYLOAD_BITS) {
+        if ((payload_bits == 0u) || (payload_bits > PPACK_MAX_PAYLOAD_BITS)) {
                 return -PPACK_ERR_INVALARG;
         }
         if ((payload_bits % (size_t)PPACK_ADDR_UNIT_BITS) != 0u) {
@@ -286,11 +286,11 @@ int
 ppack_unpack(void *base_ptr, const void *payload, size_t payload_bits,
              const struct ppack_field *fields, size_t field_count)
 {
-        if (base_ptr == NULL || payload == NULL) {
+        if ((base_ptr == NULL) || (payload == NULL)) {
                 return -PPACK_ERR_NULLPTR;
         }
 
-        if (field_count == 0u || fields == NULL) {
+        if ((field_count == 0u) || (fields == NULL)) {
                 return -PPACK_ERR_INVALARG;
         }
 
@@ -326,7 +326,7 @@ ppack_unpack(void *base_ptr, const void *payload, size_t payload_bits,
 
                 case PPACK_TYPE_UINT16: {
                         if (f->behaviour == PPACK_BEHAVIOUR_SCALED) {
-                                float tmp = ((float)(uint16_t)raw) * f->scale
+                                float tmp = (((float)(uint16_t)raw) * f->scale)
                                             + f->offset;
                                 (void)memcpy((void *)field_ptr, (void *)&tmp,
                                              sizeof(tmp));
@@ -342,7 +342,7 @@ ppack_unpack(void *base_ptr, const void *payload, size_t payload_bits,
                         if (f->behaviour == PPACK_BEHAVIOUR_SCALED) {
                                 int32_t sval = sign_extend(raw, f->bit_length);
                                 float tmp =
-                                    ((float)sval) * f->scale + f->offset;
+                                    (((float)sval) * f->scale) + f->offset;
                                 (void)memcpy((void *)field_ptr, (void *)&tmp,
                                              sizeof(tmp));
                         } else {
@@ -356,7 +356,7 @@ ppack_unpack(void *base_ptr, const void *payload, size_t payload_bits,
 
                 case PPACK_TYPE_UINT32: {
                         if (f->behaviour == PPACK_BEHAVIOUR_SCALED) {
-                                float tmp = ((float)raw) * f->scale + f->offset;
+                                float tmp = (((float)raw) * f->scale) + f->offset;
                                 (void)memcpy((void *)field_ptr, (void *)&tmp,
                                              sizeof(tmp));
                         } else {
@@ -370,7 +370,7 @@ ppack_unpack(void *base_ptr, const void *payload, size_t payload_bits,
                         int32_t sval = sign_extend(raw, f->bit_length);
                         if (f->behaviour == PPACK_BEHAVIOUR_SCALED) {
                                 float tmp =
-                                    ((float)sval) * f->scale + f->offset;
+                                    (((float)sval) * f->scale) + f->offset;
                                 (void)memcpy((void *)field_ptr, (void *)&tmp,
                                              sizeof(tmp));
                         } else {
@@ -405,11 +405,11 @@ int
 ppack_pack(const void *base_ptr, void *payload, size_t payload_bits,
            const struct ppack_field *fields, size_t field_count)
 {
-        if (base_ptr == NULL || payload == NULL) {
+        if ((base_ptr == NULL) || (payload == NULL)) {
                 return -PPACK_ERR_NULLPTR;
         }
 
-        if (field_count == 0u || fields == NULL) {
+        if ((field_count == 0u) || (fields == NULL)) {
                 return -PPACK_ERR_INVALARG;
         }
 

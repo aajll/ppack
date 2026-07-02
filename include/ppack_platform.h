@@ -142,11 +142,11 @@ ppack_bit_to_shift(uint16_t bit)
 }
 
 /* Catch unsupported configurations at compile time. */
-_Static_assert(PPACK_ADDR_UNIT_BITS == 8u || PPACK_ADDR_UNIT_BITS == 16u,
+_Static_assert((PPACK_ADDR_UNIT_BITS == 8u) || (PPACK_ADDR_UNIT_BITS == 16u),
                "ppack only supports 8-bit or 16-bit addressable units");
 
-_Static_assert(PPACK_PAYLOAD_BITS > 0u
-                   && PPACK_PAYLOAD_BITS % PPACK_ADDR_UNIT_BITS == 0u,
+_Static_assert((PPACK_PAYLOAD_BITS > 0u)
+                   && ((PPACK_PAYLOAD_BITS % PPACK_ADDR_UNIT_BITS) == 0u),
                "PPACK_PAYLOAD_BITS must be a positive multiple of "
                "PPACK_ADDR_UNIT_BITS");
 
