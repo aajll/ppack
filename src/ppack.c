@@ -318,7 +318,8 @@ ppack_unpack(void *base_ptr, const void *payload, size_t payload_bits,
                                 return -PPACK_ERR_INVALARG;
                         }
                         ppack_u8_t tmp = (ppack_u8_t)(raw & 0xFFu);
-                        (void)memcpy(field_ptr, &tmp, sizeof(tmp));
+                        (void)memcpy((void *)field_ptr, (void *)&tmp,
+                                     sizeof(tmp));
                         break;
                 }
 
@@ -326,10 +327,12 @@ ppack_unpack(void *base_ptr, const void *payload, size_t payload_bits,
                         if (f->behaviour == PPACK_BEHAVIOUR_SCALED) {
                                 float tmp = ((float)(uint16_t)raw) * f->scale
                                             + f->offset;
-                                (void)memcpy(field_ptr, &tmp, sizeof(tmp));
+                                (void)memcpy((void *)field_ptr, (void *)&tmp,
+                                             sizeof(tmp));
                         } else {
                                 uint16_t tmp = (uint16_t)raw;
-                                (void)memcpy(field_ptr, &tmp, sizeof(tmp));
+                                (void)memcpy((void *)field_ptr, (void *)&tmp,
+                                             sizeof(tmp));
                         }
                         break;
                 }
@@ -339,11 +342,13 @@ ppack_unpack(void *base_ptr, const void *payload, size_t payload_bits,
                                 int32_t sval = sign_extend(raw, f->bit_length);
                                 float tmp =
                                     ((float)sval) * f->scale + f->offset;
-                                (void)memcpy(field_ptr, &tmp, sizeof(tmp));
+                                (void)memcpy((void *)field_ptr, (void *)&tmp,
+                                             sizeof(tmp));
                         } else {
                                 int16_t tmp =
                                     (int16_t)sign_extend(raw, f->bit_length);
-                                (void)memcpy(field_ptr, &tmp, sizeof(tmp));
+                                (void)memcpy((void *)field_ptr, (void *)&tmp,
+                                             sizeof(tmp));
                         }
                         break;
                 }
@@ -351,9 +356,11 @@ ppack_unpack(void *base_ptr, const void *payload, size_t payload_bits,
                 case PPACK_TYPE_UINT32: {
                         if (f->behaviour == PPACK_BEHAVIOUR_SCALED) {
                                 float tmp = ((float)raw) * f->scale + f->offset;
-                                (void)memcpy(field_ptr, &tmp, sizeof(tmp));
+                                (void)memcpy((void *)field_ptr, (void *)&tmp,
+                                             sizeof(tmp));
                         } else {
-                                (void)memcpy(field_ptr, &raw, sizeof(raw));
+                                (void)memcpy((void *)field_ptr, (void *)&raw,
+                                             sizeof(raw));
                         }
                         break;
                 }
@@ -363,22 +370,26 @@ ppack_unpack(void *base_ptr, const void *payload, size_t payload_bits,
                         if (f->behaviour == PPACK_BEHAVIOUR_SCALED) {
                                 float tmp =
                                     ((float)sval) * f->scale + f->offset;
-                                (void)memcpy(field_ptr, &tmp, sizeof(tmp));
+                                (void)memcpy((void *)field_ptr, (void *)&tmp,
+                                             sizeof(tmp));
                         } else {
-                                (void)memcpy(field_ptr, &sval, sizeof(sval));
+                                (void)memcpy((void *)field_ptr, (void *)&sval,
+                                             sizeof(sval));
                         }
                         break;
                 }
 
                 case PPACK_TYPE_F32: {
                         float tmp;
-                        (void)memcpy(&tmp, &raw, sizeof(tmp));
-                        (void)memcpy(field_ptr, &tmp, sizeof(tmp));
+                        (void)memcpy((void *)&tmp, (void *)&raw, sizeof(tmp));
+                        (void)memcpy((void *)field_ptr, (void *)&tmp,
+                                     sizeof(tmp));
                         break;
                 }
 
                 case PPACK_TYPE_BITS: {
-                        (void)memcpy(field_ptr, &raw, sizeof(raw));
+                        (void)memcpy((void *)field_ptr, (void *)&raw,
+                                     sizeof(raw));
                         break;
                 }
 
@@ -429,7 +440,8 @@ ppack_pack(const void *base_ptr, void *payload, size_t payload_bits,
                                 return -PPACK_ERR_INVALARG;
                         }
                         ppack_u8_t tmp;
-                        (void)memcpy(&tmp, field_ptr, sizeof(tmp));
+                        (void)memcpy(&tmp, (const void *)field_ptr,
+                                     sizeof(tmp));
                         raw = (uint32_t)(tmp & 0xFFu);
                         break;
                 }
@@ -440,14 +452,16 @@ ppack_pack(const void *base_ptr, void *payload, size_t payload_bits,
                                         return -PPACK_ERR_OVERFLOW;
                                 }
                                 float val;
-                                (void)memcpy(&val, field_ptr, sizeof(val));
+                                (void)memcpy(&val, (const void *)field_ptr,
+                                             sizeof(val));
                                 float scaled = (val - f->offset) / f->scale;
                                 scaled =
                                     ppack_clamp_float(scaled, 0.0f, 65535.0f);
                                 raw = (uint32_t)(uint16_t)scaled;
                         } else {
                                 uint16_t tmp;
-                                (void)memcpy(&tmp, field_ptr, sizeof(tmp));
+                                (void)memcpy(&tmp, (const void *)field_ptr,
+                                             sizeof(tmp));
                                 raw = (uint32_t)tmp;
                         }
                         break;
@@ -459,14 +473,16 @@ ppack_pack(const void *base_ptr, void *payload, size_t payload_bits,
                                         return -PPACK_ERR_OVERFLOW;
                                 }
                                 float val;
-                                (void)memcpy(&val, field_ptr, sizeof(val));
+                                (void)memcpy(&val, (const void *)field_ptr,
+                                             sizeof(val));
                                 float scaled = (val - f->offset) / f->scale;
                                 scaled = ppack_clamp_float(scaled, -32768.0f,
                                                            32767.0f);
                                 raw = (uint32_t)(int16_t)scaled;
                         } else {
                                 int16_t tmp;
-                                (void)memcpy(&tmp, field_ptr, sizeof(tmp));
+                                (void)memcpy(&tmp, (const void *)field_ptr,
+                                             sizeof(tmp));
                                 raw = (uint32_t)tmp;
                         }
                         break;
@@ -478,13 +494,15 @@ ppack_pack(const void *base_ptr, void *payload, size_t payload_bits,
                                         return -PPACK_ERR_OVERFLOW;
                                 }
                                 float val;
-                                (void)memcpy(&val, field_ptr, sizeof(val));
+                                (void)memcpy(&val, (const void *)field_ptr,
+                                             sizeof(val));
                                 float scaled = (val - f->offset) / f->scale;
                                 scaled = ppack_clamp_float(
                                     scaled, 0.0f, PPACK_FLOAT_UINT32_MAX);
                                 raw = (uint32_t)scaled;
                         } else {
-                                (void)memcpy(&raw, field_ptr, sizeof(raw));
+                                (void)memcpy(&raw, (const void *)field_ptr,
+                                             sizeof(raw));
                         }
                         break;
                 }
@@ -495,7 +513,8 @@ ppack_pack(const void *base_ptr, void *payload, size_t payload_bits,
                                         return -PPACK_ERR_OVERFLOW;
                                 }
                                 float val;
-                                (void)memcpy(&val, field_ptr, sizeof(val));
+                                (void)memcpy(&val, (const void *)field_ptr,
+                                             sizeof(val));
                                 float scaled = (val - f->offset) / f->scale;
                                 scaled = ppack_clamp_float(
                                     scaled, PPACK_FLOAT_INT32_MIN,
@@ -503,7 +522,8 @@ ppack_pack(const void *base_ptr, void *payload, size_t payload_bits,
                                 raw = (uint32_t)(int32_t)scaled;
                         } else {
                                 int32_t tmp;
-                                (void)memcpy(&tmp, field_ptr, sizeof(tmp));
+                                (void)memcpy(&tmp, (const void *)field_ptr,
+                                             sizeof(tmp));
                                 raw = (uint32_t)tmp;
                         }
                         break;
@@ -511,13 +531,15 @@ ppack_pack(const void *base_ptr, void *payload, size_t payload_bits,
 
                 case PPACK_TYPE_F32: {
                         uint32_t tmp;
-                        (void)memcpy(&tmp, field_ptr, sizeof(tmp));
+                        (void)memcpy(&tmp, (const void *)field_ptr,
+                                     sizeof(tmp));
                         raw = tmp;
                         break;
                 }
 
                 case PPACK_TYPE_BITS: {
-                        (void)memcpy(&raw, field_ptr, sizeof(raw));
+                        (void)memcpy(&raw, (const void *)field_ptr,
+                                     sizeof(raw));
                         break;
                 }
 
