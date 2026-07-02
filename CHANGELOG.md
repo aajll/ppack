@@ -4,6 +4,22 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.4.0] - 2026-07-02
+
+### Changed
+
+- Resolved all required MISRA C:2012 deviations (Rules 10.4, 10.6, 10.7, 10.8, 11.8, 12.1, 21.15) through explicit casts, temporary variables for composite expressions, and operator precedence parentheses.
+- Applied `memcpy` pointer-copy workaround to resolve Rule 11.5 (`void *` to object pointer conversions) in `write_bits`, `read_bits`, `ppack_pack`, and `ppack_unpack`.
+- Moved `PPACK_PAYLOAD_UNITS` from internal `ppack_platform.h` to public `ppack.h` to explicitly surface it as part of the library API.
+
+### Removed
+
+- Removed unused `PPACK_WORD_MASK` macro from `ppack_platform.h`.
+
+### Added
+
+- Centralised advisory MISRA deviations in `misra-deviations.txt` with targeted inline `cppcheck-suppress` comments for statement-level and macro-level findings.
+
 ## [2.3.0] - 2026-06-19
 
 ### Changed
