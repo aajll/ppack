@@ -29,6 +29,20 @@ extern "C" {
  */
 
 /**
+ * @brief Number of addressable units occupied by a payload of
+ *        @c PPACK_PAYLOAD_BITS bits.
+ *
+ * On 16-bit MAU platforms, ppack allocates one addressable unit per
+ *        logical octet. This ensures compatibility with other primitives.
+ *
+ * Use this to declare a portable payload buffer:
+ * @code
+ * ppack_byte_t payload[PPACK_PAYLOAD_UNITS];
+ * @endcode
+ */
+#define PPACK_PAYLOAD_UNITS (PPACK_PAYLOAD_BITS / PPACK_ADDR_UNIT_BITS)
+
+/**
  * @defgroup ppack_api Ppack Library
  *
  * @brief Generic payload serialisation/deserialisation for bit-aligned fields.

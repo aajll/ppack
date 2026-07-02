@@ -99,21 +99,6 @@ typedef ppack_byte_t ppack_u8_t;
 #endif
 
 /**
- * @brief Number of addressable units occupied by a payload of
- *        @c PPACK_PAYLOAD_BITS bits.
- *
- * On 16-bit MAU platforms, ppack allocates one addressable unit per
- *        logical octet. This ensures compatibility with other primitives.
-
- *
- * Use this to declare a portable payload buffer:
- * @code
- * ppack_byte_t payload[PPACK_PAYLOAD_UNITS];
- * @endcode
- */
-#define PPACK_PAYLOAD_UNITS (PPACK_PAYLOAD_BITS / PPACK_ADDR_UNIT_BITS)
-
-/**
  * @brief Convert a payload bit index to its addressable-unit index.
  *
  * @param[in] bit Bit position within the payload.
