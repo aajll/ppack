@@ -221,7 +221,8 @@ read_bits(const void *payload, uint16_t start_bit, uint16_t bit_len)
 static int32_t
 sign_extend(uint32_t value, uint16_t width)
 {
-        uint32_t sign_bit = (uint32_t)1u << (width - 1u);
+        uint16_t shift = width - 1u;
+        uint32_t sign_bit = (uint32_t)1u << shift;
 
         /* If sign bit is set, fill upper bits with 1s. */
         if ((value & sign_bit) != 0u) {
@@ -442,7 +443,9 @@ ppack_pack(const void *base_ptr, void *payload, size_t payload_bits,
                         ppack_u8_t tmp;
                         (void)memcpy(&tmp, (const void *)field_ptr,
                                      sizeof(tmp));
-                        raw = (uint32_t)(tmp & 0xFFu);
+                        uint32_t mask_val = (uint32_t)tmp;
+                        mask_val &= 0xFFu;
+                        raw = mask_val;
                         break;
                 }
 
