@@ -57,6 +57,7 @@
 /** @brief Storage unit used for the payload buffer. */
 typedef uint16_t ppack_byte_t;
 #else
+/* cppcheck-suppress misra-c2012-2.5 ; @deviation Public macro for external platform detection. */
 #define PPACK_IS_16BIT_MAU   0
 /** @brief Logical bits per payload unit. Always 8 for interoperability. */
 #define PPACK_ADDR_UNIT_BITS 8u

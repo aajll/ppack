@@ -40,6 +40,7 @@ extern "C" {
  * ppack_byte_t payload[PPACK_PAYLOAD_UNITS];
  * @endcode
  */
+/* cppcheck-suppress misra-c2012-2.5 ; @deviation Public API macro for caller buffer sizing. */
 #define PPACK_PAYLOAD_UNITS (PPACK_PAYLOAD_BITS / PPACK_ADDR_UNIT_BITS)
 
 /**
