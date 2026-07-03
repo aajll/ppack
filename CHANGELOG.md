@@ -4,7 +4,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [2.4.0] - 2026-07-02
+## [2.4.0] - 2026-07-03
+
+### Fixed
+
+- Rejected NaN on scaled pack paths with `-PPACK_ERR_INVALARG`. Previously a NaN source value (or a NaN scaled result from the scale/offset arithmetic) reached a float-to-integer cast, which is undefined behaviour; ±infinity continues to saturate to the clamp bounds. Locked down with dedicated non-finite tests for every scaled type.
 
 ### Changed
 
@@ -22,6 +26,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - Adopted `misch` (cppcheck-backed MISRA C:2023 analysis) via `misra.toml`. The audit is clean; all deviations (advisory Rules 2.5, 8.7, 11.5, 15.5, 18.4 and required Rule 21.15) are justified at point of use with `cppcheck-suppress` `@deviation` comments or project-wide in `misra-deviations.txt`.
 - Added a compile-time guard that `float` is exactly 32 bits (`PPACK_TYPE_F32` wire-format prerequisite).
+- Added `-fsanitize=float-cast-overflow` to the CI sanitizer jobs: GCC does not include the float-to-integer conversion check in `-fsanitize=undefined`, leaving the Linux jobs blind to that UB class.
+- Raised the CI coverage gate from 80% line / 70% branch to 100% / 100%, matching what the suite achieves.
+- Documented error-path semantics for `ppack_pack` / `ppack_unpack` (destination contents are unspecified after a non-zero return) and clarified the 16-bit MAU `PPACK_TYPE_UINT8` storage contract (unpack zeroes the upper 8 bits of the member's storage unit).
 
 ## [2.3.0] - 2026-06-19
 

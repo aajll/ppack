@@ -22,11 +22,12 @@
 
 /* ================ INCLUDES ================================================ */
 
+#include <math.h>
 #include <stdint.h>
 #include <string.h>
 
 #include "ppack.h"
-#include <ppack_platform.h>
+#include "ppack_platform.h"
 
 /* ================ DEFINES ================================================= */
 
@@ -445,6 +446,9 @@ ppack_pack(const void *base_ptr, void *payload, size_t payload_bits,
                                 float val;
                                 ppack_member_read(&val, field_ptr, sizeof(val));
                                 float scaled = (val - f->offset) / f->scale;
+                                if (isnan(scaled) != 0) {
+                                        return -PPACK_ERR_INVALARG;
+                                }
                                 scaled =
                                     ppack_clamp_float(scaled, 0.0f, 65535.0f);
                                 raw = (uint32_t)(uint16_t)scaled;
@@ -464,6 +468,9 @@ ppack_pack(const void *base_ptr, void *payload, size_t payload_bits,
                                 float val;
                                 ppack_member_read(&val, field_ptr, sizeof(val));
                                 float scaled = (val - f->offset) / f->scale;
+                                if (isnan(scaled) != 0) {
+                                        return -PPACK_ERR_INVALARG;
+                                }
                                 scaled = ppack_clamp_float(scaled, -32768.0f,
                                                            32767.0f);
                                 raw = (uint32_t)(int16_t)scaled;
@@ -483,6 +490,9 @@ ppack_pack(const void *base_ptr, void *payload, size_t payload_bits,
                                 float val;
                                 ppack_member_read(&val, field_ptr, sizeof(val));
                                 float scaled = (val - f->offset) / f->scale;
+                                if (isnan(scaled) != 0) {
+                                        return -PPACK_ERR_INVALARG;
+                                }
                                 scaled = ppack_clamp_float(
                                     scaled, 0.0f, PPACK_FLOAT_UINT32_MAX);
                                 raw = (uint32_t)scaled;
@@ -500,6 +510,9 @@ ppack_pack(const void *base_ptr, void *payload, size_t payload_bits,
                                 float val;
                                 ppack_member_read(&val, field_ptr, sizeof(val));
                                 float scaled = (val - f->offset) / f->scale;
+                                if (isnan(scaled) != 0) {
+                                        return -PPACK_ERR_INVALARG;
+                                }
                                 scaled = ppack_clamp_float(
                                     scaled, PPACK_FLOAT_INT32_MIN,
                                     PPACK_FLOAT_INT32_MAX);

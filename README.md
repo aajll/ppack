@@ -284,6 +284,10 @@ For `PPACK_TYPE_UINT32` and `PPACK_TYPE_INT32` scaled fields, the float clamp us
 
 For safety-critical applications where an out-of-range physical value MUST be detected, validate the input at the call site before calling `ppack_pack`.
 
+### Non-finite values
+
+Pack rejects a scaled field whose scaled result is NaN (a NaN source value, or a NaN produced by the scale/offset arithmetic) with `-PPACK_ERR_INVALARG`; NaN has no defined integer representation. Positive and negative infinity are treated like any other out-of-range value and saturate to the clamp bounds above. `PPACK_TYPE_F32` fields are a raw bit-copy and carry NaN/infinity payloads unchanged.
+
 ### Quantization
 
 The float-to-integer cast in pack truncates toward zero (C standard cast semantics). The maximum round-trip error is one LSB, equal to `scale`. For round-to-nearest behaviour, pre-add `0.5f * scale * sign(physical)` at the call site before pack.

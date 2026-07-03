@@ -15,12 +15,12 @@
  *    platforms), @c ppack_byte_t is @c uint16_t. Regardless of MAU size,
  *    ppack treats the payload as a sequence of 8-bit logical units to
  *    ensure interoperability with other primitives (like @c ucrc).
-
  *
  *    @c PPACK_PAYLOAD_BITS is a user-overridable convenience macro that
- *    sizes @c PPACK_PAYLOAD_UNITS for stack buffer declarations. Define
- *    it before including the header (e.g. @c -DPPACK_PAYLOAD_BITS=128
- *    or @c -DPPACK_PAYLOAD_BITS=512) to change the default. The runtime
+ *    sizes the @c PPACK_PAYLOAD_UNITS buffer-sizing macro (defined in
+ *    @c ppack.h, the library's public entry point). Define it before
+ *    including the header (e.g. @c -DPPACK_PAYLOAD_BITS=128 or
+ *    @c -DPPACK_PAYLOAD_BITS=512) to change the default. The runtime
  *    @c ppack_pack / @c ppack_unpack API takes the payload size as an
  *    explicit argument and does not depend on this macro.
  *
@@ -85,7 +85,7 @@ typedef ppack_byte_t ppack_u8_t;
 
 /**
  * @brief Default payload size in bits for the @c PPACK_PAYLOAD_UNITS
- *        convenience macro.
+ *        convenience macro (defined in @c ppack.h).
  *
  * Override at the toolchain level (e.g. @c -DPPACK_PAYLOAD_BITS=128)
  * to size stack buffer declarations to a non-default payload. Must

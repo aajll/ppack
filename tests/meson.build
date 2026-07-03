@@ -5,6 +5,7 @@ test_sources = [
   'test_null_args.c',
   'test_validation.c',
   'test_scale_zero.c',
+  'test_scaled_nonfinite.c',
   'test_layout.c',
   'test_roundtrip_raw.c',
   'test_sign_extension.c',
