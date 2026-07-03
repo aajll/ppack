@@ -3,8 +3,8 @@
 [project]
 # Analysed source roots. Directory-style entries match everything beneath
 # them; globs (e.g. "*.c") are also honoured.
-# The shipped library is src/ + the public headers. tools/ (the host-side
-# table generator) is dev tooling, out of MISRA scope like tests/.
+# The shipped library is src/ + the public headers. tests/ is host-side
+# test infrastructure, out of MISRA scope.
 scope   = ["include/", "src/"]
 # Explicitly excluded. Every compile-DB file must match scope OR exclude;
 # an unclassified file is a hard error (no silent scope creep).

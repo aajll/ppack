@@ -42,19 +42,15 @@ gcovr --root . --filter 'src/' --filter 'include/' --print-summary
 - Public functions return `int` (negated `PPACK_ERR_*` on failure). No
   `errno`, no exceptions.
 
-## MISRA C:2012
+## MISRA C:2023
 
-The library is reviewed against MISRA C:2012. The full deviation record
-lives in the file header of `src/ppack.c`. If your change introduces a
-new deviation:
+The library is analysed with `misch` (cppcheck-backed MISRA C:2023 analysis), configured by `misra.toml`. The audit is clean: `misch run` must report zero findings. If your change introduces a new finding:
 
-1. Add an entry to the file-header deviation record (rule, sites,
-   justification, mitigation).
-2. Add an inline `/* MISRA <rule> */` marker at the deviation site.
-3. Justify the deviation in the PR description.
+1. Prefer restructuring the code so the rule is satisfied. Deviate only when compliance would make the code genuinely worse, and never restructure purely to hide a violation from the checker; an honest deviation beats evasion.
+2. Suppress at point of use with `/* cppcheck-suppress misra-c2012-<rule> ; @deviation <rationale> */`, or add a justified project-wide entry to `misra-deviations.txt` for house-style rules.
+3. Verify with `misch run` and `misch deviations` (every suppression must carry a rationale), and justify the deviation in the PR description.
 
-`required` rule deviations face a higher bar than `advisory`. We
-currently have zero required-rule deviations and want to keep it that way.
+`required` rule deviations face a higher bar than `advisory`. We currently carry exactly three, all Rule 21.15: the type-erased struct-member copies centralised in `ppack_member_write` / `ppack_member_read`, and the deliberate F32 `float`/`uint32_t` pun. Do not add required-rule deviations without strong justification; route new member copies through the existing helpers.
 
 ## Tests and coverage
 

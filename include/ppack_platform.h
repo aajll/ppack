@@ -137,4 +137,8 @@ _Static_assert(PPACK_PAYLOAD_BITS <= 512u,
                "PPACK_PAYLOAD_BITS must be at most 512 "
                "(CAN-FD frame data field ceiling)");
 
+_Static_assert(sizeof(float) == sizeof(uint32_t),
+               "ppack requires a 32-bit float "
+               "(PPACK_TYPE_F32 wire-format prerequisite)");
+
 #endif /* PPACK_PLATFORM_H_ */

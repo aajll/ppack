@@ -8,9 +8,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
-- Resolved all required MISRA C:2012 deviations (Rules 10.4, 10.6, 10.7, 10.8, 11.8, 12.1, 21.15) through explicit casts, temporary variables for composite expressions, and operator precedence parentheses.
-- Applied `memcpy` pointer-copy workaround to resolve Rule 11.5 (`void *` to object pointer conversions) in `write_bits`, `read_bits`, `ppack_pack`, and `ppack_unpack`.
-- Moved `PPACK_PAYLOAD_UNITS` from internal `ppack_platform.h` to public `ppack.h` to explicitly surface it as part of the library API.
+- Resolved the required MISRA C:2023 violations for Rules 10.4, 10.7 and 10.8 through unsigned suffixes and temporary variables for composite expressions.
+- Centralised the type-erased struct-member copies in internal `ppack_member_write` / `ppack_member_read` helpers; Rule 21.15 is now deviated at exactly three documented sites (the two helpers and the deliberate F32 `float`/`uint32_t` pun) rather than silenced per call site.
+- Resolved advisory Rule 12.1 findings by making operator precedence explicit with parentheses.
+- Moved `PPACK_PAYLOAD_UNITS` from `ppack_platform.h` to `ppack.h` to explicitly surface it as part of the public API. Include `ppack.h` (the documented entry point) rather than `ppack_platform.h` directly.
+- Updated `README.md` and `CONTRIBUTING.md` to describe the tool-driven MISRA workflow.
 
 ### Removed
 
@@ -18,7 +20,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
-- Centralised advisory MISRA deviations in `misra-deviations.txt` with targeted inline `cppcheck-suppress` comments for statement-level and macro-level findings.
+- Adopted `misch` (cppcheck-backed MISRA C:2023 analysis) via `misra.toml`. The audit is clean; all deviations (advisory Rules 2.5, 8.7, 11.5, 15.5, 18.4 and required Rule 21.15) are justified at point of use with `cppcheck-suppress` `@deviation` comments or project-wide in `misra-deviations.txt`.
+- Added a compile-time guard that `float` is exactly 32 bits (`PPACK_TYPE_F32` wire-format prerequisite).
 
 ## [2.3.0] - 2026-06-19
 
