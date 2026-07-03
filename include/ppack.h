@@ -29,6 +29,21 @@ extern "C" {
  */
 
 /**
+ * @brief Number of addressable units occupied by a payload of
+ *        @c PPACK_PAYLOAD_BITS bits.
+ *
+ * On 16-bit MAU platforms, ppack allocates one addressable unit per
+ *        logical octet. This ensures compatibility with other primitives.
+ *
+ * Use this to declare a portable payload buffer:
+ * @code
+ * ppack_byte_t payload[PPACK_PAYLOAD_UNITS];
+ * @endcode
+ */
+/* cppcheck-suppress misra-c2012-2.5 ; @deviation Public API macro for caller buffer sizing. */
+#define PPACK_PAYLOAD_UNITS (PPACK_PAYLOAD_BITS / PPACK_ADDR_UNIT_BITS)
+
+/**
  * @defgroup ppack_api Ppack Library
  *
  * @brief Generic payload serialisation/deserialisation for bit-aligned fields.
@@ -108,6 +123,14 @@ extern "C" {
  *    @c 2147483520 respectively (the next representable float
  *    below the type's true maximum).
  *
+ *    @b Non-finite values: pack rejects a SCALED field whose scaled
+ *    result is NaN (a NaN source value, or a NaN produced by the
+ *    scale/offset arithmetic) with @c -PPACK_ERR_INVALARG; NaN has no
+ *    defined integer representation. Positive/negative infinity is
+ *    treated like any other out-of-range value and saturates to the
+ *    destination type's clamp bounds. @c PPACK_TYPE_F32 fields are a
+ *    raw bit-copy and carry NaN/infinity payloads unchanged.
+ *
  *    ## 16-bit MAU Platform Notes
  *
  *    On platforms with a 16-bit minimum addressable unit (MAU)
@@ -118,17 +141,19 @@ extern "C" {
  *    ensure interoperability with other primitives. Two contract points
  *    specific to this platform:
  *
- *    @li A @c PPACK_TYPE_UINT8 field reads and writes only the LOW 8
- *        bits of its struct member's storage. On 16-bit MAU platforms
- *        the member's underlying 16-bit storage can technically hold 0..65535,
- *        but only the low 8 bits round-trip through the wire.
+ *    @li A @c PPACK_TYPE_UINT8 field carries only the low 8 bits of its
+ *        struct member through the wire. On pack, the upper 8 bits of
+ *        the member's 16-bit storage are read but masked out. On
+ *        unpack, the member's FULL storage unit is written: the low 8
+ *        bits receive the wire value and the upper 8 bits are zeroed.
+ *        Do not keep sentinel data in the upper bits of a
+ *        @c PPACK_TYPE_UINT8 member; it will not survive an unpack.
  *
  *    @li The @c ptr_offset value comes from @c offsetof(), which
  *        returns @c char-units. On 16-bit MAU platforms a @c char is 16
  *        bits, so the value is naturally in 16-bit units; the library
  *        does not need to translate it. Always use @c offsetof() rather
  *        than computing offsets by hand.
-
  *
  * @{
  */
@@ -251,8 +276,9 @@ struct ppack_field {
  * @return -PPACK_ERR_INVALARG  if @c field_count is 0, @c fields is NULL,
  *                               @c payload_bits is 0, not a multiple of
  *                               @c PPACK_ADDR_UNIT_BITS, or > 512;
- *                               @c bit_length is 0 or > 32; or scaling is
- *                               requested for @c PPACK_TYPE_UINT8
+ *                               @c bit_length is 0 or > 32; scaling is
+ *                               requested for @c PPACK_TYPE_UINT8; or a
+ *                               SCALED field's scaled result is NaN
  * @return -PPACK_ERR_OVERFLOW  if @c start_bit + bit_length exceeds
  *                               @c payload_bits, or @c scale is 0.0 on a
  *                               SCALED field
@@ -262,8 +288,13 @@ struct ppack_field {
  *        across threads or ISRs must provide their own mutual exclusion.
  *
  * @note  Out-of-range scaled values clamp silently to the destination
- *        type's representable range. See "Scaled-field semantics" in
- *        the file-level docs.
+ *        type's representable range; NaN is rejected. See "Scaled-field
+ *        semantics" in the file-level docs.
+ *
+ * @note  Not atomic on failure: the payload buffer is zeroed before the
+ *        field descriptors are validated, so on an error return its
+ *        contents are unspecified (zeroed and possibly partially
+ *        written). Do not transmit a payload after a non-zero return.
  */
 int ppack_pack(const void *base_ptr, void *payload, size_t payload_bits,
                const struct ppack_field *fields, size_t field_count);
@@ -302,6 +333,12 @@ int ppack_pack(const void *base_ptr, void *payload, size_t payload_bits,
  *
  * @note  Not thread-safe. Callers sharing @c base_ptr or @c payload
  *        across threads or ISRs must provide their own mutual exclusion.
+ *
+ * @note  Not atomic on failure: fields are decoded in descriptor order,
+ *        so on an error return the struct members of every field before
+ *        the offending descriptor have already been overwritten. Treat
+ *        the destination structure as unspecified after a non-zero
+ *        return.
  */
 int ppack_unpack(void *base_ptr, const void *payload, size_t payload_bits,
                  const struct ppack_field *fields, size_t field_count);

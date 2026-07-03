@@ -10,6 +10,9 @@ jobs:
   # ---------------------------------------------------------------------------
   # Build the library and run the full test suite under ASan + UBSan.
   # Runs on both Linux and macOS to catch platform-specific issues.
+  # float-cast-overflow is added explicitly: GCC does not include it in
+  # -fsanitize=undefined (clang does), and it is the check that catches
+  # undefined float-to-integer conversions (e.g. NaN) in the scaled paths.
   # ---------------------------------------------------------------------------
   test:
     name: "Test (${{ matrix.os }})"
@@ -44,6 +47,8 @@ jobs:
           --buildtype=debug
           -Dbuild_tests=true
           -Db_sanitize=address,undefined
+          -Dc_args=-fsanitize=float-cast-overflow
+          -Dc_link_args=-fsanitize=float-cast-overflow
 
       - name: Build
         run: meson compile -C build
@@ -88,7 +93,8 @@ jobs:
           --buildtype=debug
           -Dbuild_tests=true
           -Db_sanitize=address,undefined
-          -Dc_args=-DPPACK_PAYLOAD_BITS=512
+          "-Dc_args=-DPPACK_PAYLOAD_BITS=512 -fsanitize=float-cast-overflow"
+          -Dc_link_args=-fsanitize=float-cast-overflow
 
       - name: Build
         run: meson compile -C build
@@ -137,7 +143,8 @@ jobs:
   # ---------------------------------------------------------------------------
   # Code coverage gate. Builds with gcov instrumentation, runs the full
   # test suite, and fails the job if line or branch coverage drops below
-  # the threshold. Threshold is currently 80% line / 70% branch as a pragmatic baseline.
+  # the threshold. The suite achieves 100% line and branch coverage; the
+  # gate is set there to keep it that way.
   # ---------------------------------------------------------------------------
   coverage:
     name: "Coverage gate"
@@ -180,8 +187,8 @@ jobs:
             --html-details coverage-report/index.html \
             --txt coverage-report/summary.txt \
             --print-summary \
-            --fail-under-line 80 \
-            --fail-under-branch 70
+            --fail-under-line 100 \
+            --fail-under-branch 100
 
       - name: Upload coverage report
         if: always()

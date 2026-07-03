@@ -15,12 +15,12 @@
  *    platforms), @c ppack_byte_t is @c uint16_t. Regardless of MAU size,
  *    ppack treats the payload as a sequence of 8-bit logical units to
  *    ensure interoperability with other primitives (like @c ucrc).
-
  *
  *    @c PPACK_PAYLOAD_BITS is a user-overridable convenience macro that
- *    sizes @c PPACK_PAYLOAD_UNITS for stack buffer declarations. Define
- *    it before including the header (e.g. @c -DPPACK_PAYLOAD_BITS=128
- *    or @c -DPPACK_PAYLOAD_BITS=512) to change the default. The runtime
+ *    sizes the @c PPACK_PAYLOAD_UNITS buffer-sizing macro (defined in
+ *    @c ppack.h, the library's public entry point). Define it before
+ *    including the header (e.g. @c -DPPACK_PAYLOAD_BITS=128 or
+ *    @c -DPPACK_PAYLOAD_BITS=512) to change the default. The runtime
  *    @c ppack_pack / @c ppack_unpack API takes the payload size as an
  *    explicit argument and does not depend on this macro.
  *
@@ -57,6 +57,7 @@
 /** @brief Storage unit used for the payload buffer. */
 typedef uint16_t ppack_byte_t;
 #else
+/* cppcheck-suppress misra-c2012-2.5 ; @deviation Public macro for external platform detection. */
 #define PPACK_IS_16BIT_MAU   0
 /** @brief Logical bits per payload unit. Always 8 for interoperability. */
 #define PPACK_ADDR_UNIT_BITS 8u
@@ -84,7 +85,7 @@ typedef ppack_byte_t ppack_u8_t;
 
 /**
  * @brief Default payload size in bits for the @c PPACK_PAYLOAD_UNITS
- *        convenience macro.
+ *        convenience macro (defined in @c ppack.h).
  *
  * Override at the toolchain level (e.g. @c -DPPACK_PAYLOAD_BITS=128)
  * to size stack buffer declarations to a non-default payload. Must
@@ -97,24 +98,6 @@ typedef ppack_byte_t ppack_u8_t;
 #ifndef PPACK_PAYLOAD_BITS
 #define PPACK_PAYLOAD_BITS 64u
 #endif
-
-/**
- * @brief Number of addressable units occupied by a payload of
- *        @c PPACK_PAYLOAD_BITS bits.
- *
- * On 16-bit MAU platforms, ppack allocates one addressable unit per
- *        logical octet. This ensures compatibility with other primitives.
-
- *
- * Use this to declare a portable payload buffer:
- * @code
- * ppack_byte_t payload[PPACK_PAYLOAD_UNITS];
- * @endcode
- */
-#define PPACK_PAYLOAD_UNITS (PPACK_PAYLOAD_BITS / PPACK_ADDR_UNIT_BITS)
-
-/** @brief Bitmask covering one addressable unit. */
-#define PPACK_WORD_MASK     (((uint32_t)1u << PPACK_ADDR_UNIT_BITS) - 1u)
 
 /**
  * @brief Convert a payload bit index to its addressable-unit index.
@@ -142,16 +125,20 @@ ppack_bit_to_shift(uint16_t bit)
 }
 
 /* Catch unsupported configurations at compile time. */
-_Static_assert(PPACK_ADDR_UNIT_BITS == 8 || PPACK_ADDR_UNIT_BITS == 16,
+_Static_assert((PPACK_ADDR_UNIT_BITS == 8u) || (PPACK_ADDR_UNIT_BITS == 16u),
                "ppack only supports 8-bit or 16-bit addressable units");
 
-_Static_assert(PPACK_PAYLOAD_BITS > 0u
-                   && PPACK_PAYLOAD_BITS % PPACK_ADDR_UNIT_BITS == 0u,
+_Static_assert((PPACK_PAYLOAD_BITS > 0u)
+                   && ((PPACK_PAYLOAD_BITS % PPACK_ADDR_UNIT_BITS) == 0u),
                "PPACK_PAYLOAD_BITS must be a positive multiple of "
                "PPACK_ADDR_UNIT_BITS");
 
 _Static_assert(PPACK_PAYLOAD_BITS <= 512u,
                "PPACK_PAYLOAD_BITS must be at most 512 "
                "(CAN-FD frame data field ceiling)");
+
+_Static_assert(sizeof(float) == sizeof(uint32_t),
+               "ppack requires a 32-bit float "
+               "(PPACK_TYPE_F32 wire-format prerequisite)");
 
 #endif /* PPACK_PLATFORM_H_ */

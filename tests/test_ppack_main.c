@@ -30,6 +30,7 @@ _Static_assert(sizeof(ppack_byte_t) == 1 || sizeof(ppack_byte_t) == 2,
 extern void run_null_arg_tests(void);
 extern void run_validation_tests(void);
 extern void run_scale_zero_tests(void);
+extern void run_scaled_nonfinite_tests(void);
 extern void run_roundtrip_raw_tests(void);
 extern void run_sign_extension_tests(void);
 extern void run_layout_tests(void);
@@ -53,6 +54,7 @@ main(void)
         run_null_arg_tests();
         run_validation_tests();
         run_scale_zero_tests();
+        run_scaled_nonfinite_tests();
         run_roundtrip_raw_tests();
         run_sign_extension_tests();
         run_layout_tests();

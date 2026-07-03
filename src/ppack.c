@@ -6,67 +6,28 @@
  * @brief
  *    Implementation of the ppack library - generic payload serialisation.
  *
- * @par MISRA C:2012 Deviation Record
+ * @par MISRA C:2023 Compliance
  *
- * Deviations are intentional and have been reviewed. Each site is also
- * tagged in-line at point-of-use (search for "MISRA <rule>"). Tool-driven
- * full compliance requires running a certified static analyser
- * (e.g. PC-lint Plus, Coverity, Polyspace) against this list.
- *
- * Last reviewed: against MISRA C:2012 Guidelines (manual review).
- *
- * Rule 11.5 (advisory) - Cast from pointer-to-void to pointer-to-object
- *   Sites:        write_bits, read_bits payload casts to ppack_byte_t*;
- *                 ppack_pack/unpack base_ptr cast to char* for offset
- *                 arithmetic.
- *   Justification: The public API takes void* / const void* per the C
- *                  standard's convention for opaque polymorphic buffer
- *                  types. Internal code requires unit-typed access on
- *                  the payload (for indexed read-modify-write of bits)
- *                  and char-typed access on the user struct (for
- *                  offsetof()-based member addressing).
- *   Mitigation:   Verified end-to-end on host (8-bit MAU) and via
- *                  PPACK_SIMULATE_16BIT_MAU host build (16-bit MAU code
- *                  path). ASan + UBSan clean across the test suite,
- *                  including 35 000 randomised round-trip iterations
- *                  per type.
- *
- * Rule 18.4 (advisory) - The +, -, += and -= operators should not be
- *                         applied to an expression of pointer type
- *   Sites:        ppack_pack / ppack_unpack field_ptr arithmetic
- *                 (char* + ptr_offset).
- *   Justification: ptr_offset is the user-supplied offsetof() value and
- *                  encodes the location of the struct member relative
- *                  to base_ptr. Arithmetic addition is the natural and
- *                  idiomatic way to apply it; alternatives (subscript,
- *                  uintptr_t round-trip) either reduce to the same
- *                  underlying pointer arithmetic or introduce a
- *                  pointer-to-integer conversion (Rule 11.4) which is
- *                  worse.
- *   Mitigation:   ptr_offset is bounded by sizeof(user struct) and
- *                  validated implicitly at use (memcpy with a fixed
- *                  small size). All field tests exercise this path.
- *
- * Rule 15.5 (advisory) - A function should have a single point of exit
- *   Sites:        ppack_pack, ppack_unpack, validate_field, sign_extend
- *   Justification: Early-return-on-error is the project's idiomatic
- *                  control flow. Refactoring to a single-exit pattern
- *                  would either deeply nest the validation arms (hurting
- *                  readability) or introduce a goto-cleanup (Rule 15.1
- *                  deviation), trading one advisory deviation for
- *                  another with no readability gain.
- *   Mitigation:   All exit points return one of the documented error
- *                  codes or PPACK_SUCCESS; covered by NULL/INVALARG/
- *                  OVERFLOW/NOTFOUND test cases.
+ * The library is analysed with misch (cppcheck-backed MISRA C:2023
+ * analysis), configured by misra.toml at the project root. The audit is
+ * clean; every deviation is recorded at point of use as a
+ * `cppcheck-suppress` comment carrying an `@deviation` rationale, or
+ * project-wide in misra-deviations.txt (Rule 15.5, single-exit house
+ * style). The only required-rule deviations are three Rule 21.15 sites:
+ * the type-erased member copies centralised in ppack_member_write /
+ * ppack_member_read, and the deliberate float/uint32_t pun in F32
+ * unpack. Run `misch run` to reproduce the audit and `misch deviations`
+ * to harvest the deviation record.
  */
 
 /* ================ INCLUDES ================================================ */
 
+#include <math.h>
 #include <stdint.h>
 #include <string.h>
 
 #include "ppack.h"
-#include <ppack_platform.h>
+#include "ppack_platform.h"
 
 /* ================ DEFINES ================================================= */
 
@@ -122,6 +83,34 @@ ppack_clamp_float(float val, float lo, float hi)
 }
 
 /**
+ * @brief Copy @p n bytes from a typed temporary into a struct member
+ *        addressed as char* via its offsetof() value.
+ *
+ * Centralises the type-erased member store so the deliberate Rule 21.15
+ * deviation has a single, documented site.
+ */
+static void
+ppack_member_write(char *dst, const void *src, size_t n)
+{
+        /* cppcheck-suppress misra-c2012-21.15 ; @deviation Type-erased copy to a struct member addressed via offsetof(); the source temporary's type matches the member's declared type by API contract (see ppack_type). */
+        (void)memcpy(dst, src, n);
+}
+
+/**
+ * @brief Copy @p n bytes from a struct member addressed as const char*
+ *        via its offsetof() value into a typed temporary.
+ *
+ * Centralises the type-erased member load so the deliberate Rule 21.15
+ * deviation has a single, documented site.
+ */
+static void
+ppack_member_read(void *dst, const char *src, size_t n)
+{
+        /* cppcheck-suppress misra-c2012-21.15 ; @deviation Type-erased copy from a struct member addressed via offsetof(); the destination temporary's type matches the member's declared type by API contract (see ppack_type). */
+        (void)memcpy(dst, src, n);
+}
+
+/**
  * @brief Write a bitfield of arbitrary length into a payload buffer.
  *
  * @param[in,out] payload   Output buffer
@@ -135,7 +124,7 @@ ppack_clamp_float(float val, float lo, float hi)
 static void
 write_bits(void *payload, uint16_t start_bit, uint16_t bit_len, uint32_t value)
 {
-        /* MISRA 11.5: opaque void* payload requires unit-typed access. */
+        /* cppcheck-suppress misra-c2012-11.5 ; @deviation Opaque void* payload requires unit-typed access for indexed read-modify-write. */
         ppack_byte_t *words = (ppack_byte_t *)payload;
         uint16_t bits_written = 0;
 
@@ -178,7 +167,7 @@ write_bits(void *payload, uint16_t start_bit, uint16_t bit_len, uint32_t value)
 static uint32_t
 read_bits(const void *payload, uint16_t start_bit, uint16_t bit_len)
 {
-        /* MISRA 11.5: opaque const void* payload requires unit-typed access. */
+        /* cppcheck-suppress misra-c2012-11.5 ; @deviation Opaque const void* payload requires unit-typed access for indexed reads. */
         const ppack_byte_t *words = (const ppack_byte_t *)payload;
         uint32_t result = 0;
         uint16_t bits_read = 0;
@@ -221,7 +210,8 @@ read_bits(const void *payload, uint16_t start_bit, uint16_t bit_len)
 static int32_t
 sign_extend(uint32_t value, uint16_t width)
 {
-        uint32_t sign_bit = (uint32_t)1u << (width - 1u);
+        uint16_t shift = width - 1u;
+        uint32_t sign_bit = (uint32_t)1u << shift;
 
         /* If sign bit is set, fill upper bits with 1s. */
         if ((value & sign_bit) != 0u) {
@@ -248,7 +238,7 @@ sign_extend(uint32_t value, uint16_t width)
 static int
 validate_field(const struct ppack_field *f, size_t payload_bits)
 {
-        if (f->bit_length == 0u || f->bit_length > PPACK_MAX_FIELD_BITS) {
+        if ((f->bit_length == 0u) || (f->bit_length > PPACK_MAX_FIELD_BITS)) {
                 return -PPACK_ERR_INVALARG;
         }
         if ((size_t)f->start_bit + (size_t)f->bit_length > payload_bits) {
@@ -270,7 +260,7 @@ validate_field(const struct ppack_field *f, size_t payload_bits)
 static int
 validate_payload_bits(size_t payload_bits)
 {
-        if (payload_bits == 0u || payload_bits > PPACK_MAX_PAYLOAD_BITS) {
+        if ((payload_bits == 0u) || (payload_bits > PPACK_MAX_PAYLOAD_BITS)) {
                 return -PPACK_ERR_INVALARG;
         }
         if ((payload_bits % (size_t)PPACK_ADDR_UNIT_BITS) != 0u) {
@@ -282,14 +272,15 @@ validate_payload_bits(size_t payload_bits)
 /* ================ GLOBAL PROTOTYPES ======================================= */
 
 int
+/* cppcheck-suppress misra-c2012-8.7 ; @deviation Public API function consumed by external translation units. */
 ppack_unpack(void *base_ptr, const void *payload, size_t payload_bits,
              const struct ppack_field *fields, size_t field_count)
 {
-        if (base_ptr == NULL || payload == NULL) {
+        if ((base_ptr == NULL) || (payload == NULL)) {
                 return -PPACK_ERR_NULLPTR;
         }
 
-        if (field_count == 0u || fields == NULL) {
+        if ((field_count == 0u) || (fields == NULL)) {
                 return -PPACK_ERR_INVALARG;
         }
 
@@ -306,10 +297,10 @@ ppack_unpack(void *base_ptr, const void *payload, size_t payload_bits,
                         return vret;
                 }
 
-                /* MISRA 11.5: void* opaque struct requires char* for offset
-                 * arithmetic. MISRA 18.4: ptr_offset is the user-supplied
-                 * offsetof() value and is added to the base pointer. */
-                char *field_ptr = (char *)base_ptr + f->ptr_offset;
+                /* cppcheck-suppress misra-c2012-11.5 ; @deviation void* opaque struct requires char* for offsetof()-based member addressing. */
+                char *field_ptr = (char *)base_ptr;
+                /* cppcheck-suppress misra-c2012-18.4 ; @deviation ptr_offset is the user-supplied offsetof() value and is added to the base pointer. */
+                field_ptr += f->ptr_offset;
                 uint32_t raw = read_bits(payload, f->start_bit, f->bit_length);
 
                 switch (f->type) {
@@ -318,18 +309,20 @@ ppack_unpack(void *base_ptr, const void *payload, size_t payload_bits,
                                 return -PPACK_ERR_INVALARG;
                         }
                         ppack_u8_t tmp = (ppack_u8_t)(raw & 0xFFu);
-                        (void)memcpy(field_ptr, &tmp, sizeof(tmp));
+                        ppack_member_write(field_ptr, &tmp, sizeof(tmp));
                         break;
                 }
 
                 case PPACK_TYPE_UINT16: {
                         if (f->behaviour == PPACK_BEHAVIOUR_SCALED) {
-                                float tmp = ((float)(uint16_t)raw) * f->scale
+                                float tmp = (((float)(uint16_t)raw) * f->scale)
                                             + f->offset;
-                                (void)memcpy(field_ptr, &tmp, sizeof(tmp));
+                                ppack_member_write(field_ptr, &tmp,
+                                                   sizeof(tmp));
                         } else {
                                 uint16_t tmp = (uint16_t)raw;
-                                (void)memcpy(field_ptr, &tmp, sizeof(tmp));
+                                ppack_member_write(field_ptr, &tmp,
+                                                   sizeof(tmp));
                         }
                         break;
                 }
@@ -338,22 +331,27 @@ ppack_unpack(void *base_ptr, const void *payload, size_t payload_bits,
                         if (f->behaviour == PPACK_BEHAVIOUR_SCALED) {
                                 int32_t sval = sign_extend(raw, f->bit_length);
                                 float tmp =
-                                    ((float)sval) * f->scale + f->offset;
-                                (void)memcpy(field_ptr, &tmp, sizeof(tmp));
+                                    (((float)sval) * f->scale) + f->offset;
+                                ppack_member_write(field_ptr, &tmp,
+                                                   sizeof(tmp));
                         } else {
                                 int16_t tmp =
                                     (int16_t)sign_extend(raw, f->bit_length);
-                                (void)memcpy(field_ptr, &tmp, sizeof(tmp));
+                                ppack_member_write(field_ptr, &tmp,
+                                                   sizeof(tmp));
                         }
                         break;
                 }
 
                 case PPACK_TYPE_UINT32: {
                         if (f->behaviour == PPACK_BEHAVIOUR_SCALED) {
-                                float tmp = ((float)raw) * f->scale + f->offset;
-                                (void)memcpy(field_ptr, &tmp, sizeof(tmp));
+                                float tmp =
+                                    (((float)raw) * f->scale) + f->offset;
+                                ppack_member_write(field_ptr, &tmp,
+                                                   sizeof(tmp));
                         } else {
-                                (void)memcpy(field_ptr, &raw, sizeof(raw));
+                                ppack_member_write(field_ptr, &raw,
+                                                   sizeof(raw));
                         }
                         break;
                 }
@@ -362,23 +360,26 @@ ppack_unpack(void *base_ptr, const void *payload, size_t payload_bits,
                         int32_t sval = sign_extend(raw, f->bit_length);
                         if (f->behaviour == PPACK_BEHAVIOUR_SCALED) {
                                 float tmp =
-                                    ((float)sval) * f->scale + f->offset;
-                                (void)memcpy(field_ptr, &tmp, sizeof(tmp));
+                                    (((float)sval) * f->scale) + f->offset;
+                                ppack_member_write(field_ptr, &tmp,
+                                                   sizeof(tmp));
                         } else {
-                                (void)memcpy(field_ptr, &sval, sizeof(sval));
+                                ppack_member_write(field_ptr, &sval,
+                                                   sizeof(sval));
                         }
                         break;
                 }
 
                 case PPACK_TYPE_F32: {
                         float tmp;
+                        /* cppcheck-suppress misra-c2012-21.15 ; @deviation Deliberate float/uint32_t bit reinterpretation; memcpy is the well-defined idiom for type punning. */
                         (void)memcpy(&tmp, &raw, sizeof(tmp));
-                        (void)memcpy(field_ptr, &tmp, sizeof(tmp));
+                        ppack_member_write(field_ptr, &tmp, sizeof(tmp));
                         break;
                 }
 
                 case PPACK_TYPE_BITS: {
-                        (void)memcpy(field_ptr, &raw, sizeof(raw));
+                        ppack_member_write(field_ptr, &raw, sizeof(raw));
                         break;
                 }
 
@@ -390,14 +391,15 @@ ppack_unpack(void *base_ptr, const void *payload, size_t payload_bits,
 }
 
 int
+/* cppcheck-suppress misra-c2012-8.7 ; @deviation Public API function consumed by external translation units. */
 ppack_pack(const void *base_ptr, void *payload, size_t payload_bits,
            const struct ppack_field *fields, size_t field_count)
 {
-        if (base_ptr == NULL || payload == NULL) {
+        if ((base_ptr == NULL) || (payload == NULL)) {
                 return -PPACK_ERR_NULLPTR;
         }
 
-        if (field_count == 0u || fields == NULL) {
+        if ((field_count == 0u) || (fields == NULL)) {
                 return -PPACK_ERR_INVALARG;
         }
 
@@ -417,10 +419,10 @@ ppack_pack(const void *base_ptr, void *payload, size_t payload_bits,
                         return vret;
                 }
 
-                /* MISRA 11.5: const void* opaque struct requires const char*
-                 * for offset arithmetic. MISRA 18.4: ptr_offset is the
-                 * user-supplied offsetof() value. */
-                const char *field_ptr = (const char *)base_ptr + f->ptr_offset;
+                /* cppcheck-suppress misra-c2012-11.5 ; @deviation const void* opaque struct requires const char* for offsetof()-based member addressing. */
+                const char *field_ptr = (const char *)base_ptr;
+                /* cppcheck-suppress misra-c2012-18.4 ; @deviation ptr_offset is the user-supplied offsetof() value. */
+                field_ptr += f->ptr_offset;
                 uint32_t raw = 0u;
 
                 switch (f->type) {
@@ -429,8 +431,10 @@ ppack_pack(const void *base_ptr, void *payload, size_t payload_bits,
                                 return -PPACK_ERR_INVALARG;
                         }
                         ppack_u8_t tmp;
-                        (void)memcpy(&tmp, field_ptr, sizeof(tmp));
-                        raw = (uint32_t)(tmp & 0xFFu);
+                        ppack_member_read(&tmp, field_ptr, sizeof(tmp));
+                        uint32_t mask_val = (uint32_t)tmp;
+                        mask_val &= 0xFFu;
+                        raw = mask_val;
                         break;
                 }
 
@@ -440,14 +444,17 @@ ppack_pack(const void *base_ptr, void *payload, size_t payload_bits,
                                         return -PPACK_ERR_OVERFLOW;
                                 }
                                 float val;
-                                (void)memcpy(&val, field_ptr, sizeof(val));
+                                ppack_member_read(&val, field_ptr, sizeof(val));
                                 float scaled = (val - f->offset) / f->scale;
+                                if (isnan(scaled) != 0) {
+                                        return -PPACK_ERR_INVALARG;
+                                }
                                 scaled =
                                     ppack_clamp_float(scaled, 0.0f, 65535.0f);
                                 raw = (uint32_t)(uint16_t)scaled;
                         } else {
                                 uint16_t tmp;
-                                (void)memcpy(&tmp, field_ptr, sizeof(tmp));
+                                ppack_member_read(&tmp, field_ptr, sizeof(tmp));
                                 raw = (uint32_t)tmp;
                         }
                         break;
@@ -459,14 +466,17 @@ ppack_pack(const void *base_ptr, void *payload, size_t payload_bits,
                                         return -PPACK_ERR_OVERFLOW;
                                 }
                                 float val;
-                                (void)memcpy(&val, field_ptr, sizeof(val));
+                                ppack_member_read(&val, field_ptr, sizeof(val));
                                 float scaled = (val - f->offset) / f->scale;
+                                if (isnan(scaled) != 0) {
+                                        return -PPACK_ERR_INVALARG;
+                                }
                                 scaled = ppack_clamp_float(scaled, -32768.0f,
                                                            32767.0f);
                                 raw = (uint32_t)(int16_t)scaled;
                         } else {
                                 int16_t tmp;
-                                (void)memcpy(&tmp, field_ptr, sizeof(tmp));
+                                ppack_member_read(&tmp, field_ptr, sizeof(tmp));
                                 raw = (uint32_t)tmp;
                         }
                         break;
@@ -478,13 +488,16 @@ ppack_pack(const void *base_ptr, void *payload, size_t payload_bits,
                                         return -PPACK_ERR_OVERFLOW;
                                 }
                                 float val;
-                                (void)memcpy(&val, field_ptr, sizeof(val));
+                                ppack_member_read(&val, field_ptr, sizeof(val));
                                 float scaled = (val - f->offset) / f->scale;
+                                if (isnan(scaled) != 0) {
+                                        return -PPACK_ERR_INVALARG;
+                                }
                                 scaled = ppack_clamp_float(
                                     scaled, 0.0f, PPACK_FLOAT_UINT32_MAX);
                                 raw = (uint32_t)scaled;
                         } else {
-                                (void)memcpy(&raw, field_ptr, sizeof(raw));
+                                ppack_member_read(&raw, field_ptr, sizeof(raw));
                         }
                         break;
                 }
@@ -495,15 +508,18 @@ ppack_pack(const void *base_ptr, void *payload, size_t payload_bits,
                                         return -PPACK_ERR_OVERFLOW;
                                 }
                                 float val;
-                                (void)memcpy(&val, field_ptr, sizeof(val));
+                                ppack_member_read(&val, field_ptr, sizeof(val));
                                 float scaled = (val - f->offset) / f->scale;
+                                if (isnan(scaled) != 0) {
+                                        return -PPACK_ERR_INVALARG;
+                                }
                                 scaled = ppack_clamp_float(
                                     scaled, PPACK_FLOAT_INT32_MIN,
                                     PPACK_FLOAT_INT32_MAX);
                                 raw = (uint32_t)(int32_t)scaled;
                         } else {
                                 int32_t tmp;
-                                (void)memcpy(&tmp, field_ptr, sizeof(tmp));
+                                ppack_member_read(&tmp, field_ptr, sizeof(tmp));
                                 raw = (uint32_t)tmp;
                         }
                         break;
@@ -511,13 +527,13 @@ ppack_pack(const void *base_ptr, void *payload, size_t payload_bits,
 
                 case PPACK_TYPE_F32: {
                         uint32_t tmp;
-                        (void)memcpy(&tmp, field_ptr, sizeof(tmp));
+                        ppack_member_read(&tmp, field_ptr, sizeof(tmp));
                         raw = tmp;
                         break;
                 }
 
                 case PPACK_TYPE_BITS: {
-                        (void)memcpy(&raw, field_ptr, sizeof(raw));
+                        ppack_member_read(&raw, field_ptr, sizeof(raw));
                         break;
                 }
 
