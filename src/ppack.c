@@ -92,7 +92,10 @@ ppack_clamp_float(float val, float lo, float hi)
 static void
 ppack_member_write(char *dst, const void *src, size_t n)
 {
-        /* cppcheck-suppress misra-c2012-21.15 ; @deviation Type-erased copy to a struct member addressed via offsetof(); the source temporary's type matches the member's declared type by API contract (see ppack_type). */
+        /* cppcheck-suppress misra-c2012-21.15 ; @deviation Type-erased copy to
+         * a struct member addressed via offsetof(); the source temporary's type
+         * matches the member's declared type by API contract (see ppack_type).
+         */
         (void)memcpy(dst, src, n);
 }
 
@@ -106,7 +109,10 @@ ppack_member_write(char *dst, const void *src, size_t n)
 static void
 ppack_member_read(void *dst, const char *src, size_t n)
 {
-        /* cppcheck-suppress misra-c2012-21.15 ; @deviation Type-erased copy from a struct member addressed via offsetof(); the destination temporary's type matches the member's declared type by API contract (see ppack_type). */
+        /* cppcheck-suppress misra-c2012-21.15 ; @deviation Type-erased copy
+         * from a struct member addressed via offsetof(); the destination
+         * temporary's type matches the member's declared type by API contract
+         * (see ppack_type). */
         (void)memcpy(dst, src, n);
 }
 
@@ -124,7 +130,8 @@ ppack_member_read(void *dst, const char *src, size_t n)
 static void
 write_bits(void *payload, uint16_t start_bit, uint16_t bit_len, uint32_t value)
 {
-        /* cppcheck-suppress misra-c2012-11.5 ; @deviation Opaque void* payload requires unit-typed access for indexed read-modify-write. */
+        /* cppcheck-suppress misra-c2012-11.5 ; @deviation Opaque void* payload
+         * requires unit-typed access for indexed read-modify-write. */
         ppack_byte_t *words = (ppack_byte_t *)payload;
         uint16_t bits_written = 0;
 
@@ -167,7 +174,8 @@ write_bits(void *payload, uint16_t start_bit, uint16_t bit_len, uint32_t value)
 static uint32_t
 read_bits(const void *payload, uint16_t start_bit, uint16_t bit_len)
 {
-        /* cppcheck-suppress misra-c2012-11.5 ; @deviation Opaque const void* payload requires unit-typed access for indexed reads. */
+        /* cppcheck-suppress misra-c2012-11.5 ; @deviation Opaque const void*
+         * payload requires unit-typed access for indexed reads. */
         const ppack_byte_t *words = (const ppack_byte_t *)payload;
         uint32_t result = 0;
         uint16_t bits_read = 0;
@@ -272,7 +280,8 @@ validate_payload_bits(size_t payload_bits)
 /* ================ GLOBAL PROTOTYPES ======================================= */
 
 int
-/* cppcheck-suppress misra-c2012-8.7 ; @deviation Public API function consumed by external translation units. */
+/* cppcheck-suppress misra-c2012-8.7 ; @deviation Public API function consumed
+   by external translation units. */
 ppack_unpack(void *base_ptr, const void *payload, size_t payload_bits,
              const struct ppack_field *fields, size_t field_count)
 {
@@ -297,9 +306,13 @@ ppack_unpack(void *base_ptr, const void *payload, size_t payload_bits,
                         return vret;
                 }
 
-                /* cppcheck-suppress misra-c2012-11.5 ; @deviation void* opaque struct requires char* for offsetof()-based member addressing. */
+                /* cppcheck-suppress misra-c2012-11.5 ; @deviation void* opaque
+                 * struct requires char* for offsetof()-based member addressing.
+                 */
                 char *field_ptr = (char *)base_ptr;
-                /* cppcheck-suppress misra-c2012-18.4 ; @deviation ptr_offset is the user-supplied offsetof() value and is added to the base pointer. */
+                /* cppcheck-suppress misra-c2012-18.4 ; @deviation ptr_offset is
+                 * the user-supplied offsetof() value and is added to the base
+                 * pointer. */
                 field_ptr += f->ptr_offset;
                 uint32_t raw = read_bits(payload, f->start_bit, f->bit_length);
 
@@ -372,7 +385,9 @@ ppack_unpack(void *base_ptr, const void *payload, size_t payload_bits,
 
                 case PPACK_TYPE_F32: {
                         float tmp;
-                        /* cppcheck-suppress misra-c2012-21.15 ; @deviation Deliberate float/uint32_t bit reinterpretation; memcpy is the well-defined idiom for type punning. */
+                        /* cppcheck-suppress misra-c2012-21.15 ; @deviation
+                         * Deliberate float/uint32_t bit reinterpretation;
+                         * memcpy is the well-defined idiom for type punning. */
                         (void)memcpy(&tmp, &raw, sizeof(tmp));
                         ppack_member_write(field_ptr, &tmp, sizeof(tmp));
                         break;
@@ -391,7 +406,8 @@ ppack_unpack(void *base_ptr, const void *payload, size_t payload_bits,
 }
 
 int
-/* cppcheck-suppress misra-c2012-8.7 ; @deviation Public API function consumed by external translation units. */
+/* cppcheck-suppress misra-c2012-8.7 ; @deviation Public API function consumed
+   by external translation units. */
 ppack_pack(const void *base_ptr, void *payload, size_t payload_bits,
            const struct ppack_field *fields, size_t field_count)
 {
@@ -419,9 +435,12 @@ ppack_pack(const void *base_ptr, void *payload, size_t payload_bits,
                         return vret;
                 }
 
-                /* cppcheck-suppress misra-c2012-11.5 ; @deviation const void* opaque struct requires const char* for offsetof()-based member addressing. */
+                /* cppcheck-suppress misra-c2012-11.5 ; @deviation const void*
+                 * opaque struct requires const char* for offsetof()-based
+                 * member addressing. */
                 const char *field_ptr = (const char *)base_ptr;
-                /* cppcheck-suppress misra-c2012-18.4 ; @deviation ptr_offset is the user-supplied offsetof() value. */
+                /* cppcheck-suppress misra-c2012-18.4 ; @deviation ptr_offset is
+                 * the user-supplied offsetof() value. */
                 field_ptr += f->ptr_offset;
                 uint32_t raw = 0u;
 

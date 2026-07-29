@@ -4,25 +4,26 @@
  * @file: ppack_platform.h
  *
  * @brief
- *    Platform abstraction for ppack. Detects whether the target's
- *    minimum addressable unit (MAU) is 8 or 16 bits and exposes the
- *    type aliases and compile-time constants the library needs.
+ *    Platform abstraction for ppack.
  *
- *    On byte-addressable targets (x86_64, ARM, AArch64, RISC-V, AVR, etc.)
+ *    The library detects the target minimum addressable unit (MAU)
+ *    size (8 or 16 bits). It defines the type aliases and
+ *    compile-time constants the implementation needs.
+ *
+ *    On byte-addressable targets (x86_64, ARM, AArch64, RISC-V, AVR)
  *    @c ppack_byte_t is @c uint8_t.
  *
- *    On word-addressable targets where @c CHAR_BIT is 16 (e.g. 16-bit MAU
- *    platforms), @c ppack_byte_t is @c uint16_t. Regardless of MAU size,
- *    ppack treats the payload as a sequence of 8-bit logical units to
- *    ensure interoperability with other primitives (like @c ucrc).
+ *    On targets where @c CHAR_BIT is 16, @c ppack_byte_t is @c uint16_t.
+ *    ppack uses 8-bit logical units for the payload on all targets.
+ *    This matches other primitives in this project, such as @c ucrc.
  *
- *    @c PPACK_PAYLOAD_BITS is a user-overridable convenience macro that
- *    sizes the @c PPACK_PAYLOAD_UNITS buffer-sizing macro (defined in
- *    @c ppack.h, the library's public entry point). Define it before
- *    including the header (e.g. @c -DPPACK_PAYLOAD_BITS=128 or
- *    @c -DPPACK_PAYLOAD_BITS=512) to change the default. The runtime
- *    @c ppack_pack / @c ppack_unpack API takes the payload size as an
- *    explicit argument and does not depend on this macro.
+ *    @c PPACK_PAYLOAD_BITS sets the default payload size for the
+ *    @c PPACK_PAYLOAD_UNITS buffer-sizing macro.
+ *    The @c ppack.h header defines @c PPACK_PAYLOAD_UNITS.
+ *    Override @c PPACK_PAYLOAD_BITS before you include this header
+ *    (for example, @c -DPPACK_PAYLOAD_BITS=128 or
+ *    @c -DPPACK_PAYLOAD_BITS=512).
+ *    The runtime API takes the payload size as an explicit argument.
  *
  *    The library's wire format is identical across both addressing
  *    models: a sequence of N bits (where N is the @c payload_bits
@@ -32,10 +33,9 @@
  *    full contract.
  *
  *    Define @c PPACK_SIMULATE_16BIT_MAU at compile time on a byte-
- *    addressable host to exercise the word-addressable code path
- *    against host unit tests. This is for library development and
- *    test infrastructure; production builds should leave it undefined
- *    and rely on auto-detection.
+ *    addressable host to exercise the 16-bit MAU code path.
+ *    Use this flag for library development and host unit tests only.
+ *    Production builds must leave it undefined.
  */
 
 #ifndef PPACK_PLATFORM_H_
@@ -57,7 +57,8 @@
 /** @brief Storage unit used for the payload buffer. */
 typedef uint16_t ppack_byte_t;
 #else
-/* cppcheck-suppress misra-c2012-2.5 ; @deviation Public macro for external platform detection. */
+/* cppcheck-suppress misra-c2012-2.5 ; @deviation Public macro for external
+ * platform detection. */
 #define PPACK_IS_16BIT_MAU   0
 /** @brief Logical bits per payload unit. Always 8 for interoperability. */
 #define PPACK_ADDR_UNIT_BITS 8u
@@ -65,35 +66,33 @@ typedef uint8_t ppack_byte_t;
 #endif
 
 /**
- * @brief Storage type that a user's `uint8_t` struct member resolves
- *        to on the current target.
+ * @brief Storage type for a `uint8_t` struct member on this target.
  *
- * On byte-addressable hosts this is @c uint8_t. On a 16-bit MAU target the
- * narrowest integer type is 16 bits, so any @c uint8_t the toolchain provides
- * is necessarily backed by 16-bit storage; this typedef mirrors that wider
- * storage. (@c uint8_t is an optional C type and such an alias is technically
- * non-conforming, but it is the de-facto behaviour of these toolchains.)
+ * On byte-addressable hosts this is @c uint8_t.
+ * On a 16-bit MAU target the narrowest integer type is 16 bits.
+ * Any @c uint8_t the toolchain provides uses 16-bit storage.
+ * This typedef mirrors that wider storage.
+ * The C standard marks @c uint8_t as optional when it maps to 16-bit
+ * storage, but these toolchains provide it anyway.
  *
- * @note  This is a library-internal alias used by the implementation
- *        and the unit tests. Application code on real targets should
- *        continue to declare struct members as @c uint8_t for
- *        @c PPACK_TYPE_UINT8 fields. @c ppack_u8_t exists so that host
- *        builds with @c PPACK_SIMULATE_16BIT_MAU faithfully reproduce
- *        the 16-bit MAU storage layout.
+ * @note  The library implementation and unit tests use this alias.
+ *        Application code must declare struct members as @c uint8_t
+ *        for @c PPACK_TYPE_UINT8 fields on real targets.
+ *        Host builds that define @c PPACK_SIMULATE_16BIT_MAU use
+ *        @c ppack_u8_t to reproduce the 16-bit MAU storage layout.
  */
 typedef ppack_byte_t ppack_u8_t;
 
 /**
- * @brief Default payload size in bits for the @c PPACK_PAYLOAD_UNITS
- *        convenience macro (defined in @c ppack.h).
+ * @brief Default payload size in bits for @c PPACK_PAYLOAD_UNITS
+ *        (defined in @c ppack.h).
  *
- * Override at the toolchain level (e.g. @c -DPPACK_PAYLOAD_BITS=128)
- * to size stack buffer declarations to a non-default payload. Must
- * be a positive multiple of @c PPACK_ADDR_UNIT_BITS and no greater
- * than 512.
+ * Override at the toolchain level (for example, @c -DPPACK_PAYLOAD_BITS=128)
+ * to declare stack buffers of a different size.
+ * The value must be a positive multiple of @c PPACK_ADDR_UNIT_BITS
+ * and no greater than 512.
  *
- * The runtime @c ppack_pack / @c ppack_unpack API takes the payload
- * size as an explicit argument and is independent of this macro.
+ * The runtime API takes the payload size as an explicit argument.
  */
 #ifndef PPACK_PAYLOAD_BITS
 #define PPACK_PAYLOAD_BITS 64u

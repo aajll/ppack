@@ -8,14 +8,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 
-- Rejected NaN on scaled pack paths with `-PPACK_ERR_INVALARG`. Previously a NaN source value (or a NaN scaled result from the scale/offset arithmetic) reached a float-to-integer cast, which is undefined behaviour; ±infinity continues to saturate to the clamp bounds. Locked down with dedicated non-finite tests for every scaled type.
+- Return `-PPACK_ERR_INVALARG` when a scaled field produces a NaN result during packing. A NaN source value or a NaN from the scale/offset calculation previously reached a float-to-integer cast. That is undefined behaviour. Positive and negative infinity saturate to the clamp bounds as before.
+
+Added non-finite tests for every scaled type.
 
 ### Changed
 
-- Resolved the required MISRA C:2023 violations for Rules 10.4, 10.7 and 10.8 through unsigned suffixes and temporary variables for composite expressions.
-- Centralised the type-erased struct-member copies in internal `ppack_member_write` / `ppack_member_read` helpers; Rule 21.15 is now deviated at exactly three documented sites (the two helpers and the deliberate F32 `float`/`uint32_t` pun) rather than silenced per call site.
-- Resolved advisory Rule 12.1 findings by making operator precedence explicit with parentheses.
-- Moved `PPACK_PAYLOAD_UNITS` from `ppack_platform.h` to `ppack.h` to explicitly surface it as part of the public API. Include `ppack.h` (the documented entry point) rather than `ppack_platform.h` directly.
+- Fixed MISRA C:2023 Rule 10.4, 10.7, and 10.8 violations with unsigned suffixes and temporary variables in composite expressions.
+- Moved the type-erased struct-member copies into internal `ppack_member_write` and `ppack_member_read` helper functions.
+
+Rule 21.15 deviations are now at exactly three documented sites: the two helpers and the deliberate F32 `float`/`uint32_t` pun. The library no longer suppresses this rule per call site.
+- Made operator precedence explicit with parentheses to resolve advisory MISRA C:2023 Rule 12.1 findings.
+- Moved `PPACK_PAYLOAD_UNITS` from `ppack_platform.h` to `ppack.h`. This macro is part of the public API.
+
+Include `ppack.h` in your code. Do not include `ppack_platform.h` directly.
 - Updated `README.md` and `CONTRIBUTING.md` to describe the tool-driven MISRA workflow.
 
 ### Removed
@@ -24,21 +30,36 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
-- Adopted `misch` (cppcheck-backed MISRA C:2023 analysis) via `misra.toml`. The audit is clean; all deviations (advisory Rules 2.5, 8.7, 11.5, 15.5, 18.4 and required Rule 21.15) are justified at point of use with `cppcheck-suppress` `@deviation` comments or project-wide in `misra-deviations.txt`.
-- Added a compile-time guard that `float` is exactly 32 bits (`PPACK_TYPE_F32` wire-format prerequisite).
-- Added `-fsanitize=float-cast-overflow` to the CI sanitizer jobs: GCC does not include the float-to-integer conversion check in `-fsanitize=undefined`, leaving the Linux jobs blind to that UB class.
-- Raised the CI coverage gate from 80% line / 70% branch to 100% / 100%, matching what the suite achieves.
-- Documented error-path semantics for `ppack_pack` / `ppack_unpack` (destination contents are unspecified after a non-zero return) and clarified the 16-bit MAU `PPACK_TYPE_UINT8` storage contract (unpack zeroes the upper 8 bits of the member's storage unit).
+- Added `misch` (cppcheck-backed MISRA C:2023 analysis) via `misra.toml`.
+
+The audit reports zero findings. All deviations (advisory Rules 2.5, 8.7, 11.5, 15.5, 18.4 and required Rule 21.15) are justified at point of use with `cppcheck-suppress` and `@deviation` comments or project-wide in `misra-deviations.txt`.
+- Added a compile-time check that `float` is 32 bits. This is required for the `PPACK_TYPE_F32` wire format.
+- Added `-fsanitize=float-cast-overflow` to the CI sanitizer jobs.
+
+GCC does not check float-to-integer conversions with `-fsanitize=undefined`. This flag covers that undefined behaviour class on Linux.
+- Raised the CI coverage gate from 80% line and 70% branch to 100% for both metrics. The test suite meets this level already.
+- Added documentation for the `ppack_pack` and `ppack_unpack` error paths.
+
+The destination buffer contains unspecified data after a non-zero return.
+
+Clarified the 16-bit MAU `PPACK_TYPE_UINT8` storage contract.
+The unpack function zeroes the upper 8 bits of the member's storage unit.
 
 ## [2.3.0] - 2026-06-19
 
 ### Changed
 
-- Aligned the memory layout on 16-bit MAU platforms to one octet per addressable unit to ensure seamless interoperability with the `ucrc` CRC library.
-- Decoupled logical payload units from physical MAU size, ensuring `PPACK_ADDR_UNIT_BITS` is always 8.
-- Updated documentation to use generic "16-bit MAU" terminology instead of vendor-specific references.
-- Changed the default `build_tests` Meson option to `false`; CI continues to opt into tests explicitly with `-Dbuild_tests=true`.
-- Adjusted the CI coverage gate to the shared primitive baseline of 80% line / 70% branch coverage.
+- Changed the memory layout on 16-bit MAU platforms to one octet per addressable unit.
+
+The ppack wire format matches the ucrc CRC library.
+- Separated logical payload units from physical MAU size.
+
+`PPACK_ADDR_UNIT_BITS` is always 8.
+- Replaced vendor-specific platform names with "16-bit MAU" in the documentation.
+- Changed the default `build_tests` Meson option to `false`.
+
+CI enables tests explicitly with `-Dbuild_tests=true`.
+- Set the CI coverage gate to 80% line and 70% branch coverage. This matches the shared baseline for all primitives in this repository.
 
 ## [2.2.0] - 2026-04-28
 
@@ -56,10 +77,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
-- Renamed `enum ppack_type` constants from `S*` / `U*` names to `<stdint.h>`-style `INT*` / `UINT*` names. This is a source-compatibility break only; the wire format is unchanged.
+- Renamed the `enum ppack_type` constants from `S*` and `U*` style to `<stdint.h>` style (`INT*` and `UINT*`).
+
+This breaks source compatibility. The wire format does not change.
 
 ## [1.4.1] - 2026-04-25
 
 ### Added
 
-- First public release with `ppack_pack` / `ppack_unpack`, fixed-size 64-bit payload serialisation, bit-aligned field definitions, raw and scaled modes, 8-bit / 16-bit addressable-unit support, MISRA deviation documentation, and CI coverage gates.
+- First public release.
+
+Initial features: `ppack_pack`, `ppack_unpack`, fixed-size 64-bit payloads, bit-aligned field definitions, raw and scaled modes, 8-bit and 16-bit addressable-unit support, MISRA deviation documentation, and CI coverage gates.

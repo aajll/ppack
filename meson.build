@@ -50,10 +50,7 @@ ppack_lib = static_library(
 )
 
 # Install public header
-install_headers(
-  ['include/ppack.h', 'include/ppack_platform.h'],
-  subdir: 'ppack'
-)
+install_headers(['include/ppack.h', 'include/ppack_platform.h'], subdir: 'ppack')
 
 ppack_dep = declare_dependency(
   include_directories: public_headers,

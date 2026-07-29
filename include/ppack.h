@@ -40,7 +40,8 @@ extern "C" {
  * ppack_byte_t payload[PPACK_PAYLOAD_UNITS];
  * @endcode
  */
-/* cppcheck-suppress misra-c2012-2.5 ; @deviation Public API macro for caller buffer sizing. */
+/* cppcheck-suppress misra-c2012-2.5 ; @deviation Public API macro for caller
+ * buffer sizing. */
 #define PPACK_PAYLOAD_UNITS (PPACK_PAYLOAD_BITS / PPACK_ADDR_UNIT_BITS)
 
 /**
@@ -70,29 +71,28 @@ extern "C" {
  *    ## Wire format
  *
  *    The payload is treated as N bits numbered 0..N-1, where N is the
- *    @c payload_bits argument. Bit @c K maps to bit @c (K mod 8) of
- *    logical byte @c (K / 8), where logical byte 0 is the first byte
- *    on the wire.
+ *    @c payload_bits argument.
+ *    Bit @c K is in logical byte @c (K / 8) at position @c (K mod 8).
+ *    Logical byte 0 is the first byte on the wire.
  *
- *    Within each logical byte, bit 0 is the least significant bit.
- *    Multi-byte fields are little-endian (Intel ordering, equivalent
- *    to DBC @c byte_order=1). A field at @c start_bit=0, @c bit_length=16
- *    with value @c 0x1234 produces @c 0x34 in byte 0 and @c 0x12 in byte 1.
+ *    Bit 0 is the least significant bit within each logical byte.
+ *    Multi-byte fields use little-endian order. This matches DBC
+ *    @c byte_order=1. A 16-bit field at @c start_bit=0 with value
+ *    @c 0x1234 writes @c 0x34 to byte 0 and @c 0x12 to byte 1.
  *
- *    @c PPACK_TYPE_F32 is a raw 32-bit IEEE-754 bit-copy. The wire
- *    representation is host-endian @c uint32_t. This is interoperable
- *    between any two little-endian IEEE-754 hosts (e.g. x86_64, ARM Cortex-M,
- *    AArch64, 16-bit MAU platforms). It is NOT safe between a
- *    little-endian and a big-endian host without explicit byte-swapping
- *    in user code.
+ *    @c PPACK_TYPE_F32 copies 32 IEEE-754 bits directly.
+ *    The wire bytes follow the host @c uint32_t byte order.
+ *    Any two little-endian hosts interoperate (for example,
+ *    x86_64, ARM Cortex-M, AArch64, 16-bit MAU platforms).
+ *    Little-endian and big-endian hosts do not interoperate without
+ *    explicit byte swapping in user code.
  *
- *    The payload buffer model is portable across MAU sizes: declare it
- *    as @c ppack_byte_t @c payload[PPACK_PAYLOAD_UNITS]. The
- *    @c PPACK_PAYLOAD_UNITS macro defaults to a 64-bit payload (8 bytes
- *    or 4 16-bit words); override @c PPACK_PAYLOAD_BITS at the
- *    toolchain level for non-default sizes (e.g.
- *    @c -DPPACK_PAYLOAD_BITS=512). The runtime API takes the size
- *    explicitly and is independent of this macro.
+ *    Declare the payload buffer as @c ppack_byte_t
+ * payload[PPACK_PAYLOAD_UNITS]. This model works on all MAU sizes. The @c
+ * PPACK_PAYLOAD_UNITS macro declares a 64-bit payload by default (8 bytes or
+ * four 16-bit words). Override @c PPACK_PAYLOAD_BITS at the toolchain level for
+ * other sizes (for example, @c -DPPACK_PAYLOAD_BITS=512). The runtime API takes
+ * the size as an explicit argument.
  *
  *    ## Scaled-field semantics
  *
@@ -102,44 +102,40 @@ extern "C" {
  *      unpack:  physical = (float)raw * scale + offset
  *    @endcode
  *
- *    @b Saturation: pack silently clamps the raw integer to the
- *    destination type's representable range (e.g. 0..65535 for
- *    @c PPACK_TYPE_UINT16). For safety-critical applications where an
- *    out-of-range physical value MUST be detected, validate the
- *    input before calling @c ppack_pack.
+ *    @b Saturation: ppack_pack clamps the raw integer to the
+ *    destination type's range (for example, 0..65535 for
+ *    @c PPACK_TYPE_UINT16). Validate the input at the call site
+ *    if your application must detect out-of-range physical values.
  *
- *    @b Quantization: the float-to-integer cast truncates toward
- *    zero (C standard cast semantics, not round-to-nearest). The
- *    maximum round-trip error is one LSB (one unit of @c scale).
- *    For round-to-nearest behaviour, pre-add
- *    @c 0.5f*scale*sign(physical) at the call site before pack.
+ *    @b Quantization: ppack_pack truncates the float-to-integer cast
+ *    toward zero (standard C cast rules). The maximum round-trip error
+ *    is one LSB, equal to @c scale.
+ *    Add @c 0.5f*scale*sign(physical) at the call site for
+ *    round-to-nearest behaviour.
  *
- *    @b Float-range clamp: for @c PPACK_TYPE_UINT32 / @c PPACK_TYPE_INT32
- *    scaled fields the upper/lower clamp is the largest float that
- *    is exactly representable AND fits in the destination integer.
- *    @c UINT32_MAX (4294967295) and @c INT32_MAX (2147483647) round
- *    UP to @c 2^32 / @c 2^31 as floats, which would overflow the
- *    destination cast. The library clamps to @c 4294967040 and
- *    @c 2147483520 respectively (the next representable float
- *    below the type's true maximum).
+ *    @b Float-range clamp: for @c PPACK_TYPE_UINT32 scaled fields,
+ *    ppack_pack clamps to @c 4294967040. This is the largest float
+ *    value that fits in a @c uint32_t.
+ *    For @c PPACK_TYPE_INT32 it clamps to @c 2147483520.
+ *    The values @c UINT32_MAX and @c INT32_MAX round up to
+ *    @c 2^32 or @c 2^31 as 32-bit floats. That overflows the cast.
  *
- *    @b Non-finite values: pack rejects a SCALED field whose scaled
- *    result is NaN (a NaN source value, or a NaN produced by the
- *    scale/offset arithmetic) with @c -PPACK_ERR_INVALARG; NaN has no
- *    defined integer representation. Positive/negative infinity is
- *    treated like any other out-of-range value and saturates to the
- *    destination type's clamp bounds. @c PPACK_TYPE_F32 fields are a
- *    raw bit-copy and carry NaN/infinity payloads unchanged.
+ *    @b Non-finite values: ppack_pack rejects a SCALED field when
+ *    the result is NaN. The function returns @c -PPACK_ERR_INVALARG.
+ *    NaN can come from the source value or the scale/offset calculation.
+ *    NaN has no valid integer representation.
+ *    Positive and negative infinity saturate to the type's clamp bounds.
+ *    @c PPACK_TYPE_F32 fields copy bits directly.
+ *    They carry NaN and infinity values unchanged.
  *
  *    ## 16-bit MAU Platform Notes
  *
- *    On platforms with a 16-bit minimum addressable unit (MAU)
- *    (16-bit MAU platforms), @c CHAR_BIT is 16 and any @c uint8_t the
- *    toolchain provides is backed by 16-bit storage. ppack auto-detects
- *    this (via @c CHAR_BIT / @c UCHAR_MAX, not @c uint8_t) and selects a 16-bit
- *    storage unit internally, but maintains a logical 8-bit layout to
- *    ensure interoperability with other primitives. Two contract points
- *    specific to this platform:
+ *    On 16-bit MAU platforms, @c CHAR_BIT is 16.
+ *    Any @c uint8_t the toolchain provides uses 16-bit storage.
+ *    ppack detects this from @c CHAR_BIT and @c UCHAR_MAX.
+ *    The library selects a 16-bit storage unit internally.
+ *    It keeps an 8-bit logical layout to match other primitives.
+ *    Two contract points apply on this platform:
  *
  *    @li A @c PPACK_TYPE_UINT8 field carries only the low 8 bits of its
  *        struct member through the wire. On pack, the upper 8 bits of
@@ -163,21 +159,21 @@ extern "C" {
 /* ---------------- Error Codes --------------------------------------------- */
 
 /** @brief Success */
-#define PPACK_SUCCESS      0
+#define PPACK_SUCCESS       0
 
 /** @brief Invalid arguments (NULL pointer, zero field count, etc.) */
-#define PPACK_ERR_INVALARG 1
+#define PPACK_ERR_INVALARG  1
 
 /* Note: error code 2 is reserved for future use. */
 
 /** @brief Requested item not found */
-#define PPACK_ERR_NOTFOUND 3
+#define PPACK_ERR_NOTFOUND  3
 
 /** @brief Null pointer detected */
-#define PPACK_ERR_NULLPTR  4
+#define PPACK_ERR_NULLPTR   4
 
 /** @brief Field descriptor overflows the payload boundary */
-#define PPACK_ERR_OVERFLOW 5
+#define PPACK_ERR_OVERFLOW  5
 
 /* ================ STRUCTURES ============================================== */
 
@@ -216,16 +212,16 @@ enum ppack_behaviour {
 /**
  * @brief Describes a field within a payload.
  *
- * @note  Set @c bit_length to match the natural width of the @c type
- *        for predictable behaviour. Values larger than the type's
- *        natural width are accepted (the validation only enforces
- *        @c bit_length <= 32 and @c start_bit + bit_length <= payload_bits)
- *        but only the low bits of the source are meaningful, so the
- *        upper wire bits will be zero or sign-extended.
+ * @note  Set @c bit_length to match the natural width of @c type.
+ *        The library accepts larger values (it enforces
+ *        @c bit_length <= 32 and
+ *        @c start_bit + bit_length <= payload_bits).
+ *        Only the low bits of the source carry data.
+ *        The upper wire bits are zero or sign-extended.
  *
- * @note  @c PPACK_TYPE_F32 always uses raw bit-copy semantics; @c behaviour
- *        and @c scale / @c offset are ignored. This assumes matching
- *        IEEE-754 layout and endianness across nodes.
+ * @note  @c PPACK_TYPE_F32 always copies bits directly.
+ *        The library ignores @c behaviour, @c scale, and @c offset for this
+ * type. This requires matching IEEE-754 layout and endianness on all nodes.
  *
  * @note  For @c PPACK_BEHAVIOUR_SCALED the struct member must be @c float.
  *        For @c PPACK_BEHAVIOUR_RAW  the struct member must match the
@@ -253,10 +249,10 @@ struct ppack_field {
 /**
  * @brief Pack a payload from given fields into a buffer.
  *
- * Writes a payload of @c payload_bits bits to @c payload by reading
- * each field's source value from the @c base_ptr structure, applying
- * any scaling, and placing the bits at the field's @c start_bit. Bits
- * outside the union of the field ranges are cleared to zero.
+ * ppack_pack reads each field from the @c base_ptr structure,
+ * applies any scaling, and writes the bits to @c payload.
+ * It places each value at the field's @c start_bit position.
+ * Bits outside all field ranges are set to zero.
  *
  * @param[in]  base_ptr     Pointer to source structure
  * @param[out] payload      Destination buffer of exactly @c payload_bits
@@ -273,28 +269,31 @@ struct ppack_field {
  *
  * @return PPACK_SUCCESS on success
  * @return -PPACK_ERR_NULLPTR   if @c base_ptr or @c payload is NULL
- * @return -PPACK_ERR_INVALARG  if @c field_count is 0, @c fields is NULL,
- *                               @c payload_bits is 0, not a multiple of
- *                               @c PPACK_ADDR_UNIT_BITS, or > 512;
- *                               @c bit_length is 0 or > 32; scaling is
- *                               requested for @c PPACK_TYPE_UINT8; or a
- *                               SCALED field's scaled result is NaN
- * @return -PPACK_ERR_OVERFLOW  if @c start_bit + bit_length exceeds
+ * @return -PPACK_ERR_INVALARG  on invalid arguments. This includes:
+ *                               @c field_count is 0, @c fields is NULL,
+ *                               @c payload_bits is 0, @c payload_bits is not
+ *                               a multiple of @c PPACK_ADDR_UNIT_BITS,
+ *                               @c payload_bits exceeds 512, @c bit_length is 0
+ *                               or greater than 32, scaling is set for
+ *                               @c PPACK_TYPE_UINT8, or a SCALED field
+ *                               produces a NaN result.
+ * @return -PPACK_ERR_OVERFLOW  when @c start_bit plus bit_length exceeds
  *                               @c payload_bits, or @c scale is 0.0 on a
- *                               SCALED field
+ *                               SCALED field.
  * @return -PPACK_ERR_NOTFOUND  if an unknown field type is encountered
  *
  * @note  Not thread-safe. Callers sharing @c base_ptr or @c payload
  *        across threads or ISRs must provide their own mutual exclusion.
  *
- * @note  Out-of-range scaled values clamp silently to the destination
- *        type's representable range; NaN is rejected. See "Scaled-field
- *        semantics" in the file-level docs.
+ * @note  Out-of-range scaled values clamp to the destination type's
+ *        range. The function rejects NaN with @c -PPACK_ERR_INVALARG.
+ *        See the "Scaled-field semantics" section above.
  *
- * @note  Not atomic on failure: the payload buffer is zeroed before the
- *        field descriptors are validated, so on an error return its
- *        contents are unspecified (zeroed and possibly partially
- *        written). Do not transmit a payload after a non-zero return.
+ * @note  The function does not roll back on failure.
+ *        ppack_pack clears the payload buffer before it validates the
+ *        field descriptors. On an error return the buffer contains zeroed
+ *        data and possibly partial writes.
+ *        Do not transmit a payload after a non-zero return.
  */
 int ppack_pack(const void *base_ptr, void *payload, size_t payload_bits,
                const struct ppack_field *fields, size_t field_count);
@@ -302,10 +301,10 @@ int ppack_pack(const void *base_ptr, void *payload, size_t payload_bits,
 /**
  * @brief Unpack a payload from a buffer into specified field locations.
  *
- * Reads a payload of @c payload_bits bits from @c payload and writes
- * each field's decoded value to the corresponding offset within the
- * @c base_ptr structure. Existing bytes of struct members not covered
- * by any field are left untouched.
+ * ppack_unpack reads @c payload_bits bits from @c payload.
+ * It writes each decoded value to the matching offset in @c base_ptr.
+ * Bytes inside struct members that have no field mapping keep their current
+ * values.
  *
  * @param[out] base_ptr     Pointer to destination structure
  * @param[in]  payload      Source buffer of exactly @c payload_bits
@@ -322,11 +321,13 @@ int ppack_pack(const void *base_ptr, void *payload, size_t payload_bits,
  *
  * @return PPACK_SUCCESS on success
  * @return -PPACK_ERR_NULLPTR   if @c base_ptr or @c payload is NULL
- * @return -PPACK_ERR_INVALARG  if @c field_count is 0, @c fields is NULL,
- *                               @c payload_bits is 0, not a multiple of
- *                               @c PPACK_ADDR_UNIT_BITS, or > 512;
- *                               @c bit_length is 0 or > 32; or scaling is
- *                               requested for @c PPACK_TYPE_UINT8
+ * @return -PPACK_ERR_INVALARG  on invalid arguments. This includes:
+ *                               @c field_count is 0, @c fields is NULL,
+ *                               @c payload_bits is 0, @c payload_bits is not
+ *                               a multiple of @c PPACK_ADDR_UNIT_BITS,
+ *                               @c payload_bits exceeds 512, @c bit_length is 0
+ *                               or greater than 32, or scaling is set for
+ *                               @c PPACK_TYPE_UINT8.
  * @return -PPACK_ERR_OVERFLOW  if @c start_bit + bit_length exceeds
  *                               @c payload_bits
  * @return -PPACK_ERR_NOTFOUND  if an unknown field type is encountered
@@ -334,11 +335,11 @@ int ppack_pack(const void *base_ptr, void *payload, size_t payload_bits,
  * @note  Not thread-safe. Callers sharing @c base_ptr or @c payload
  *        across threads or ISRs must provide their own mutual exclusion.
  *
- * @note  Not atomic on failure: fields are decoded in descriptor order,
- *        so on an error return the struct members of every field before
- *        the offending descriptor have already been overwritten. Treat
- *        the destination structure as unspecified after a non-zero
- *        return.
+ * @note  The function does not roll back on failure.
+ *        ppack_unpack decodes fields in descriptor order.
+ *        On an error return it has already written all fields before
+ *        the failing descriptor.
+ *        Do not use the destination structure after a non-zero return.
  */
 int ppack_unpack(void *base_ptr, const void *payload, size_t payload_bits,
                  const struct ppack_field *fields, size_t field_count);
