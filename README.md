@@ -2,18 +2,18 @@
 
 [![CI](https://github.com/aajll/ppack/actions/workflows/ci.yml/badge.svg)](https://github.com/aajll/ppack/actions/workflows/ci.yml)
 
-A generic payload serialisation library for bit-aligned data fields in C.
+ppack packs and unpacks structures into bit-aligned payloads of up to 512 bits.
 
 ## Features
 
-- **Bit-aligned fields** - Fields can start at any bit position and span arbitrary bit ranges
-- **Variable payload size** - Caller supplies the payload size in bits (multiple of 8, up to 512); supports CAN classic (64) and CAN-FD (up to 512)
-- **No dynamic memory** - Fixed-size operations, no `malloc` / `free`
-- **Deterministic WCET** - All operations have bounded execution time
-- **Scaled fields** - Linear scale/offset transformations for physical-unit encoding
-- **Multiple types** - Supports `u8`, `u16`, `i16`, `u32`, `i32`, `f32`, and raw bitfields
-- **Cross-platform** - Works on any C11 target with an 8-bit or 16-bit minimum addressable unit; auto-detected from `<limits.h>` with no chip-specific code paths
-- **Error codes** - All APIs return explicit error codes; no `errno`, no exceptions
+- **Bit-aligned fields** — Place each field at any bit position in the payload.
+- **Variable payload size** — Pass the payload size in bits (multiple of 8, up to 512). Covers CAN classic (64) and CAN-FD (up to 512).
+- **No dynamic memory** — All operations use fixed-size buffers. The library does not call `malloc` or `free`.
+- **Bounded execution time** — Execution time is deterministic when field descriptors are `static const`.
+- **Scaled fields** — Apply linear scale/offset transformations for physical-unit encoding.
+- **Multiple types** — Supports `uint8_t`, `uint16_t`, `int16_t`, `uint32_t`, `int32_t`, `float`, and raw bitfields.
+- **Cross-platform** — Runs on any C11 target with an 8-bit or 16-bit minimum addressable unit. The library detects the platform from `<limits.h>`. There are no chip-specific code paths.
+- **Error codes** — All functions return explicit error codes. The library does not use `errno` or exceptions.
 
 ## Requirements
 
@@ -100,9 +100,9 @@ int main(void)
         engine_data_t tx = {.rpm = 3000, .temperature = -10, .voltage = 12.5f};
         engine_data_t rx = {0};
 
-        /* Pack structure into a 64-bit payload (CAN classic). The third
-         * argument is the payload size in bits — pass 128, 256, 512,
-         * etc. for CAN-FD or other larger frames. */
+        /* Pack the structure into a 64-bit payload (CAN classic).
+         * The third argument is the payload size in bits.
+         * Pass 128, 256, or 512 for CAN-FD frames. */
         int ret = ppack_pack(&tx, payload, 64, fields, 3);
         if (ret != PPACK_SUCCESS) {
                 return ret;
@@ -115,7 +115,7 @@ int main(void)
 }
 ```
 
-`ppack_byte_t[PPACK_PAYLOAD_UNITS]` defaults to a 64-bit payload (`uint8_t[8]` on byte-addressable targets, `uint16_t[8]` on 16-bit MAU targets) and is intended as a convenience for the common case. For non-default sizes, override `PPACK_PAYLOAD_BITS` at the toolchain level (e.g. `-DPPACK_PAYLOAD_BITS=512`) or size the buffer manually as `ppack_byte_t payload[N / PPACK_ADDR_UNIT_BITS]`. The wire format is identical across MAU sizes.
+`ppack_byte_t[PPACK_PAYLOAD_UNITS]` declares a 64-bit payload by default (`uint8_t[8]` on byte-addressable targets, `uint16_t[8]` on 16-bit MAU targets). Override `PPACK_PAYLOAD_BITS` at the toolchain level (for example, `-DPPACK_PAYLOAD_BITS=512`) or size the buffer manually as `ppack_byte_t payload[N / PPACK_ADDR_UNIT_BITS]`. The wire format is identical across MAU sizes.
 
 ### CAN-FD (512-bit) example
 
@@ -183,7 +183,7 @@ meson compile -C build
 meson test -C build --verbose
 ```
 
-The test target runs twice: once natively (8-bit MAU) and once with `-DPPACK_SIMULATE_16BIT_MAU` to exercise the word-addressable code path that runs on 16-bit MAU platforms.
+The test target runs twice. It runs once natively (8-bit MAU) and once with `-DPPACK_SIMULATE_16BIT_MAU` to exercise the 16-bit MAU code path.
 
 ### Code coverage
 
@@ -198,7 +198,7 @@ gcovr --root . --filter 'src/' --filter 'include/' --print-summary
 gcovr --root . --filter 'src/' --filter 'include/' --html-details build_cov/coverage.html
 ```
 
-CI gates on 100% line and 100% branch coverage. The library's safety case depends on every reachable code path being exercised by an explicit test; any drop from this baseline is a deliberate decision that must be approved alongside a justification for the new gap.
+CI requires 100% line coverage and 100% branch coverage. Every reachable code path has an explicit test. A drop below this baseline requires approval and a justification.
 
 ## API Reference
 
@@ -258,12 +258,12 @@ Functions return the negated error code on failure (e.g. `-PPACK_ERR_NULLPTR`). 
 
 The payload is `payload_bits` bits long (a multiple of 8, between 8 and 512), addressed as `payload_bits / 8` logical bytes numbered 0 to `payload_bits / 8 - 1`.
 
-- **Bit numbering**: payload bit `N` lives in logical byte `N / 8`, at position `N mod 8` within that byte.
-- **Within a byte**: bit 0 is the least significant bit.
-- **Multi-byte fields**: little-endian (Intel ordering, equivalent to DBC `byte_order=1`). A field at `start_bit=0`, `bit_length=16` with value `0x1234` produces `0x34` in byte 0 and `0x12` in byte 1.
+- **Bit numbering**: payload bit `N` is in logical byte `N / 8`. The bit position inside that byte is `N mod 8`.
+- **Bit order within a byte**: bit 0 is the least significant bit.
+- **Multi-byte fields**: little-endian byte order. This matches DBC `byte_order=1`. A 16-bit field at `start_bit=0` with value `0x1234` writes `0x34` to byte 0 and `0x12` to byte 1.
 - **Cross-platform**: the format is identical on byte-addressable and 16-bit-MAU hosts. Two nodes using ppack interoperate regardless of their addressable-unit size, provided they agree on `payload_bits`.
 
-`PPACK_TYPE_F32` is a raw 32-bit IEEE-754 bit copy. The wire bytes are the host's `uint32_t` byte order. This is interoperable between any two little-endian hosts (e.g. x86_64, ARM Cortex-M, AArch64 in default mode, 16-bit MAU platforms) but NOT between a little-endian and a big-endian host without explicit byte swapping in user code.
+`PPACK_TYPE_F32` copies 32 IEEE-754 bits directly. The wire bytes follow the host `uint32_t` byte order. Any two little-endian hosts interoperate (for example, x86_64, ARM Cortex-M, AArch64, 16-bit MAU platforms). Little-endian and big-endian hosts do not interoperate without explicit byte swapping in user code.
 
 ## Scaled Fields
 
@@ -274,29 +274,31 @@ raw      = (physical - offset) / scale    /* pack:   float -> integer */
 physical = (float)raw * scale + offset    /* unpack: integer -> float */
 ```
 
-This encodes floating-point physical values into compact integer fields, e.g. voltage in 0.01 V/LSB or temperature with -40 °C offset and 0.25 °C resolution.
+This encodes a floating-point physical value into a compact integer field. Examples include voltage at 0.01 V/LSB and temperature with a -40 °C offset and 0.25 °C resolution.
 
 ### Saturation
 
-Pack silently clamps the integer value to the destination type's representable range. For example, `PPACK_TYPE_UINT16` clamps to `0..65535` and `PPACK_TYPE_INT16` clamps to `-32768..32767`. Out-of-range physical inputs do NOT produce an error.
+ppack_pack clamps the raw integer value to the destination type's range. `PPACK_TYPE_UINT16` clamps to `0..65535`. `PPACK_TYPE_INT16` clamps to `-32768..32767`. Out-of-range inputs do not return an error.
 
-For `PPACK_TYPE_UINT32` and `PPACK_TYPE_INT32` scaled fields, the float clamp uses `4294967040` (largest float exactly representable below `UINT32_MAX`) and `2147483520` (largest float below `INT32_MAX`). The true type maxima `UINT32_MAX` and `INT32_MAX` round up to `2^32` / `2^31` as 32-bit floats and would overflow the destination cast.
+For `PPACK_TYPE_UINT32` scaled fields, ppack_pack clamps to `4294967040`. This is the largest float value that fits in a `uint32_t`. For `PPACK_TYPE_INT32`, it clamps to `2147483520`. The values `UINT32_MAX` and `INT32_MAX` round up to `2^32` or `2^31` as 32-bit floats. That would overflow the destination cast.
 
-For safety-critical applications where an out-of-range physical value MUST be detected, validate the input at the call site before calling `ppack_pack`.
+Validate the input at the call site if your application must detect out-of-range physical values.
 
 ### Non-finite values
 
-Pack rejects a scaled field whose scaled result is NaN (a NaN source value, or a NaN produced by the scale/offset arithmetic) with `-PPACK_ERR_INVALARG`; NaN has no defined integer representation. Positive and negative infinity are treated like any other out-of-range value and saturate to the clamp bounds above. `PPACK_TYPE_F32` fields are a raw bit-copy and carry NaN/infinity payloads unchanged.
+ppack_pack rejects a scaled field when the result is NaN. The function returns `-PPACK_ERR_INVALARG`. NaN can come from the source value or the scale/offset calculation. NaN has no valid integer representation.
+
+Positive and negative infinity saturate to the type's clamp bounds. `PPACK_TYPE_F32` fields copy bits directly. They carry NaN and infinity values unchanged.
 
 ### Quantization
 
-The float-to-integer cast in pack truncates toward zero (C standard cast semantics). The maximum round-trip error is one LSB, equal to `scale`. For round-to-nearest behaviour, pre-add `0.5f * scale * sign(physical)` at the call site before pack.
+ppack_pack truncates the float-to-integer cast toward zero (standard C cast rules). The maximum round-trip error is one LSB, equal to `scale`. Add `0.5f * scale * sign(physical)` at the call site for round-to-nearest behaviour.
 
 ## Platform Support
 
 ### Supported architectures
 
-ppack works on any toolchain meeting the requirements below. There are no chip-specific code paths; the library auto-detects the addressing model from the standard library headers.
+ppack runs on any toolchain that meets the requirements below. The library detects the addressing model from the standard library headers. There are no chip-specific code paths.
 
 | Requirement                         | Notes                                                                                                        |
 | ----------------------------------- | ------------------------------------------------------------------------------------------------------------ |
@@ -305,11 +307,11 @@ ppack works on any toolchain meeting the requirements below. There are no chip-s
 | Two's-complement signed integers    | Required for the documented sign-extension and unsigned-to-signed cast behaviour. Universal on real targets. |
 | IEEE-754 binary32 `float`           | Required for `PPACK_TYPE_F32` and scaled fields. Universal on real targets.                                  |
 
-Targets meeting these requirements are expected to work, including (but not limited to) x86_64, AArch64, ARMv7-M, ARMv8-M, RISC-V, AVR, and 16-bit MAU platforms.
+Expected targets include x86_64, AArch64, ARMv7-M, ARMv8-M, RISC-V, AVR, and 16-bit MAU platforms.
 
 ### Validated configurations
 
-These configurations are run through the test suite or have been verified on hardware:
+The test suite runs these configurations, or they are verified on hardware:
 
 | Toolchain                                    | Target                    | Status                                                            |
 | -------------------------------------------- | ------------------------- | ----------------------------------------------------------------- |
@@ -317,7 +319,7 @@ These configurations are run through the test suite or have been verified on har
 | GCC, Clang with `-DPPACK_SIMULATE_16BIT_MAU` | x86_64 Linux              | Run in CI (16-bit MAU code path)                                  |
 | Native Toolchains                           | 16-bit MAU platforms      | Code path covered by host simulation; no live cross-compile in CI |
 
-Other architectures from the supported list above are expected to work but are not yet routinely validated. If you bring up ppack on a new target, please report back so the table can be extended.
+Other architectures from the list above should work but are not yet tested routinely. Report results from new targets to extend this table.
 
 ### 16-bit-MAU specifics
 
@@ -345,36 +347,38 @@ All public APIs validate arguments at the function boundary.
 - A `PPACK_BEHAVIOUR_SCALED` request on a `PPACK_TYPE_UINT8` field returns `-PPACK_ERR_INVALARG`.
 - An unrecognised field type returns `-PPACK_ERR_NOTFOUND`.
 
-`bit_length` is range-checked against the absolute field limit (1..32) and against the runtime payload limit (`bit_length <= payload_bits - start_bit`). It is NOT cross-checked against the natural width of the field's `type`. Declaring a `PPACK_TYPE_UINT16` with `bit_length=24` is accepted by the library; only the low 16 bits are meaningful, with the upper bits zero or sign-extended depending on type. Match `bit_length` to the type's natural width unless you have a specific reason not to.
+`bit_length` must be between 1 and 32 and fit within the payload (`bit_length <= payload_bits - start_bit`). The library does not check `bit_length` against the natural width of the field's `type`. A `PPACK_TYPE_UINT16` with `bit_length=24` passes validation. Only the low 16 bits carry data. Match `bit_length` to the type's natural width unless you have a specific reason.
 
 ## Use Cases
 
-1. **Protocol Encoding** - Compact data for CAN, I2C, or custom binary protocols
-2. **Register Access** - Safe manipulation of peripheral register layouts
-3. **Telemetry Frames** - Serialise sensor data into fixed-size telemetry packets
-4. **Cross-platform IPC** - Deterministic binary serialisation between heterogeneous targets
+1. **Protocol encoding** — Pack data for CAN, I2C, or custom binary protocols.
+2. **Register access** — Read and write peripheral register layouts safely.
+3. **Telemetry frames** — Encode sensor data into fixed-size telemetry packets.
+4. **Cross-platform IPC** — Exchange deterministic binary data between different targets.
 
 ## Limitations
 
-ppack is a serialisation primitive only. The following are explicitly out of scope:
+ppack packs and unpacks data. It does not perform the tasks below:
 
-- **No integrity checks**: no CRC, checksum, or framing. Caller (or the transport, e.g. the CAN frame CRC) is responsible for detecting bit errors.
-- **No schema versioning**: the field-descriptor layout is the schema. Maintain it in shared headers across nodes.
-- **Payload size capped at 512 bits**: matches a full CAN-FD frame data field. Larger payloads require multiple ppack calls on chunks.
-- **No multi-buffer / streaming API**: a single payload is processed in one call.
-- **No runtime endianness adaptation**: the wire format is little-endian. Big-endian hosts would need explicit byte swapping at the boundary (no such host is currently a target).
+- **No integrity checks**: ppack does not compute a CRC, checksum, or frame header. The caller detects bit errors. Use the transport layer for error detection (for example, CAN frame CRC).
+- **No schema versioning**: the field-descriptor layout is the schema. Store it in shared headers across nodes.
+- **Payload size capped at 512 bits**: this matches a full CAN-FD frame data field. Send larger payloads with multiple ppack calls on separate chunks.
+- **No multi-buffer API**: ppack processes one payload per call.
+- **No runtime endianness adaptation**: the wire format uses little-endian byte order. A big-endian host needs explicit byte swapping at the boundary.
 
 ## Notes
 
 | Topic                       | Note                                                                                                                                                                                                                                                                                                                                              |
 | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Memory**                  | All operations use stack memory; no dynamic allocation                                                                                                                                                                                                                                                                                            |
-| **MISRA C:2023**            | Audited with `misch` (cppcheck-backed MISRA C:2023 analysis; configuration in `misra.toml`); the audit reports zero findings. Deviations are justified at point of use with `cppcheck-suppress ... @deviation` comments, or project-wide in `misra-deviations.txt`. The only required-rule deviations are three Rule 21.15 sites: the type-erased struct-member copies centralised in two internal helpers, and the deliberate F32 `float`/`uint32_t` pun. Design follows MISRA principles throughout: no dynamic allocation, no UB shifts, explicit error codes, `memcpy`-based type punning. |
-| **Payload size**            | Caller-supplied via `payload_bits` (multiple of 8, between 8 and 512). 64 matches CAN classic; 512 matches full CAN-FD.                                                                                                                                                                                                                           |
-| **Bit ordering**            | LSB-first within each byte; multi-byte fields little-endian; fields may span byte boundaries                                                                                                                                                                                                                                                      |
+| **Memory**                  | All operations use stack memory. The library does not allocate memory dynamically.
+| **MISRA C:2023**            | Audited with `misch` (cppcheck-backed MISRA C:2023 analysis; configuration in `misra.toml`). The audit reports zero findings.
+
+Deviations are justified at point of use with `cppcheck-suppress ... @deviation` comments or project-wide in `misra-deviations.txt`. The only required-rule deviations are three Rule 21.15 sites: the type-erased struct-member copies in two internal helpers and the deliberate F32 `float`/`uint32_t` pun. Design follows MISRA principles throughout: no dynamic allocation, no UB shifts, explicit error codes, `memcpy`-based type punning. |
+| **Payload size**            | The caller supplies the payload size via `payload_bits` (multiple of 8, between 8 and 512). A value of 64 matches CAN classic. A value of 512 matches full CAN-FD.
+| **Bit ordering**            | Bit 0 is the least significant bit within each byte. Multi-byte fields use little-endian order. Fields may span byte boundaries.
 | **Field size**              | 1-32 bits per field                                                                                                                                                                                                                                                                                                                               |
-| **Thread safety**           | Not thread-safe; caller must provide mutual exclusion when `base_ptr` or `payload` is shared across threads or ISRs                                                                                                                                                                                                                               |
-| **WCET**                    | Execution time is bounded and deterministic **when field descriptors are `static const`** (loop bounds are compile-time constants). WCET is not guaranteed if descriptors are constructed at runtime with arbitrary `bit_length` values.                                                                                                          |
-| **F32 and scaling**         | `PPACK_TYPE_F32` always performs a raw 32-bit IEEE 754 bit-copy; `scale`, `offset`, and `behaviour` are ignored for this type. Use a scaled integer type (`UINT16`, `INT16`, `UINT32`, `INT32`) to encode floating-point physical values with a resolution factor.                                                                                |
-| **UINT8 struct member**     | `PPACK_TYPE_UINT8` reads and writes a `uint8_t`. On 16-bit MAU platforms, where a `uint8_t` member is backed by 16-bit storage, only the low 8 bits round-trip.                                                                                                                                                                                                           |
-| **Version header**          | `ppack_version.h` is auto-generated by the Meson build and placed in the output build folder                                                                                                                                                                                                                                                      |
+| **Thread safety**           | ppack is not thread-safe. The caller provides mutual exclusion when `base_ptr` or `payload` is shared across threads or ISRs.
+| **WCET**                    | Execution time is bounded and deterministic **when field descriptors are `static const`**. The loop bounds are compile-time constants in that case. WCET is not guaranteed if the caller constructs descriptors at runtime with arbitrary `bit_length` values.
+| **F32 and scaling**         | `PPACK_TYPE_F32` always copies 32 IEEE-754 bits directly. The library ignores `scale`, `offset`, and `behaviour` for this type. Use a scaled integer type (`UINT16`, `INT16`, `UINT32`, `INT32`) to encode floating-point physical values with a resolution factor.
+| **UINT8 struct member**     | `PPACK_TYPE_UINT8` reads and writes a `uint8_t`. On 16-bit MAU platforms the member uses 16-bit storage. Only the low 8 bits round-trip through the payload.
+| **Version header**          | The Meson build generates `ppack_version.h` and places it in the build directory.
