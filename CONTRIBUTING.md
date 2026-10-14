@@ -100,7 +100,7 @@ change is needed, not _what_ the diff already shows.
   before implementation.
 - Keep PRs focused. One feature or one fix per PR.
 - The PR description should explain _why_ the change is needed.
-- All CI checks must pass: tests on Linux+macOS, ASan+UBSan, release
+- All CI checks must pass: tests under ASan+UBSan, release
   build, coverage gate.
 - Any new MISRA deviation must be flagged in the PR description.
 

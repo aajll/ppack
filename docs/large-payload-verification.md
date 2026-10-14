@@ -88,7 +88,7 @@ Values use a fixed pseudorandom seed. This is not exhaustive over all values
 or multi-field descriptor combinations.
 
 CI pins the old source to `fecf8778423c353a54b7387aa0954887a75fbe49`.
-It runs both storage models on Linux and macOS with sanitizers.
+It runs both storage models on Linux with sanitizers.
 To reproduce from the repository root:
 
 ```sh

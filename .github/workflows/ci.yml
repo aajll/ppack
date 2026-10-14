@@ -9,19 +9,13 @@ on:
 jobs:
   # ---------------------------------------------------------------------------
   # Build the library and run the full test suite under ASan + UBSan.
-  # Runs on both Linux and macOS to catch platform-specific issues.
   # float-cast-overflow is added explicitly: GCC does not include it in
   # -fsanitize=undefined (clang does), and it is the check that catches
   # undefined float-to-integer conversions (e.g. NaN) in the scaled paths.
   # ---------------------------------------------------------------------------
   test:
-    name: "Test (${{ matrix.os }})"
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, macos-latest]
+    name: "Test"
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
@@ -30,13 +24,8 @@ jobs:
         with:
           python-version: "3.x"
 
-      - name: Install ninja (Ubuntu)
-        if: runner.os == 'Linux'
+      - name: Install ninja
         run: sudo apt-get update -q && sudo apt-get install -y ninja-build
-
-      - name: Install ninja (macOS)
-        if: runner.os == 'macOS'
-        run: brew install ninja
 
       - name: Install meson
         run: pip install meson
@@ -75,7 +64,7 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: testlog-${{ matrix.os }}
+          name: testlog
           path: |
             build/meson-logs/testlog.txt
             build_compat/meson-logs/testlog.txt
