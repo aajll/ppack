@@ -12,10 +12,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - `scripts/format.sh`, which pins the clang-format release and runs it with `uvx`. CI checks formatting through it.
 - CI runs the MISRA C:2023 analysis with `misch`, fails on any finding, and prints the deviation record.
 - CI compiles the library with warnings as errors using two releases of a vendor C11 compiler for a 16-bit-MAU DSP target, under both of its object formats.
+- A `ppack docs examples` test compiles every C example in the documentation.
 
 ### Changed
 
 - CI installs Meson, Ninja and gcovr with `uv` instead of `pip` and `apt`.
+- The README is a short landing page, with the integration guide, API reference and design record in `docs/integration.md`, `docs/api.md` and `docs/design.md`. The large-payload verification record is part of `docs/design.md`.
 
 ## [2.5.0] - 2026-09-08
 
@@ -44,7 +46,7 @@ and format-version policy remain the consumer's responsibility.
 - Guard, clearing, input-preservation, and malformed-geometry tests for both
   native and simulated 16-bit-MAU storage.
 - Compile-time configuration checks and a maximum-size CI override build.
-- A [verification record](docs/large-payload-verification.md) with the range
+- A [verification record](https://github.com/aajll/ppack/blob/v2.5.0/docs/large-payload-verification.md) with the range
   argument, compatibility checks, and target-compilation scope.
 
 ## [2.4.0] - 2026-07-03

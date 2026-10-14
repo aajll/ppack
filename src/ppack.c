@@ -278,7 +278,7 @@ validate_payload_bits(size_t payload_bits)
         return PPACK_SUCCESS;
 }
 
-/* ================ GLOBAL PROTOTYPES ======================================= */
+/* ================ GLOBAL FUNCTIONS ======================================== */
 
 int
 /* cppcheck-suppress misra-c2012-8.7 ; @deviation Public API function consumed
