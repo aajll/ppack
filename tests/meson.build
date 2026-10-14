@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+
 test_sources = [
   'test_ppack_main.c',
   'test_harness.c',

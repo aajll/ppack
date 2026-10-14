@@ -1,4 +1,6 @@
 /*
+ * SPDX-License-Identifier: MIT
+ *
  * @file: test_layout.c
  * @brief Field layout and multi-field placement.
  */

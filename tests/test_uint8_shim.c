@@ -1,4 +1,6 @@
 /*
+ * SPDX-License-Identifier: MIT
+ *
  * @file: test_uint8_shim.c
  * @brief 16-bit-MAU uint8_t alias-shim behaviour.
  *

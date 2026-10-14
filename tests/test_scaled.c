@@ -1,4 +1,6 @@
 /*
+ * SPDX-License-Identifier: MIT
+ *
  * @file: test_scaled.c
  * @brief Scaled (linear scale/offset) field round-trips.
  */

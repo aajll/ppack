@@ -1,4 +1,6 @@
 /*
+ * SPDX-License-Identifier: MIT
+ *
  * @file: test_payload_size.c
  * @brief Variable-size payload validation and round-trip coverage.
  *

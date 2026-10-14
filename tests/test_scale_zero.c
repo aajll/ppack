@@ -1,4 +1,6 @@
 /*
+ * SPDX-License-Identifier: MIT
+ *
  * @file: test_scale_zero.c
  * @brief Rejection of scale==0 (and any scaling on PPACK_TYPE_UINT8).
  */

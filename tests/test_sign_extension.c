@@ -1,4 +1,6 @@
 /*
+ * SPDX-License-Identifier: MIT
+ *
  * @file: test_sign_extension.c
  * @brief Sign-extension behaviour for sub-width signed fields.
  */

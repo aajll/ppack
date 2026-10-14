@@ -1,4 +1,6 @@
 /*
+ * SPDX-License-Identifier: MIT
+ *
  * @file: test_legacy_compat.c
  * @brief Compare valid legacy geometry against an unmodified old codec.
  *

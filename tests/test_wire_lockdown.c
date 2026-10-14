@@ -1,4 +1,6 @@
 /*
+ * SPDX-License-Identifier: MIT
+ *
  * @file: test_wire_lockdown.c
  * @brief Wire-format lockdown tests for the 64-bit (CAN classic) payload.
  *

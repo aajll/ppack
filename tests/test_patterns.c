@@ -1,4 +1,6 @@
 /*
+ * SPDX-License-Identifier: MIT
+ *
  * @file: test_patterns.c
  * @brief Targeted edge-value tests — scaled extremes, sign-extension
  *        boundaries, all-zeros / all-ones payloads, single-bit fields.
