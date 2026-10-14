@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+
 # Optional side-by-side comparison. Supply an unmodified legacy checkout.
 project('ppack-legacy-comparison', 'c', default_options: ['c_std=c11'])
 

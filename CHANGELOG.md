@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Added
+
+- `meson install` generates a `ppack.pc` file, so an installed package is consumed with `pkg-config --cflags --libs ppack`, and the build registers `ppack` with `meson.override_dependency`.
+- `scripts/format.sh`, which pins the clang-format release and runs it with `uvx`. CI checks formatting through it.
+- CI runs the MISRA C:2023 analysis with `misch`, fails on any finding, and prints the deviation record.
+- CI compiles the library with warnings as errors using two releases of a vendor C11 compiler for a 16-bit-MAU DSP target, under both of its object formats.
+
+### Changed
+
+- CI installs Meson, Ninja and gcovr with `uv` instead of `pip` and `apt`.
+
 ## [2.5.0] - 2026-09-08
 
 ### Changed

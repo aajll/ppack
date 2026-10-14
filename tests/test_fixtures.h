@@ -1,4 +1,6 @@
 /*
+ * SPDX-License-Identifier: MIT
+ *
  * @file: test_fixtures.h
  * @brief Shared fixtures, payload-inspection macros, and struct typedefs
  *        used by every category of the ppack unit-test suite.

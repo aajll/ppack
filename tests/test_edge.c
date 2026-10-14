@@ -1,4 +1,6 @@
 /*
+ * SPDX-License-Identifier: MIT
+ *
  * @file: test_edge.c
  * @brief Misc / edge cases — invalid types, empty fields, extreme values,
  *        single-bit and overlapping fields, full-payload sanity.

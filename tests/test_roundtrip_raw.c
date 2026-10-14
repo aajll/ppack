@@ -1,4 +1,6 @@
 /*
+ * SPDX-License-Identifier: MIT
+ *
  * @file: test_roundtrip_raw.c
  * @brief Raw (non-scaled) pack/unpack round-trips at full type widths.
  */

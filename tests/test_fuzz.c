@@ -1,4 +1,6 @@
 /*
+ * SPDX-License-Identifier: MIT
+ *
  * @file: test_fuzz.c
  * @brief PRNG + small math helpers shared by the fuzz tests.
  */

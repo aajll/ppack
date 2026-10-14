@@ -1,4 +1,6 @@
 /*
+ * SPDX-License-Identifier: MIT
+ *
  * @file: test_large_payload.c
  * @brief Large-payload checks against an independent bit-at-a-time model.
  *

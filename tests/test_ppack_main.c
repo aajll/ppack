@@ -1,4 +1,6 @@
 /*
+ * SPDX-License-Identifier: MIT
+ *
  * @file: test_ppack_main.c
  * @brief Unit-test driver for the ppack library.
  *

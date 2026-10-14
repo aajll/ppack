@@ -1,4 +1,6 @@
 /*
+ * SPDX-License-Identifier: MIT
+ *
  * @file: test_null_args.c
  * @brief NULL / invalid-argument handling.
  */

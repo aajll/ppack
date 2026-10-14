@@ -1,4 +1,6 @@
 /*
+ * SPDX-License-Identifier: MIT
+ *
  * @file: test_fuzz.h
  * @brief Deterministic xorshift32 PRNG and helpers for the fuzz tests.
  *

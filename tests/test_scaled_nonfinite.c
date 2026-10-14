@@ -1,4 +1,6 @@
 /*
+ * SPDX-License-Identifier: MIT
+ *
  * @file: test_scaled_nonfinite.c
  * @brief Non-finite inputs on SCALED fields: NaN is rejected with
  *        -PPACK_ERR_INVALARG (casting NaN to an integer is undefined

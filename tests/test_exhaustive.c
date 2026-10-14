@@ -1,4 +1,6 @@
 /*
+ * SPDX-License-Identifier: MIT
+ *
  * @file: test_exhaustive.c
  * @brief Brute-force sweeps over bit positions, bit lengths, cross-boundary
  *        layouts, adjacency, odd alignment, and full-payload multi-field

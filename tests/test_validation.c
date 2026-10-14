@@ -1,4 +1,6 @@
 /*
+ * SPDX-License-Identifier: MIT
+ *
  * @file: test_validation.c
  * @brief Overflow and bit_length bounds validation.
  */

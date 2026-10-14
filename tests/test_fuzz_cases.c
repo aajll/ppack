@@ -1,4 +1,6 @@
 /*
+ * SPDX-License-Identifier: MIT
+ *
  * @file: test_fuzz_cases.c
  * @brief Stress / fuzz / property tests using the deterministic PRNG
  *        from test_fuzz.h: per-type round-trips, pack/unpack/pack

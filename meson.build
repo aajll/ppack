@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+
 project(
   'ppack',
   'c',
@@ -55,6 +57,17 @@ install_headers(['include/ppack.h', 'include/ppack_platform.h'], subdir: 'ppack'
 ppack_dep = declare_dependency(
   include_directories: public_headers,
   link_with: ppack_lib,
+)
+
+meson.override_dependency('ppack', ppack_dep)
+
+pkg = import('pkgconfig')
+pkg.generate(
+  ppack_lib,
+  description: 'Bit-aligned payload serialisation for embedded C',
+  filebase: 'ppack',
+  name: 'ppack',
+  subdirs: 'ppack',
 )
 
 # === Host unit tests ==========================================================

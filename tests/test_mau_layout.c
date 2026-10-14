@@ -1,4 +1,6 @@
 /*
+ * SPDX-License-Identifier: MIT
+ *
  * @file: test_mau_layout.c
  * @brief Verify the physical memory layout of ppack payloads on 16-bit MAU.
  *

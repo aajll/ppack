@@ -1,4 +1,6 @@
 /*
+ * SPDX-License-Identifier: MIT
+ *
  * @file: test_partial_coverage.c
  * @brief Verify struct-member survival semantics when fields only partially
  *        cover a multi-byte destination member.
