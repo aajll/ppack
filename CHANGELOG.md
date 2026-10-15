@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- `ppack.h` defines `PPACK_VERSION_MAJOR`, `_MINOR`, `_PATCH`, `PPACK_VERSION`, `PPACK_VERSION_STRING` and a new `PPACK_VERSION_NUMBER` (`long`, `MAJOR * 10000 + MINOR * 100 + PATCH`), so a copied-in header carries its version. `ppack_version.h` is no longer generated; it is installed as a deprecated header that includes `ppack.h`. Meson fails to configure when the header and `project(version:)` disagree, and the build needs Meson 0.57 or later.
 - CI installs Meson, Ninja and gcovr with `uv` instead of `pip` and `apt`.
 - The README is a short landing page, with the integration guide, API reference and design record in `docs/integration.md`, `docs/api.md` and `docs/design.md`. The large-payload verification record is part of `docs/design.md`.
 

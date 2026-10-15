@@ -40,7 +40,7 @@ scripts/format.sh --fix    # rewrite in place
 
 ### 1.2 Notes
 
-- `meson setup` generates the optional `ppack_version.h` into the build directory; `ppack.h` does not include it.
+- `include/ppack.h` defines the version macros, and `meson setup` fails when they differ from `project(version:)`, so a release updates both. `include/ppack_version.h` is a deprecated header that includes `ppack.h`.
 - `PPACK_PAYLOAD_BITS` (default 64) sizes only the `PPACK_PAYLOAD_UNITS` buffer macro; every call takes the payload size explicitly. `PPACK_SIMULATE_16BIT_MAU` selects the 16-bit storage model on a host, for tests only. The only Meson option is `build_tests`.
 - The test suite builds twice, native and with `PPACK_SIMULATE_16BIT_MAU`. `tests/compatibility` is a separate Meson project that compares against the pinned 2.4.0 source; the command is in `CONTRIBUTING.md`.
 

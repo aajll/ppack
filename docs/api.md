@@ -213,3 +213,25 @@ parameters_load(const ppack_byte_t record[1024u / PPACK_ADDR_UNIT_BITS])
 ### Other uses
 
 The same table pattern serves I²C and SPI device frames, register images, fixed telemetry packets, and binary exchange between nodes of different addressing models, which see the same bytes.
+
+## Version
+
+`ppack.h` defines the release it belongs to, so a copied-in header still identifies itself:
+
+<!-- snippet: skip -->
+```c
+#define PPACK_VERSION_MAJOR 2
+#define PPACK_VERSION_MINOR 5
+#define PPACK_VERSION_PATCH 0
+#define PPACK_VERSION "2.5.0"
+```
+
+`PPACK_VERSION_NUMBER` is `MAJOR * 10000 + MINOR * 100 + PATCH` as a `long`, so it holds any version where `int` is 16 bits. Compare it in the preprocessor to require a minimum release:
+
+```c
+#if PPACK_VERSION_NUMBER < 20500L
+#error "ppack 2.5.0 or later is required"
+#endif
+```
+
+`PPACK_VERSION_STRING` is the same string as `PPACK_VERSION`. `ppack_version.h` is a deprecated header that includes `ppack.h`, kept so existing includes compile until the next major release.

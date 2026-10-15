@@ -22,6 +22,32 @@ extern "C" {
 
 #include "ppack_platform.h"
 
+/* ================ VERSION ================================================= */
+
+/**
+ * @name Version
+ * @brief Release of this header, for diagnostics and @c #if checks.
+ *
+ * @details
+ *    @c PPACK_VERSION_NUMBER is @c MAJOR*10000 @c + @c MINOR*100
+ *    @c + @c PATCH with type @c long, so it cannot overflow where @c int is
+ *    16 bits. The Meson build fails to configure when these values differ
+ *    from the project version.
+ * @{
+ */
+/* cppcheck-suppress-begin misra-c2012-2.5 ; @deviation Public version macros
+ * for consumer diagnostics and #if checks; the library does not use them. */
+#define PPACK_VERSION_MAJOR  2
+#define PPACK_VERSION_MINOR  5
+#define PPACK_VERSION_PATCH  0
+#define PPACK_VERSION        "2.5.0"
+#define PPACK_VERSION_STRING PPACK_VERSION
+#define PPACK_VERSION_NUMBER                                                   \
+        ((PPACK_VERSION_MAJOR * 10000L) + (PPACK_VERSION_MINOR * 100L)         \
+         + PPACK_VERSION_PATCH)
+/* cppcheck-suppress-end misra-c2012-2.5 ; @deviation As above. */
+/** @} */
+
 /*
  * Re-export the platform abstraction so users picking up ppack.h get
  * ppack_byte_t and PPACK_PAYLOAD_UNITS for portable buffer declarations

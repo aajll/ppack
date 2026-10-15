@@ -4,6 +4,7 @@ project(
   'ppack',
   'c',
   version: '2.5.0',
+  meson_version: '>=0.57.0',
   default_options: [
     'c_std=c11',
     'warning_level=3',
@@ -11,27 +12,27 @@ project(
   license: 'MIT',
 )
 
-# === Version header ===========================================================
+# === Version ==================================================================
+# include/ppack.h defines the version macros, so a copy-in build has them.
+# Configuration fails when they differ from the project version.
 
-ver = meson.project_version().split('.')
-
-major = ver[0].to_int()
-minor = ver[1].to_int()
-patch = ver[2].to_int()
-
-conf = configuration_data()
-conf.set_quoted('VERSION', meson.project_version())
-conf.set('MAJOR', major)
-conf.set('MINOR', minor)
-conf.set('PATCH', patch)
-
-configure_file(
-  input: 'config' / 'ppack_version.h.in',
-  output: 'ppack_version.h',
-  configuration: conf,
-  install: true,
-  install_dir: get_option('includedir') / 'ppack',
-)
+fs = import('fs')
+version_parts = meson.project_version().split('.')
+version_macros = {
+  'PPACK_VERSION_MAJOR': version_parts[0],
+  'PPACK_VERSION_MINOR': version_parts[1],
+  'PPACK_VERSION_PATCH': version_parts[2],
+  'PPACK_VERSION': '"' + meson.project_version() + '"',
+}
+header_lines = []
+foreach line : fs.read('include' / 'ppack.h').split('\n')
+  header_lines += ' '.join(line.split())
+endforeach
+foreach name, value : version_macros
+  if '#define @0@ @1@'.format(name, value) not in header_lines
+    error('include/ppack.h must define @0@ as @1@'.format(name, value))
+  endif
+endforeach
 
 # === Include directories ======================================================
 
@@ -52,7 +53,10 @@ ppack_lib = static_library(
 )
 
 # Install public header
-install_headers(['include/ppack.h', 'include/ppack_platform.h'], subdir: 'ppack')
+install_headers(
+  ['include/ppack.h', 'include/ppack_platform.h', 'include/ppack_version.h'],
+  subdir: 'ppack',
+)
 
 ppack_dep = declare_dependency(
   include_directories: public_headers,
