@@ -7,6 +7,7 @@
  */
 
 #include "ppack.h"
+#include "ppack_version.h"
 #include "test_fixtures.h"
 #include "test_harness.h"
 #include <ppack_platform.h>
@@ -424,6 +425,15 @@ TEST_CASE(test_full_payload)
         TEST_ASSERT(unpacked.field_uint32 == 0x9ABCDEF0);
 }
 
+/* The deprecated version header still exposes the macros from ppack.h. */
+TEST_CASE(test_version_macros)
+{
+        TEST_ASSERT(PPACK_VERSION_NUMBER
+                    == ((PPACK_VERSION_MAJOR * 10000L)
+                        + (PPACK_VERSION_MINOR * 100L) + PPACK_VERSION_PATCH));
+        TEST_ASSERT(PPACK_VERSION_STRING[0] != '\0');
+}
+
 void
 run_edge_tests(void)
 {
@@ -446,4 +456,5 @@ run_edge_tests(void)
         run_test(test_1bit_field_zero, "test_1bit_field_zero");
         run_test(test_overlapping_fields, "test_overlapping_fields");
         run_test(test_full_payload, "test_full_payload");
+        run_test(test_version_macros, "test_version_macros");
 }

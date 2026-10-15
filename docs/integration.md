@@ -28,7 +28,7 @@ Keep both headers on the same include path, because `ppack.h` includes `ppack_pl
 #include "ppack.h"
 ```
 
-`ppack_version.h` exists only in Meson builds.
+`ppack.h` defines the version macros described in [api.md](api.md#version).
 
 ## Meson subproject
 
@@ -58,10 +58,9 @@ The headers install to a `ppack/` subdirectory, and the `pkg-config` flags add t
 <!-- snippet: skip -->
 ```c
 #include <ppack/ppack.h>
-#include <ppack/ppack_version.h>
 ```
 
-`ppack_version.h` defines `PPACK_VERSION` and `PPACK_VERSION_STRING` as the version string, and `PPACK_VERSION_MAJOR`, `PPACK_VERSION_MINOR` and `PPACK_VERSION_PATCH` as integers.
+`ppack_version.h` is installed beside it as a deprecated header that includes `ppack.h`.
 
 ## Buffer sizing
 
