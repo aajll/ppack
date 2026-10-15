@@ -11,10 +11,6 @@
 #ifndef PPACK_H_
 #define PPACK_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /* ================ INCLUDES ================================================ */
 
 #include <stddef.h>
@@ -382,9 +378,5 @@ int ppack_unpack(void *base_ptr, const void *payload, size_t payload_bits,
                  const struct ppack_field *fields, size_t field_count);
 
 /** @} */
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif /* PPACK_H_ */

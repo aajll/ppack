@@ -23,6 +23,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Removed
 
 - `ppack_version.h`. `ppack.h` defines the version macros.
+- The `extern "C"` guards in `ppack.h`. The library is C11 only and its headers make no C++ claim.
 
 ## [2.5.0] - 2026-09-08
 
