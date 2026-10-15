@@ -7,7 +7,6 @@
  */
 
 #include "ppack.h"
-#include "ppack_version.h"
 #include "test_fixtures.h"
 #include "test_harness.h"
 #include <ppack_platform.h>
@@ -425,7 +424,7 @@ TEST_CASE(test_full_payload)
         TEST_ASSERT(unpacked.field_uint32 == 0x9ABCDEF0);
 }
 
-/* The deprecated version header still exposes the macros from ppack.h. */
+/* The version number agrees with its parts. */
 TEST_CASE(test_version_macros)
 {
         TEST_ASSERT(PPACK_VERSION_NUMBER

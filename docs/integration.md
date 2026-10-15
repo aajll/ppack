@@ -60,8 +60,6 @@ The headers install to a `ppack/` subdirectory, and the `pkg-config` flags add t
 #include <ppack/ppack.h>
 ```
 
-`ppack_version.h` is installed beside it as a deprecated header that includes `ppack.h`.
-
 ## Buffer sizing
 
 A payload buffer is an array of `ppack_byte_t` with one element per logical octet. `ppack_byte_t` is `uint8_t` on a byte-addressable target and `uint16_t` where `CHAR_BIT` is 16, so the element count is the same on both and only the storage per element differs.

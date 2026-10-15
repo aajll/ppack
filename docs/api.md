@@ -234,4 +234,4 @@ The same table pattern serves I²C and SPI device frames, register images, fixed
 #endif
 ```
 
-`PPACK_VERSION_STRING` is the same string as `PPACK_VERSION`. `ppack_version.h` is a deprecated header that includes `ppack.h`, kept so existing includes compile until the next major release.
+`PPACK_VERSION_STRING` is the same string as `PPACK_VERSION`.
