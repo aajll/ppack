@@ -221,16 +221,16 @@ The same table pattern serves I²C and SPI device frames, register images, fixed
 <!-- snippet: skip -->
 ```c
 #define PPACK_VERSION_MAJOR 2
-#define PPACK_VERSION_MINOR 5
+#define PPACK_VERSION_MINOR 6
 #define PPACK_VERSION_PATCH 0
-#define PPACK_VERSION "2.5.0"
+#define PPACK_VERSION "2.6.0"
 ```
 
 `PPACK_VERSION_NUMBER` is `MAJOR * 10000 + MINOR * 100 + PATCH` as a `long`, so it holds any version where `int` is 16 bits. Compare it in the preprocessor to require a minimum release:
 
 ```c
-#if PPACK_VERSION_NUMBER < 20500L
-#error "ppack 2.5.0 or later is required"
+#if PPACK_VERSION_NUMBER < 20600L
+#error "ppack 2.6.0 or later is required"
 #endif
 ```
 
