@@ -34,9 +34,9 @@
 /* cppcheck-suppress-begin misra-c2012-2.5 ; @deviation Public version macros
  * for consumer diagnostics and #if checks; the library does not use them. */
 #define PPACK_VERSION_MAJOR  2
-#define PPACK_VERSION_MINOR  5
+#define PPACK_VERSION_MINOR  6
 #define PPACK_VERSION_PATCH  0
-#define PPACK_VERSION        "2.5.0"
+#define PPACK_VERSION        "2.6.0"
 #define PPACK_VERSION_STRING PPACK_VERSION
 #define PPACK_VERSION_NUMBER                                                   \
         ((PPACK_VERSION_MAJOR * 10000L) + (PPACK_VERSION_MINOR * 100L)         \

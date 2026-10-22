@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [2.6.0] - 2026-10-22
+
 ### Added
 
 - `meson install` generates a `ppack.pc` file, so an installed package is consumed with `pkg-config --cflags --libs ppack`, and the build registers `ppack` with `meson.override_dependency`.
